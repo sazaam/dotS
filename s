@@ -1,3 +1,5 @@
 #!/bin/bash
 # s - wrapper for s.py (global)
-exec python3 ~/.config/opencode/s.py "$@"
+# Detect where this script is located
+DOTS_DIR="$(cd "$(dirname "$0")" && pwd)"
+exec python3 "$DOTS_DIR/s.py" "$@"

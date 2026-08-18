@@ -1,5 +1,5 @@
 @p |
-  name:opencode-ctx
+  name:dotS
   ver:0.1.0
 |
 

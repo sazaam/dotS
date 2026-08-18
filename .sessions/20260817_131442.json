@@ -1,0 +1,17 @@
+{
+  "started": "2026-08-17T13:14:42.104906",
+  "commands": [
+    {
+      "time": "2026-08-17T13:14:42.179522",
+      "cmd": "learn",
+      "args": [
+        "nginx.s",
+        "meta",
+        "lastUpdated 2026-08-17"
+      ],
+      "source": "manual"
+    }
+  ],
+  "tokens_saved": 0,
+  "websearch_fallbacks": 0
+}

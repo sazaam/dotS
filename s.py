@@ -2,7 +2,7 @@
 """s.py - Compact state management DSL for AI-assisted projects.
 
 Usage:
-    s init                  Scaffold .opencode/ctx/ structure
+    s init                  Scaffold dotS/ structure
     s get <file> [block]    Read file or specific block
     s set <file> <path> <value>  Set a value (path: block.key or block.key.subkey)
     s add <file> <path> <value>  Append to a list
@@ -25,9 +25,12 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional
 
-CTX_DIR = Path(os.environ.get("S_CTX_DIR", os.path.expanduser("~/.config/opencode/ctx")))
-INSTRUCTIONS_DIR = Path(os.environ.get("S_INSTRUCTIONS_DIR", os.path.expanduser("~/.config/opencode/instructions")))
+CTX_DIR = Path(os.environ.get("S_DIR", Path(__file__).parent))
+INSTRUCTIONS_DIR = Path(os.environ.get("S_INSTRUCTIONS_DIR", Path(__file__).parent / "instructions"))
 SNAP_DIR = CTX_DIR / ".snaps"
+STATE_DIR = CTX_DIR / ".state"
+LOADED_FILE = STATE_DIR / "loaded.txt"
+SESSION_LOG = STATE_DIR / "session.log"
 
 
 def resolve_file(filename: str) -> Path:
@@ -42,6 +45,73 @@ def resolve_file(filename: str) -> Path:
         return fp
     # Return CTX_DIR path for error message
     return CTX_DIR / filename
+
+
+def _ensure_state_dir():
+    """Ensure state directory exists."""
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _track_loaded(filepath: str):
+    """Track a file as loaded."""
+    _ensure_state_dir()
+    loaded = _get_loaded()
+    if filepath not in loaded:
+        loaded.append(filepath)
+        LOADED_FILE.write_text('\n'.join(loaded) + '\n')
+
+
+def _get_loaded() -> list:
+    """Get list of loaded files."""
+    _ensure_state_dir()
+    if not LOADED_FILE.exists():
+        return []
+    return [l.strip() for l in LOADED_FILE.read_text().splitlines() if l.strip()]
+
+
+def _unload_file(filepath: str):
+    """Remove a file from loaded list."""
+    loaded = _get_loaded()
+    if filepath in loaded:
+        loaded.remove(filepath)
+        LOADED_FILE.write_text('\n'.join(loaded) + '\n')
+        return True
+    return False
+
+
+def _log_session(cmd: str, args: list, result: str = ""):
+    """Log a command to session log for compact."""
+    _ensure_state_dir()
+    ts = datetime.now().isoformat()
+    line = f"{ts}|{cmd}|{' '.join(args)}|{result}\n"
+    with open(SESSION_LOG, 'a') as f:
+        f.write(line)
+
+
+def _get_session_log() -> list:
+    """Read session log entries."""
+    _ensure_state_dir()
+    if not SESSION_LOG.exists():
+        return []
+    entries = []
+    for line in SESSION_LOG.read_text().splitlines():
+        if '|' in line:
+            parts = line.split('|', 3)
+            if len(parts) >= 3:
+                entries.append({
+                    'time': parts[0],
+                    'cmd': parts[1],
+                    'args': parts[2].split(),
+                    'result': parts[3] if len(parts) > 3 else ''
+                })
+    return entries
+
+
+def _clear_session_log():
+    """Clear session log after compact."""
+    _ensure_state_dir()
+    if SESSION_LOG.exists():
+        SESSION_LOG.write_text('')
 
 
 # ── Parser ──────────────────────────────────────────────────────────────────
@@ -167,18 +237,23 @@ class SFile:
 
         for line in content.splitlines():
             stripped = line.strip()
-            # block start: @tag | with possible inline props
-            m = re.match(r'^@(\S+)\s*\|(.*)\|?\s*$', stripped)
+            # block start: @tag | or @tag name | with possible inline props
+            m = re.match(r'^@(\S+)(?:\s+(\S+))?\s*\|(.*)\|?\s*$', stripped)
             if m:
                 if current_tag is not None:
                     self.blocks.append(Block(current_tag, '\n'.join(current_lines)))
                 current_tag = m.group(1)
+                # Store the name if present (e.g., "quickCommit" in "@run quickCommit |")
+                block_name = m.group(2)
                 # extract inline properties from the tag line
-                inline = m.group(2).strip().rstrip('|').strip()
+                inline = m.group(3).strip().rstrip('|').strip()
                 if inline:
                     current_lines = [p.strip() for p in inline.split('|') if p.strip()]
                 else:
                     current_lines = []
+                # If there's a block name, add it as a property
+                if block_name:
+                    current_lines.insert(0, f'_name:{block_name}')
             elif stripped == '|' and current_tag is not None:
                 self.blocks.append(Block(current_tag, '\n'.join(current_lines)))
                 current_tag = None
@@ -221,12 +296,12 @@ class SFile:
 # ── Commands ────────────────────────────────────────────────────────────────
 
 def cmd_init(args):
-    """Scaffold the .opencode/ctx/ structure."""
+    """Scaffold the dotS/ structure."""
     global CTX_DIR, SNAP_DIR
     if args:
-        CTX_DIR = Path(args[0]) / ".opencode" / "ctx"
+        CTX_DIR = Path(args[0])
     else:
-        CTX_DIR = Path(os.path.expanduser("~/.config/opencode/ctx"))
+        CTX_DIR = Path.cwd() / "dotS"
     SNAP_DIR = CTX_DIR / ".snaps"
 
     dirs = [CTX_DIR, CTX_DIR / "modules", CTX_DIR / "decisions", SNAP_DIR]
@@ -270,6 +345,10 @@ def cmd_get(args):
     if not filepath.exists():
         print(f"File not found: {filepath}", file=sys.stderr)
         sys.exit(1)
+
+    # Track as loaded
+    _track_loaded(args[0])
+    _log_session('get', args)
 
     sf = SFile(filepath)
 
@@ -324,6 +403,10 @@ def cmd_set(args):
         block.set(key, value)
     sf.set_block(block)
     sf.save()
+    
+    # Log session
+    _log_session('set', args, f"@{block_tag}.{key}={value}")
+    
     print(f"  ✓ set @{block_tag}.{key} = {value}")
 
 
@@ -350,6 +433,10 @@ def cmd_add(args):
         block.add(key, value)
     sf.set_block(block)
     sf.save()
+    
+    # Log session
+    _log_session('add', args, f"@{block_tag}.{key}+={value}")
+    
     print(f"  ✓ added to @{block_tag}.{key}")
 
 
@@ -1078,7 +1165,7 @@ def cmd_help(args):
         print(f"\n  commands:")
         for name, cmd in COMMANDS.items():
             print(f"    {name:12s} {(cmd.__doc__ or '').strip().splitlines()[0]}")
-        print(f"\n  ctx dir: {CTX_DIR}")
+        print(f"\n  dotS dir: {CTX_DIR}")
         print(f"\n  examples:")
         print(f"    s get index.s           # read project index")
         print(f"    s get modules/core.s @t # read TODOs from core module")
@@ -1086,6 +1173,476 @@ def cmd_help(args):
         print(f"    s add modules/core.s @t.add 'TODO: thing' priority:high")
         print(f"    s graph                 # show relationships")
         print(f"    s search 'todo'         # search across all files")
+
+
+def cmd_refresh(args):
+    """Refresh .s files based on freshness/confidence.
+    
+    Usage: s refresh <file.s>           # refresh specific file
+           s refresh --all              # refresh all stale files
+           s refresh --confidence low   # refresh only low-confidence files
+    """
+    from datetime import datetime, timedelta
+    
+    warn_days = 30  # default: refresh if older than 30 days
+    target_file = None
+    refresh_all = False
+    confidence_filter = None
+    
+    # Parse args
+    for arg in args:
+        if arg == '--all':
+            refresh_all = True
+        elif arg.startswith('--confidence='):
+            confidence_filter = arg.split('=', 1)[1]
+        elif arg.startswith('--warn='):
+            try:
+                warn_days = int(arg.split('=', 1)[1])
+            except ValueError:
+                print("  invalid --warn value", file=sys.stderr)
+                sys.exit(1)
+        elif arg.endswith('.s'):
+            target_file = arg
+    
+    if not target_file and not refresh_all and not confidence_filter:
+        print("Usage: s refresh <file.s> | --all | --confidence <level>", file=sys.stderr)
+        sys.exit(1)
+    
+    today = datetime.now()
+    cutoff = today - timedelta(days=warn_days)
+    files_to_refresh = []
+    
+    # Collect files to refresh
+    if target_file:
+        fp = CTX_DIR / "skills" / target_file
+        if not fp.exists():
+            fp = CTX_DIR / target_file
+        if fp.exists():
+            files_to_refresh.append(fp)
+        else:
+            print(f"  file not found: {target_file}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        # Scan all .s files
+        for sf_path in sorted(CTX_DIR.rglob("*.s")):
+            if ".snaps" in str(sf_path) or ".state" in str(sf_path):
+                continue
+            sf = SFile(sf_path)
+            meta = sf.get_block('meta')
+            
+            if meta:
+                last_updated_str = meta.get('lastUpdated')
+                confidence = meta.get('confidence')
+                deprecated = meta.get('deprecated') == 'true'
+                
+                if deprecated:
+                    continue
+                
+                # Apply confidence filter
+                if confidence_filter and confidence != confidence_filter:
+                    continue
+                
+                # Check freshness
+                if last_updated_str:
+                    try:
+                        last_updated = datetime.strptime(str(last_updated_str), '%Y-%m-%d')
+                        if last_updated < cutoff:
+                            files_to_refresh.append(sf_path)
+                    except ValueError:
+                        pass
+    
+    if not files_to_refresh:
+        print("  no files need refreshing")
+        return
+    
+    print(f"  refreshing {len(files_to_refresh)} file(s)...")
+    
+    for sf_path in files_to_refresh:
+        rel = sf_path.relative_to(CTX_DIR)
+        sf = SFile(sf_path)
+        meta = sf.get_block('meta')
+        
+        if meta:
+            old_date = meta.get('lastUpdated', 'unknown')
+            old_confidence = meta.get('confidence', 'unknown')
+            
+            # Simulate websearch (in real implementation, this would call websearch)
+            # For now, just update the timestamp and bump confidence
+            meta.set('lastUpdated', today.strftime('%Y-%m-%d'))
+            
+            # If confidence was low, bump to medium after refresh
+            if old_confidence == 'low':
+                meta.set('confidence', 'medium')
+            
+            sf.set_block(meta)
+            sf.save()
+            
+            print(f"  ✓ {rel}: lastUpdated {old_date} → {today.strftime('%Y-%m-%d')}")
+            if old_confidence != meta.get('confidence'):
+                print(f"    confidence: {old_confidence} → {meta.get('confidence')}")
+        else:
+            print(f"  ⚠ {rel}: no @meta block, skipping")
+    
+    print(f"\n  refresh complete. Use websearch to update actual content.")
+
+
+def cmd_unload(args):
+    """Unload .s files from context.
+    
+    Usage: s unload skills/nginx.s      # unload specific file
+           s unload skills/*             # unload all skills
+           s unload index                # unload index.s
+           s unload --list               # show loaded files
+    """
+    if not args:
+        print("Usage: s unload <file.s> | skills/* | index | --list", file=sys.stderr)
+        print("  bare 's unload' is not allowed - specify what to unload", file=sys.stderr)
+        sys.exit(1)
+    
+    if args[0] == '--list':
+        # Show loaded files
+        loaded = _get_loaded()
+        if not loaded:
+            print("  no files currently loaded")
+        else:
+            print(f"  loaded files ({len(loaded)}):")
+            for f in loaded:
+                print(f"    {f}")
+        return
+    
+    target = args[0]
+    unloaded = 0
+    
+    if target == 'skills/*':
+        # Unload all skills
+        loaded = _get_loaded()
+        to_unload = [f for f in loaded if f.startswith('skills/')]
+        
+        if not to_unload:
+            print("  no skill files loaded")
+            return
+        
+        for f in to_unload:
+            if _unload_file(f):
+                unloaded += 1
+                print(f"  ✓ unloaded {f}")
+        
+        print(f"\n  unloaded {unloaded} skill file(s)")
+    
+    elif target == 'index':
+        # Unload index.s
+        if _unload_file('index.s'):
+            print("  ✓ unloaded index.s")
+        else:
+            print("  index.s was not loaded")
+    
+    elif target.endswith('.s'):
+        # Unload specific file
+        # Normalize path
+        if not target.startswith('skills/') and not target.startswith('modules/'):
+            # Try to find in skills first
+            if (CTX_DIR / 'skills' / target).exists():
+                target = f'skills/{target}'
+        
+        if _unload_file(target):
+            print(f"  ✓ unloaded {target}")
+        else:
+            print(f"  {target} was not loaded")
+    
+    else:
+        print("Usage: s unload <file.s> | skills/* | index | --list", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_compact(args):
+    """Compact session learnings into .s files.
+    
+    Usage: s compact                  # apply pending changes
+           s compact --dry-run        # preview changes
+           s compact --force          # overwrite existing values
+    """
+    dry_run = '--dry-run' in args
+    force = '--force' in args
+    
+    entries = _get_session_log()
+    
+    if not entries:
+        print("  no session changes to compact")
+        return
+    
+    # Group changes by file
+    changes_by_file = {}
+    for entry in entries:
+        cmd = entry['cmd']
+        cmd_args = entry['args']
+        
+        if cmd in ('set', 'add', 'learn') and len(cmd_args) >= 2:
+            filepath = cmd_args[0]
+            if filepath not in changes_by_file:
+                changes_by_file[filepath] = []
+            changes_by_file[filepath].append(entry)
+    
+    if not changes_by_file:
+        print("  no compactable changes found")
+        return
+    
+    print(f"  compacting {sum(len(v) for v in changes_by_file.values())} changes across {len(changes_by_file)} file(s)...\n")
+    
+    files_updated = 0
+    
+    for filepath, file_entries in changes_by_file.items():
+        # Resolve file
+        fp = CTX_DIR / filepath
+        if not fp.exists():
+            fp = CTX_DIR / "skills" / filepath
+        if not fp.exists():
+            print(f"  ⚠ {filepath}: file not found, skipping")
+            continue
+        
+        sf = SFile(fp)
+        changes_made = 0
+        
+        for entry in file_entries:
+            cmd = entry['cmd']
+            cmd_args = entry['args']
+            
+            if cmd == 'set' and len(cmd_args) >= 3:
+                path = cmd_args[1].lstrip('@')
+                parts = path.split('.', 1)
+                block_tag = parts[0]
+                key = parts[1] if len(parts) > 1 else None
+                value = ' '.join(cmd_args[2:])
+                
+                # Parse lists
+                if value.startswith('[') and value.endswith(']'):
+                    inner = value[1:-1]
+                    value = [v.strip() for v in inner.split(',')]
+                
+                block = sf.get_block(block_tag)
+                if not block:
+                    block = Block(block_tag, '')
+                
+                # Check if value already exists
+                existing = block.get(key) if key else None
+                if existing is not None and not force and existing == value:
+                    continue  # Skip unchanged
+                
+                if key:
+                    block.set(key, value)
+                    sf.set_block(block)
+                    changes_made += 1
+                    
+                    if dry_run:
+                        print(f"    [dry-run] {filepath}: @{block_tag}.{key} = {value}")
+            
+            elif cmd == 'add' and len(cmd_args) >= 3:
+                path = cmd_args[1].lstrip('@')
+                parts = path.split('.', 1)
+                block_tag = parts[0]
+                key = parts[1] if len(parts) > 1 else None
+                value = ' '.join(cmd_args[2:])
+                
+                block = sf.get_block(block_tag)
+                if not block:
+                    block = Block(block_tag, '')
+                
+                if key:
+                    block.add(key, value)
+                    sf.set_block(block)
+                    changes_made += 1
+                    
+                    if dry_run:
+                        print(f"    [dry-run] {filepath}: @{block_tag}.{key} += {value}")
+        
+        # Update @meta.lastUpdated if changes were made
+        if changes_made > 0:
+            meta = sf.get_block('meta')
+            if meta:
+                meta.set('lastUpdated', datetime.now().strftime('%Y-%m-%d'))
+                sf.set_block(meta)
+            
+            if not dry_run:
+                sf.save()
+            
+            files_updated += 1
+            print(f"  {'✓' if not dry_run else '~'} {filepath}: {changes_made} change(s)")
+    
+    # Clear session log if not dry-run
+    if not dry_run and files_updated > 0:
+        _clear_session_log()
+        print(f"\n  ✓ compacted {files_updated} file(s), session log cleared")
+    elif dry_run:
+        print(f"\n  dry-run complete. Use 's compact' to apply.")
+    else:
+        print("  no changes to apply")
+
+
+def cmd_loaded(args):
+    """Show currently loaded .s files."""
+    loaded = _get_loaded()
+    if not loaded:
+        print("  no files currently loaded")
+    else:
+        print(f"  loaded files ({len(loaded)}):")
+        for f in loaded:
+            print(f"    {f}")
+        print(f"\n  use 's unload <file>' to unload")
+
+
+def cmd_run(args):
+    """Execute a @run playbook from a .s file.
+    
+    Usage: s run git.s @run.quickCommit
+           s run nginx.s @run.sslSetup --dry-run
+    """
+    import subprocess
+    
+    if len(args) < 2:
+        print("Usage: s run <file.s> <@run.blockName> [--dry-run]", file=sys.stderr)
+        sys.exit(1)
+    
+    filepath = resolve_file(args[0])
+    if not filepath.exists():
+        print(f"File not found: {filepath}", file=sys.stderr)
+        sys.exit(1)
+    
+    # Parse block name (strip @run. prefix if present)
+    block_ref = args[1]
+    if block_ref.startswith('@run.'):
+        block_name = block_ref[5:]
+    elif block_ref.startswith('@'):
+        block_name = block_ref[1:]
+    else:
+        block_name = block_ref
+    
+    dry_run = '--dry-run' in args
+    
+    # Read and parse file
+    sf = SFile(filepath)
+    
+    # Find the @run block with the matching name
+    block = None
+    for b in sf.blocks:
+        if b.tag == 'run':
+            # Check if the block name matches via _name property
+            if b.props.get('_name') == block_name:
+                block = b
+                break
+    
+    if not block:
+        print(f"Block @run.{block_name} not found in {args[0]}", file=sys.stderr)
+        sys.exit(1)
+    
+    # Parse steps from block (exclude _name property)
+    steps = {}
+    for key, val in block.props.items():
+        if key == '_name':
+            continue
+        # Parse "1.cmd", "1.expect", "1.onFail", etc.
+        match = re.match(r'^(\d+)\.(cmd|expect|onFail|note)$', key)
+        if match:
+            step_num = int(match.group(1))
+            step_field = match.group(2)
+            if step_num not in steps:
+                steps[step_num] = {}
+            steps[step_num][step_field] = val
+    
+    if not steps:
+        print(f"  no steps found in @run.{block_name}", file=sys.stderr)
+        sys.exit(1)
+    
+    # Sort steps by number
+    sorted_steps = sorted(steps.keys())
+    
+    print(f"  executing @run.{block_name} ({len(sorted_steps)} steps)...")
+    if dry_run:
+        print(f"  [dry-run mode]\n")
+    
+    # Execute each step
+    for step_num in sorted_steps:
+        step = steps[step_num]
+        cmd = step.get('cmd')
+        expect = step.get('expect')
+        on_fail = step.get('onFail')
+        note = step.get('note')
+        
+        if note and not cmd:
+            # Note-only step
+            print(f"  {step_num}. {note}")
+            continue
+        
+        if not cmd:
+            continue
+        
+        print(f"  {step_num}. {cmd}")
+        
+        if dry_run:
+            if expect is not None:
+                print(f"     expect: {expect or '(empty)'}")
+            if on_fail:
+                print(f"     onFail: {on_fail}")
+            continue
+        
+        # Execute command
+        try:
+            result = subprocess.run(
+                cmd,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            
+            output = result.stdout.strip()
+            stderr = result.stderr.strip()
+            
+            if result.returncode != 0:
+                # Command failed
+                if on_fail:
+                    print(f"     ✗ FAILED: {on_fail}")
+                else:
+                    print(f"     ✗ FAILED (exit {result.returncode})")
+                    if stderr:
+                        print(f"       {stderr}")
+                print(f"\n  aborted at step {step_num}")
+                sys.exit(1)
+            
+            # Check expected output
+            if expect is not None:
+                if expect == '':
+                    # Expect empty output
+                    if output:
+                        print(f"     ✗ expected empty, got: {output[:50]}")
+                        if on_fail:
+                            print(f"       {on_fail}")
+                        sys.exit(1)
+                elif expect not in output:
+                    # Expected string not in output
+                    print(f"     ✗ expected '{expect}' in output")
+                    print(f"       got: {output[:100]}")
+                    if on_fail:
+                        print(f"       {on_fail}")
+                    sys.exit(1)
+            
+            if output:
+                # Show output (truncated)
+                for line in output.split('\n')[:5]:
+                    print(f"       {line}")
+                if len(output.split('\n')) > 5:
+                    print(f"       ... ({len(output.split(chr(10)))} lines total)")
+            
+            print(f"     ✓")
+            
+        except subprocess.TimeoutExpired:
+            print(f"     ✗ TIMEOUT (30s)")
+            if on_fail:
+                print(f"       {on_fail}")
+            sys.exit(1)
+        except Exception as e:
+            print(f"     ✗ ERROR: {e}")
+            sys.exit(1)
+    
+    print(f"\n  ✓ @run.{block_name} completed successfully")
 
 
 # ── CLI ─────────────────────────────────────────────────────────────────────
@@ -1112,6 +1669,11 @@ COMMANDS = {
     'where': cmd_where,
     'rm': cmd_rm,
     'blocks': cmd_blocks,
+    'refresh': cmd_refresh,
+    'unload': cmd_unload,
+    'compact': cmd_compact,
+    'loaded': cmd_loaded,
+    'run': cmd_run,
     'help': cmd_help,
 }
 
