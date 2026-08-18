@@ -21,7 +21,6 @@ dotS is a **Python script** that stores knowledge in `.s` files. Instead of verb
 ### Prerequisites
 
 - Python 3.6+
-- pip
 
 ### Quick Install
 
@@ -30,35 +29,40 @@ dotS is a **Python script** that stores knowledge in `.s` files. Instead of verb
 git clone https://github.com/yourusername/dots.git
 cd dots
 
-# Run the installer
-./install_s.sh
+# Run the installer (auto-detects location, adds to PATH)
+./install-s.sh
+source ~/.zshrc  # or ~/.bashrc
 ```
-
-The installer will:
-1. Copy `s` script to `/usr/local/bin/` (or `~/.local/bin/`)
-2. Make it executable
-3. Verify installation
 
 ### Manual Install
 
 ```bash
-# Copy the script
-cp s /usr/local/bin/
+# Copy to any location
+cp -r dotS ~/.dotS
 
-# Make executable
-chmod +x /usr/local/bin/s
+# Add to PATH
+export PATH="$HOME/.dotS:$PATH"
 
-# Or add to your PATH manually
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
+# Or use the installer
+cd ~/.dotS && ./install-s.sh
 ```
 
-### Verify Installation
+### Verify
 
 ```bash
-s --version
+s help
 # dotS v0.1.0
 ```
+
+### Portable
+
+dotS is **location-agnostic**. Place it anywhere:
+- `~/.config/opencode/dotS/` (opencode)
+- `~/.local/share/dotS/` (generic)
+- `/opt/dotS/` (system-wide)
+- `~/projects/dotS/` (development)
+
+The installer auto-detects its location and configures PATH accordingly.
 
 ## How It Works
 
@@ -75,53 +79,6 @@ s --version
 # Comments start with #
 ```
 
-### Execution Model
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    USER REQUEST                         │
-│              "load nginx SSL config"                    │
-└─────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────┐
-│                  SMART LOOKUP                           │
-│                   s find "ssl"                          │
-└─────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────┐
-│                 CHECK INDEX.S                           │
-│              @quickRef → @byTask → @index               │
-└─────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────┐
-│                CHECK CONFIDENCE                         │
-│         @meta block: high | medium | low                │
-└─────────────────────────────────────────────────────────┘
-                           │
-              ┌────────────┼────────────┐
-              ▼            ▼            ▼
-        ┌─────────┐  ┌─────────┐  ┌─────────┐
-        │  HIGH   │  │ MEDIUM  │  │   LOW   │
-        │  use .s │  │ .s +    │  │websearch│
-        │ directly│  │websearch│  │ primary │
-        └─────────┘  └─────────┘  └─────────┘
-              │            │            │
-              ▼            ▼            ▼
-┌─────────────────────────────────────────────────────────┐
-│              LOAD CONTEXT (~300 tokens)                 │
-│         s get skills/nginx.s @ssl                       │
-└─────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────┐
-│              RESPOND WITH CONFIDENCE                    │
-│         Use .s content + websearch if needed            │
-└─────────────────────────────────────────────────────────┘
-```
-
 ### Key Point: NOT Auto-Loaded
 
 **dotS is on-demand, not automatic.** You must explicitly ask for it:
@@ -130,8 +87,10 @@ s --version
 # This does NOT happen automatically
 # You must request it:
 s find "nginx"           # smart lookup
+# or
 s get skills/nginx.s     # direct load
-"load nginx"             # natural language (agent reads file)
+# or 
+"load nginx through dotS"             # natural language (agent reads file)
 ```
 
 **Why?**
@@ -149,7 +108,7 @@ s get skills/nginx.s     # direct load
 ## SSL Configuration in Nginx
 
 To configure SSL in Nginx, you need to:
-1. Obtain an SSL certificate (Let's Encrypt, commercial, etc.)
+1. Obtain an SSL certificate (Let\'s Encrypt, commercial, etc.)
 2. Configure the server block
 3. Set up HTTP to HTTPS redirect
 4. Configure SSL protocols and ciphers
@@ -181,11 +140,11 @@ To configure SSL in Nginx, you need to:
 
 ### Real-World Comparison: nginx SSL
 
-| Approach | Tokens | Reduction | Time |
-|----------|--------|-----------|------|
-| Plain prose | 6,000-8,000 | — | Slow |
-| Markdown docs | 2,000-3,000 | 60-70% | Medium |
-| dotS | 150-200 | **97-99%** | Instant |
+| Approach      | Tokens      | Reduction  | Time    |
+| ------------- | ----------- | ---------- | ------- |
+| Plain prose   | 6,000-8,000 | —          | Slow    |
+| Markdown docs | 2,000-3,000 | 60-70%     | Medium  |
+| dotS          | 150-200     | **97-99%** | Instant |
 
 ### Why 97-99%?
 
@@ -197,13 +156,13 @@ To configure SSL in Nginx, you need to:
 
 ### More Examples
 
-| Topic | Prose Tokens | dotS Tokens | Savings |
-|-------|--------------|-------------|---------|
-| nginx SSL | 6,000 | 150 | 97.5% |
-| Three.js geometry | 4,000 | 120 | 97% |
-| GLSL raymarching | 5,000 | 180 | 96.4% |
-| CSS flexbox | 3,500 | 100 | 97.1% |
-| Git commands | 2,500 | 80 | 96.8% |
+| Topic             | Prose Tokens | dotS Tokens | Savings |
+| ----------------- | ------------ | ----------- | ------- |
+| nginx SSL         | 6,000        | 150         | 97.5%   |
+| Three.js geometry | 4,000        | 120         | 97%     |
+| GLSL raymarching  | 5,000        | 180         | 96.4%   |
+| CSS flexbox       | 3,500        | 100         | 97.1%   |
+| Git commands      | 2,500        | 80          | 96.8%   |
 
 **Average: 97% token reduction**
 
@@ -263,29 +222,55 @@ Output:
 - **Missing content** → websearch (discover new topics)
 - **You decide** → confidence levels give you control
 
+### Execution Model
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    USER REQUEST                         │
+│              "load nginx SSL config"                    │
+└─────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│                  SMART LOOKUP                           │
+│                   s find "ssl"                          │
+└─────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│                 CHECK INDEX.S                           │
+│              @quickRef → @byTask → @index               │
+└─────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│                CHECK CONFIDENCE                         │
+│         @meta block: high | medium | low                │
+└─────────────────────────────────────────────────────────┘
+                           │
+              ┌────────────┼────────────┐
+              ▼            ▼            ▼
+        ┌─────────┐  ┌─────────┐  ┌─────────┐
+        │  HIGH   │  │ MEDIUM  │  │   LOW   │
+        │  use .s │  │ .s +    │  │websearch│
+        │ directly│  │websearch│  │ primary │
+        └─────────┘  └─────────┘  └─────────┘
+              │            │            │
+              ▼            ▼            ▼
+┌─────────────────────────────────────────────────────────┐
+│              LOAD CONTEXT (~300 tokens)                 │
+│         s get skills/nginx.s @ssl                       │
+└─────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│              RESPOND WITH CONFIDENCE                    │
+│         Use .s content + websearch if needed            │
+└─────────────────────────────────────────────────────────┘
+```
+
+
 ## Agent Integration
-
-### For OpenCode
-
-dotS works with OpenCode's skill system:
-
-1. Create context directory:
-   ```bash
-   mkdir -p ~/.config/opencode/ctx/skills
-   ```
-
-2. Add your .s files to `skills/`
-
-3. Create `index.s` with routing rules
-
-4. Load at session start:
-   ```bash
-   s get index.s
-   ```
-
-### For Claude Code
-
-Create `~/.claude/ctx/index.s` with your skills routing.
 
 ### For Any Agent
 
@@ -338,7 +323,7 @@ Store your .s files in Obsidian for visual browsing:
 ├── Projects/
 │   └── dotS/
 │       └── README.md      # This file
-└── .config/opencode/ctx/
+└── .config/opencode/dotS/
     ├── index.s
     └── skills/
         ├── css.s
@@ -350,20 +335,22 @@ Store your .s files in Obsidian for visual browsing:
 ## File Structure
 
 ```
-~/.config/opencode/ctx/
-├── index.s           # PROJECT INDEX (read first, ~200 tokens)
+dotS/
+├── s.py              # main CLI script
+├── s                 # bash wrapper
+├── install-s.sh      # installer
+├── index.s           # project index (read first, ~200 tokens)
 ├── relations.s       # dependency graph
 ├── changelog.s       # change history
-├── modules/          # per-module state
-├── decisions/        # architecture decisions
 ├── skills/           # knowledge base .s files
-│   ├── index.s       # skill index
 │   ├── css.s
 │   ├── html.s
 │   ├── threejs.s
 │   ├── glsl.s
 │   └── ...
-└── .snaps/           # snapshots for diff
+├── .snaps/           # snapshots for diff
+├── .state/           # tracking
+└── .sessions/        # session logs
 ```
 
 ## Commands Reference
@@ -512,7 +499,7 @@ To set up SSL in Nginx, you'll need to:
 
 ### Adding a New Skill
 
-1. Create `~/.config/opencode/ctx/skills/topic.s`
+1. Create `dotS/skills/topic.s`
 2. Add `@meta` block with confidence level
 3. Add content blocks with key:value pairs
 4. Update `index.s` with routing rules
