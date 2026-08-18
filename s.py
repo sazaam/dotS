@@ -88,6 +88,29 @@ def _log_session(cmd: str, args: list, result: str = ""):
         f.write(line)
 
 
+def _auto_load_skills_from_index(index_sf: SFile):
+    """Auto-load all skills listed in @index block of index.s."""
+    idx_block = index_sf.get_block('index')
+    if not idx_block:
+        return
+
+    loaded_count = 0
+    for key in idx_block.props.keys():
+        # Keys are filenames like "docker.s", "git.s", etc.
+        if key.endswith('.s') and key != 'index.s':
+            skill_path = f"skills/{key}"
+            # Check if already loaded
+            loaded = _get_loaded()
+            if skill_path not in loaded:
+                full_path = CTX_DIR / "skills" / key
+                if full_path.exists():
+                    _track_loaded(skill_path)
+                    loaded_count += 1
+
+    if loaded_count > 0:
+        print(f"\n  ✓ auto-loaded {loaded_count} skill(s) from @index")
+
+
 def _get_session_log() -> list:
     """Read session log entries."""
     _ensure_state_dir()
@@ -373,6 +396,10 @@ def cmd_get(args):
             print(block.render())
     else:
         print(sf.render(), end='')
+
+    # Auto-load all skills when loading index.s
+    if args[0] == 'index.s':
+        _auto_load_skills_from_index(sf)
 
 
 def cmd_set(args):
