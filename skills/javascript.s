@@ -1,22 +1,19 @@
 # Vanilla JavaScript Knowledge Base
-
 @meta |topic:javascript|versions:ES3-ES5-ES6-ES2020+|lastUpdated:2026-08-18|confidence:high|
-
 @esVersions |
-  es3:"no let/const, no arrow, no template, no class, no module"
-  es5:"strict mode, JSON, array extras (map/filter/forEach), Object.keys/defineProperty, getter/setter, bind/call/apply"
-  es6:"let/const, arrow, template, class, import/export, promise, destructuring, spread, default/rest params, for...of, symbol, iterator, map/set/weakmap/weakset"
-  es2017:"async/await, Object.entries/values, padStart/padEnd, Object.getOwnPropertyDescriptors"
-  es2018:"rest/spread properties, async iteration (for await), Promise.finally"
-  es2019:"Array.flat/flatMap, Object.fromEntries, optional catch binding, trimStart/trimEnd"
-  es2020:"optional chaining (?.), nullish coalescing (??), Promise.allSettled/any, BigInt, globalThis"
-  es2021:"replaceAll, Promise.any, numeric separators (1_000), logical assignment (??=)"
-  es2022:"Object.hasOwn, Array.at, top-level await, private class fields (#)"
-  es2023:"Array.findLast/last, toReversed/toSorted/toSpliced"
-  es2024:"Object.groupBy, Promise.withResolvers, ArrayBuffer resize"
-  esNext:"decorators, import.meta, pipeline operator (proposal)"
+  es3:no let/const, no arrow, no template, no class, no module
+  es5:strict mode, JSON, array extras (map/filter/forEach), Object.keys/defineProperty, getter/setter, bind/call/apply
+  es6:let/const, arrow, template, class, import/export, promise, destructuring, spread, default/rest params, for...of, symbol, iterator, map/set/weakmap/weakset
+  es2017:async/await, Object.entries/values, padStart/padEnd, Object.getOwnPropertyDescriptors
+  es2018:rest/spread properties, async iteration (for await), Promise.finally
+  es2019:Array.flat/flatMap, Object.fromEntries, optional catch binding, trimStart/trimEnd
+  es2020:optional chaining (?.), nullish coalescing (??), Promise.allSettled/any, BigInt, globalThis
+  es2021:replaceAll, Promise.any, numeric separators (1_000), logical assignment (??=)
+  es2022:Object.hasOwn, Array.at, top-level await, private class fields (#)
+  es2023:Array.findLast/last, toReversed/toSorted/toSpliced
+  es2024:Object.groupBy, Promise.withResolvers, ArrayBuffer resize
+  esNext:decorators, import.meta, pipeline operator (proposal)
 |
-
 @es5 |
   strictMode:"use strict" (no silent errors, no with, no eval scope)
   json:JSON.parse(), JSON.stringify()
@@ -30,9 +27,8 @@
   dateNow:Date.now()
   isoDate:date.toISOString()
 |
-
 @es6 |
-  letConst:"let x = 1 (block scope), const x = 1 (no reassign)"
+  letConst:let x = 1 (block scope), const x = 1 (no reassign)
   arrow:(x) => x * 2
   template:`hello ${name}`
   destructuring:const { a, b } = obj; const [x, y] = arr
@@ -54,9 +50,8 @@
   stringIncludes:str.includes('sub')
   stringStartsEnds:str.startsWith('pre'), str.endsWith('suf')
   regexpFlags:RegExp flags (g, i, m, u, y)
- tailCall:tail call optimization (limited support, Safari only)
+  tailCall:tail call optimization (limited support, Safari only)
 |
-
 @es2015plus |
   es2017:async/await, Object.entries/values, padStart/padEnd
   es2018:rest/spread properties, for await...of, Promise.finally
@@ -67,7 +62,6 @@
   es2023:findLast/last, toReversed/toSorted/toSpliced
   es2024:Object.groupBy, Promise.withResolvers
 |
-
 @es6Features |
   arrow:(x) => x * 2
   arrowThis:arrow functions don't bind `this`
@@ -100,7 +94,6 @@
   nullish:name ?? "default"
   dynamicImport:await import("./module")
 |
-
 @variables |
   scope:var (function), let/const (block)
   hoisting:var hoisted, let/const TDZ
@@ -109,7 +102,6 @@
   naming:camelCase for variables, PascalCase for classes
   namingConst:UPPER_SNAKE for true constants
 |
-
 @functions |
   declaration:function name() {} (hoisted)
   expression:const name = function() {} (not hoisted)
@@ -124,7 +116,6 @@
   apply:func.apply(thisArg, [args])
   partialApply:const bound = func.bind(null, arg1)
 |
-
 @arrays |
   create:const arr = [1, 2, 3]
   access:arr[0]
@@ -143,7 +134,7 @@
   includes:arr.includes(value)
   indexOf:arr.indexOf(value)
   find:arr.find(x => x > 5)
- .findIndex:arr.findIndex(x => x > 5)
+  .findIndex:arr.findIndex(x => x > 5)
   every:arr.every(x => x > 0)
   some:arr.some(x => x > 5)
   map:arr.map(x => x * 2)
@@ -160,9 +151,8 @@
   keys:arr.keys() // iterator of indices
   values:arr.values() // iterator of values
   arrayDestructure:const [a, b, ...rest] = arr
-  swap:[arr[i], arr[j]] = [arr[j], arr[i]]
+  swap:[arr[i],arr[j]] = [arr[j],arr[i]]
 |
-
 @objects |
   create:const obj = {}
   createFrom:Object.create(proto)
@@ -178,19 +168,18 @@
   entries:Object.entries(obj)
   fromEntries:Object.fromEntries(entries)
   assign:Object.assign(target, source)
-  spread:{ ...obj1, ...obj2 }
+  spread:{...obj1:True,...obj2:True}
   freeze:Object.freeze(obj)
   isFrozen:Object.isFrozen(obj)
   seal:Object.seal(obj)
   isSealed:Object.isSealed(obj)
   define:Object.defineProperty(obj, key, descriptor)
-  descriptor:{ value, writable, enumerable, configurable }
+  descriptor:{value:True,writable:True,enumerable:True,configurable:True}
   getter:get prop() { return this._prop }
   setter:set prop(val) { this._prop = val }
   shorthand:const name = "John"; const obj = { name }
-  computed:{ [dynamicKey]: value }
+  computed:{[dynamicKey]:value}
 |
-
 @strings |
   create:const s = "hello"
   template:`hello ${name}`
@@ -220,7 +209,6 @@
   search:s.search(/regex/)
   raw:String.raw`hello\nworld`
 |
-
 @numbers |
   parseInt:parseInt("10", 10)
   parseFloat:parseFloat("3.14")
@@ -242,7 +230,6 @@
   trunc:Math.trunc(3.9) // 3
   sign:Math.sign(-5) // -1
 |
-
 @async |
   promise:new Promise((resolve, reject) => {...})
   then:promise.then(result => {...})
@@ -261,7 +248,6 @@
   eventListen:target.addEventListener("event", handler)
   eventDispatch:target.dispatchEvent(new Event("event"))
 |
-
 @errors |
   tryCatch:try { ... } catch (e) { ... }
   finally:try { ... } finally { ... }
@@ -271,12 +257,11 @@
   stack:error.stack
   name:error.name
   message:error.message
-  instanceof: error instanceof TypeError
+  instanceof:error instanceof TypeError
   aggregateError:AggregateError [errors]
   uncaught:window.addEventListener("error", handler)
   unhandled:window.addEventListener("unhandledrejection", handler)
 |
-
 @modules |
   export:export const name = value
   exportDefault:export default function() {}
@@ -289,7 +274,6 @@
   sideEffect:import "./module"
   type:export type { Name } from "./module"
 |
-
 @iterators |
   forOf:for (const item of array) {}
   entries:for (const [i, v] of array.entries()) {}
@@ -300,9 +284,7 @@
   from:Array.from(iterable)
   next:iterator.next() // { value, done }
 |
-
 @gotchas |
-  this:arrow functions don't bind this
   thisFix:use regular functions for methods
   comparison:== does type coercion
   comparisonFix:always use ===
@@ -310,7 +292,6 @@
   nullCheck:typeof null === "object" (bug)
   nullFix:value === null
   arraySort:sort() converts to strings
-  arraySortFix:sort((a, b) => a - b)
   parseFloat:parseFloat("10px") // 10 (no error)
   parseFloatFix:parseInt(value, 10)
   spreadObject:spread doesn't deep clone
@@ -323,25 +304,23 @@
   mapAsync:map returns promises, not results
   mapAsyncFix:await Promise.all(arr.map(fn))
 |
-
 @esGotchas |
-  es5Strict:"use strict required for modern patterns"
-  es5NoLetConst:"ES5 has var only, use function scope"
-  es5NoArrow:"ES5 has function() only, no =>"
-  es5NoTemplate:"ES5 has string concat only"
-  es5NoClass:"ES5 has prototype-based inheritance"
-  es5NoModule:"ES5 has no import/export (use script tags)"
-  es5NoPromise:"ES5 has no Promise (use callbacks)"
-  es6NoAsyncAwait:"ES6 has Promise but no async/await (ES2017)"
-  es6NoRestSpread:"ES6 has function rest params, not object rest/spread (ES2018)"
-  es6NoOptionalChain:"ES6 has no ?. (ES2020)"
-  es6NoNullish:"ES6 has no ?? (ES2020)"
-  es6NoPrivate:"ES6 has no #private fields (ES2022)"
-  es6NoAtMethod:"ES6 has no arr.at() (ES2022)"
-  transpile:"use babel/polyfill or core-js for missing features"
-  browserslist:"check targets in .browserslistrc or package.json"
+  es5Strict:use strict required for modern patterns
+  es5NoLetConst:ES5 has var only, use function scope
+  es5NoArrow:ES5 has function() only, no =>
+  es5NoTemplate:ES5 has string concat only
+  es5NoClass:ES5 has prototype-based inheritance
+  es5NoModule:ES5 has no import/export (use script tags)
+  es5NoPromise:ES5 has no Promise (use callbacks)
+  es6NoAsyncAwait:ES6 has Promise but no async/await (ES2017)
+  es6NoRestSpread:ES6 has function rest params, not object rest/spread (ES2018)
+  es6NoOptionalChain:ES6 has no ?. (ES2020)
+  es6NoNullish:ES6 has no ?? (ES2020)
+  es6NoPrivate:ES6 has no #private fields (ES2022)
+  es6NoAtMethod:ES6 has no arr.at() (ES2022)
+  transpile:use babel/polyfill or core-js for missing features
+  browserslist:check targets in .browserslistrc or package.json
 |
-
 @patterns |
   debounce:fn that waits after last call
   throttle:fn that calls at most once per interval
@@ -359,15 +338,14 @@
   proxy:intercept object operations
   observer2:new Proxy(target, handler)
 |
-
 @typeCoercion |
-  string:"" + 123 // "123"
+  string:" + 123 // "123
   number:+"" // 0, +"123" // 123
   boolean:!!0 // false, !!1 // true
   array:[1] // [1], [] // []
   object:Object(1) // {1}
   explicit:String(123), Number("123"), Boolean(0)
-  implicit:"5" - 3 // 2, "5" + 3 // "53"
+  implicit:5" - 3 // 2, "5" + 3 // "53
   NaN:+"hello" // NaN, NaN !== NaN
   isNaN:use Number.isNaN() not global isNaN
 |

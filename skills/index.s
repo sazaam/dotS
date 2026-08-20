@@ -1,14 +1,11 @@
 # dotS Knowledge Base Index
-
-@meta |type:index|lastUpdated:2026-08-17|totalFiles:13|
-
+@meta |type:index|lastUpdated:2026-08-21|totalFiles:15|
 @constraints |
   pipe:"|" has three roles: block delimiter, metadata separator, value content
   pipeRule:block ends only when a line is JUST "|" — pipes inside key:value are safe
   pipeAvoid:never put "|" alone on a line inside a block — it will close the block
   shellPipes:cmd:cat file | grep pattern is fine — the pipe is part of the value
 |
-
 @index |
   nginx.s:blocks:21|topic:nginx web server|keyBlocks:@ssl @security @reverseProxy @gotchas @run
   git.s:blocks:24|topic:git version control|keyBlocks:@branching @committing @merging @undoing @run
@@ -23,8 +20,9 @@
   strawexpress.s:blocks:12|topic:strawexpress SPA router|keyBlocks:@architecture @step @express @response @formulate
   strawnode.s:blocks:7|topic:strawnode boot framework|keyBlocks:@boot @modules @sectionSystem @jadeTemplates
   betweenjs.s:blocks:11|topic:BetweenJS animation engine|keyBlocks:@tweenHierarchy @easing @publicAPI @color @modernEnhancements
+  blender-python.s:blocks:17|topic:blender python API bpy 5.2+|keyBlocks:@core @modules @operators @bmesh @gpu @gotchas
+  writing-skill.s:blocks:13|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @patterns @optimize @gotchas
 |
-
 @byTask |
   webServer:nginx.s
   deployment:docker.s linux.s ssh.s
@@ -52,8 +50,16 @@
   gestures:strawexpress.s@domnode
   i18n:strawnode.s@modules
   reactive:strawexpress.s@domnode
+  blender:blender-python.s
+  blenderAddon:blender-python.s@extensions blender-python.s@operators
+  blenderMesh:blender-python.s@bmesh
+  blenderGPU:blender-python.s@gpu
+  blenderNodes:blender-python.s@geometryNodes blender-python.s@materialNodes
+  blenderAnim:blender-python.s@animation
+  blenderContext:blender-python.s@context blender-python.s@depsgraph
+  writeSkill:writing-skill.s
+  optimizeSkill:writing-skill.s@tokens writing-skill.s@optimize
 |
-
 @quickRef |
   nginxSSL:s get nginx.s @ssl
   nginxSecurity:s get nginx.s @security
@@ -64,6 +70,10 @@
   dockerCompose:s get docker.s @compose
   linuxProcess:s get linux.s @processes
   jsES6:s get javascript.s @es6Features
+  blenderAPI:s get blender-python.s @modules
+  blenderBMesh:s get blender-python.s @bmesh
+  blenderGPU:s get blender-python.s @gpu
+  blenderAddon:s get blender-python.s @extensions
   jsAsync:s get javascript.s @async
   jsArrays:s get javascript.s @arrays
   pythonTypes:s get python.s @types
@@ -98,8 +108,11 @@
   betweenjsColor:s get betweenjs.s @color
   betweenjsModern:s get betweenjs.s @modernEnhancements
   betweenjsQuirks:s get betweenjs.s @quirks
+  writeSkillFormat:s get writing-skill.s @format
+  writeSkillTokens:s get writing-skill.s @tokens
+  writeSkillPatterns:s get writing-skill.s @patterns
+  writeSkillOptimize:s get writing-skill.s @optimize
 |
-
 @runQuickRef |
   gitCommit:s run git.s @run.quickCommit
   gitRelease:s run git.s @run.releaseTag

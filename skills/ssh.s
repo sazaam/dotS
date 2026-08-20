@@ -1,7 +1,5 @@
 # SSH Knowledge Base
-
 @meta |topic:ssh|lastUpdated:2026-08-17|confidence:high|
-
 @basics |
   config:~/.ssh/config
   keyDir:~/.ssh/
@@ -10,7 +8,6 @@
   protocol:SSH-2
   daemon:sshd (server), ssh (client)
 |
-
 @connection |
   basic:ssh user@host
   port:ssh -p 2222 user@host
@@ -19,7 +16,6 @@
   batchMode:ssh -o BatchMode=yes user@host
   connectTimeout:ssh -o ConnectTimeout=10 user@host
 |
-
 @config |
   host:Host myserver
   hostname:HostName 192.168.1.100
@@ -34,7 +30,6 @@
   strictHostKey:StrictHostKeyChecking ask
   userKnownHosts:UserKnownHostsFile ~/.ssh/known_hosts
 |
-
 @keygen |
   ed25519:ssh-keygen -t ed25519 -C "email@example.com"
   rsa:ssh-keygen -t rsa -b 4096 -C "email@example.com"
@@ -43,7 +38,6 @@
   fingerprint:ssh-keygen -lf ~/.ssh/id_ed25519.pub
   convertPub:ssh-keygen -f key -e -m PEM
 |
-
 @keyManagement |
   copyId:ssh-copy-id -i ~/.ssh/id_ed25519.pub user@host
   copyIdPort:ssh-copy-id -i ~/.ssh/id_ed25519.pub -p 2222 user@host
@@ -55,7 +49,6 @@
   agentDelete:ssh-add -D
   agentForward:ForwardAgent yes in config
 |
-
 @tunneling |
   local:ssh -L 8080:localhost:80 user@host
   localExplain:access host:80 via localhost:8080
@@ -67,15 +60,13 @@
   jumpExplain:route through bastion to target
   multiJump:ssh -J jump1,jump2 user@target
 |
-
 @proxyCommand |
   proxyCommand:ProxyCommand ssh -W %h:%p jumphost
   example:Host target
-  example2:  HostName 10.0.0.5
-  example3:  ProxyCommand ssh -W %h:%p bastion
+  example2:HostName 10.0.0.5
+  example3:ProxyCommand ssh -W %h:%p bastion
   netcat:ProxyCommand nc -X connect -x proxy:port %h %p
 |
-
 @fileTransfer |
   upload:ssh user@host "cat > /path/file" < localfile
   download:ssh user@host "cat /path/file" > localfile
@@ -86,7 +77,6 @@
   rsyncDelete:rsync -avz --delete dir/ user@host:/path/
   rsyncExclude:rsync -avz --exclude='node_modules' dir/ user@host:/path/
 |
-
 @multiplexing |
   master:ssh -M -S /tmp/ssh-socket user@host
   control:ssh -S /tmp/ssh-socket user@host
@@ -95,7 +85,6 @@
   config2:ControlPath ~/.ssh/sockets/%r@%h-%p
   config3:ControlPersist 10m
 |
-
 @agents |
   forward:ssh -A user@host
   forwardConfig:ForwardAgent yes
@@ -104,7 +93,6 @@
   remove:ssh-add -D
   ephemeral:ssh -A user@host "ssh-add -l && command"
 |
-
 @security |
   disablePassword:PasswordAuthentication no
   disableRoot:PermitRootLogin no
@@ -117,7 +105,6 @@
   logLevel:LogLevel VERBOSE
   protocol2:Protocol 2
 |
-
 @debugging |
   verbose1:ssh -v user@host
   verbose2:ssh -vv user@host
@@ -126,7 +113,6 @@
   testConnection:ssh -o ConnectTimeout=5 user@host echo ok
   auditConfig:ssh-audit host
 |
-
 @gotchas |
   hostKey:manually add to known_hosts
   hostKeyFix:ssh-keyscan host >> ~/.ssh/known_hosts
@@ -136,11 +122,9 @@
   jumpHost:need ProxyCommand for bastion
   portConflict:multiple services on 22
   timeoutFirewall:connection drops behind NAT
-  timeoutFix:ServerAliveInterval 60
   readOnlyKey:use -C "comment" to identify keys
   keyNotFound:check ssh-add -l for loaded keys
 |
-
 @run keySetup |
   1.cmd:ssh-keygen -t ed25519 -C "$EMAIL" -f ~/.ssh/id_ed25519 -N ""
   1.onFail:key may already exist — use existing or specify different path
@@ -152,15 +136,12 @@
   5.expect:ok
   5.onFail:connection failed — check firewall, port, host key
 |
-
 @run tunnelLocal |
   1.cmd:ssh -L $LOCAL_PORT:$TARGET_HOST:$TARGET_PORT $USER@$JUMP_HOST -N -f
   1.note:background tunnel, access via localhost:$LOCAL_PORT
   2.cmd:curl -s http://localhost:$LOCAL_PORT
-  2.expect:
   2.onFail:tunnel not working — check jump host connectivity
 |
-
 @run deployKey |
   1.cmd:ssh-keygen -t ed25519 -C "deploy@$(hostname)" -f ~/.ssh/deploy_key -N ""
   2.cmd:cat ~/.ssh/deploy_key.pub

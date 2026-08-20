@@ -1,7 +1,5 @@
 # GLSL + ShaderToyLite Knowledge Base
-
 @meta |topic:glsl shader shaderwebgl shader toy|versions:GLSL ES 3.0|lastUpdated:2026-08-18|confidence:high|
-
 @types |
   void:void
   float:float (32-bit)
@@ -19,18 +17,15 @@
   bvec2/3/4:boolean vectors
   uvec2/3/4:unsigned int vectors
 |
-
 @swizzle |
-  xyzw:position components
+  xyzw:vec4(x, y, z, w)
   rgba:color components
   stp:textcoord components
   xy:vec2(x, y)
   xyz:vec3(x, y, z)
-  xyzw:vec4(x, y, z, w)
   rgb:vec3(r, g, b)
   rrg:vec4(r, r, g, b) (repeat allowed)
 |
-
 @mathBuiltins |
   sin:sin(x)
   cos:cos(x)
@@ -68,7 +63,6 @@
   matrixCompMult:matrixCompMult(x, y) (element-wise)
   lessThan:lessThan(x, y)
 |
-
 @texture |
   texture:texture(sampler, coord)
   textureLod:textureLod(sampler, coord, lod)
@@ -77,7 +71,6 @@
   textureSize:textureSize(sampler, lod)
   textureGrad:textureGrad(sampler, coord, dPdx, dPdy)
 |
-
 @flow |
   if:if (cond) { } else { }
   for:for (init; cond; incr) { }
@@ -87,7 +80,6 @@
   discard:discard (fragment shader only)
   return:return value
 |
-
 @qualifiers |
   in:in (vertex input / fragment varying)
   out:out (vertex output / fragment output)
@@ -99,7 +91,6 @@
   precision:precision highp float;
   invariant:invariant (output must match)
 |
-
 @vertexShader |
   input:in vec2 vertexInPosition (or vec3 aPos)
   output:out vec2 vUv (or varying)
@@ -107,7 +98,6 @@
   builtinSize:gl_PointSize = size
   passThrough:vUv = aTexCoord (pass to fragment)
 |
-
 @fragmentShader |
   input:in vec2 vUv (from vertex)
   output:out vec4 fragColor (or gl_FragColor in ES2)
@@ -115,7 +105,6 @@
   builtin:gl_FragCoord (vec4, xy = pixel coords)
   depth:gl_FragDepth = value (write depth)
 |
-
 @noise |
   valueNoise:fract(sin(dot(floor(p), vec2(12.9898, 78.233))) * 43758.5453)
   perlinNoise:use gradient noise with smoothstep
@@ -125,7 +114,6 @@
   voronoi:distance to nearest point in grid
   cellular:cellular noise for organic patterns
 |
-
 @sdf |
   circle:float sdCircle(vec2 p, float r) { return length(p) - r; }
   box:float sdBox(vec2 p, vec2 b) { vec2 d = abs(p) - b; return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0); }
@@ -137,7 +125,6 @@
   smoothUnion:smoothstep(min, max, d1-d2)
   opSmoothUnion:float opSmoothUnion(float d1, float d2, float k) { float h = clamp(0.5 + 0.5*(d2-d1)/k, 0.0, 1.0); return mix(d2, d1, h) - k*h*(1.0-h); }
 |
-
 @raymarching |
   setup:vec3 ro (ray origin), vec3 rd (ray direction)
   direction:rd = normalize(vec3(uv, focalLength))
@@ -152,17 +139,15 @@
   distanceField:return float (signed distance)
   scene:float scene(vec3 p) { return opUnion(sdBox(p), sdSphere(p)); }
 |
-
 @shadertoylite |
-  header:"ShaderToy-compatible uniforms provided by ShaderToyLite"
-  version:"GLSL ES 3.0 (#version 300 es)"
-  precision:"precision highp float; precision highp int;"
-  textureCompat:"#define texture2D texture"
-  output:"out vec4 frag_out_color"
-  entryPoint:"void mainImage(out vec4 c, in vec2 f)"
-  mainWrapper:"main() calls mainImage()"
+  header:ShaderToy-compatible uniforms provided by ShaderToyLite
+  version:GLSL ES 3.0 (#version 300 es)
+  precision:precision highp float; precision highp int;
+  textureCompat:#define texture2D texture
+  output:out vec4 frag_out_color
+  entryPoint:void mainImage(out vec4 c, in vec2 f)
+  mainWrapper:main() calls mainImage()
 |
-
 @stlUniforms |
   iResolution:vec3 (viewport width, height, 1.0)
   iTime:float (elapsed time in seconds)
@@ -179,7 +164,6 @@
   iDate:vec4 (year, month, day, unixtime)
   iSampleRate:float (44100)
 |
-
 @stlAPI |
   constructor:new ShaderToyLite(canvasId, forceIndependent)
   setCommon:setCommon(source) (shared GLSL code)
@@ -198,7 +182,6 @@
   redraw:redraw() (single frame)
   addTexture:addTexture(texture, key) (external texture)
 |
-
 @stlPasses |
   passes:A, B, C, D, Image
   pingPong:double-buffered for feedback (A/B textures)
@@ -207,7 +190,6 @@
   chain:A reads D, B reads A, Image reads B
   imagePass:Image pass renders to screen (no framebuffer)
 |
-
 @stlConfig |
   alpha:false (no alpha channel)
   depth:false (no depth buffer)
@@ -216,7 +198,6 @@
   preserveDrawingBuffer:false (for perf)
   powerPreference:high-performance
 |
-
 @stlGotchas |
   version:must use #version 300 es
   texture2D:ShaderToy uses texture2D, GLSL300 uses texture
@@ -228,7 +209,6 @@
   common:setCommon recompiles all passes
   dispose:not implemented (manual WebGL cleanup needed)
 |
-
 @glslGotchas |
   noExplicitTypes:GLSL is strongly typed, declare everything
   noImplicitConversion:float f = 1.0; not float f = 1;
@@ -244,7 +224,6 @@
   varying:deprecated in GLSL300, use in/out
   attribute:deprecated in GLSL300, use in
 |
-
 @commonPatterns |
   uv:vec2 uv = gl_FragCoord.xy / iResolution.xy
   centeredUV:vec2 uv = (gl_FragCoord.xy - 0.5*iResolution.xy) / iResolution.y
@@ -256,11 +235,10 @@
   noise2D:float noise(vec2 p) { vec2 i = floor(p); vec2 f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(hash21(i), hash21(i+vec2(1,0)), f.x), mix(hash21(i+vec2(0,1)), hash21(i+vec2(1,1)), f.x), f.y); }
   fbm:float fbm(vec2 p) { float v=0.0; float a=0.5; for(int i=0; i<6; i++) { v+=a*noise(p); p*=2.0; a*=0.5; } return v; }
 |
-
 @verification |
   1.cmd:echo "check browser console for compilation errors"
-  1.note:"ShaderToyLite logs shader compile errors"
-  2.note:"use WebGL inspector or Spector.js for debugging"
-  3.note:"check uniform locations (null = not active/uniform)"
-  4.note:"verify texture bindings (TEXTURE0-3)"
+  1.note:ShaderToyLite logs shader compile errors
+  2.note:use WebGL inspector or Spector.js for debugging
+  3.note:check uniform locations (null = not active/uniform)
+  4.note:verify texture bindings (TEXTURE0-3)
 |

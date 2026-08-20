@@ -1,7 +1,5 @@
 # Docker Knowledge Base
-
 @meta |topic:docker|lastUpdated:2026-08-17|confidence:high|
-
 @basics |
   daemon:dockerd
   cli:docker
@@ -10,7 +8,6 @@
   hub:docker.io
   registry:ghcr.io (GitHub), ecr (AWS)
 |
-
 @containers |
   run:docker run -d --name myapp image
   runInteractive:docker run -it image sh
@@ -31,7 +28,6 @@
   top:docker top container
   cp:docker cp container:/path /host
 |
-
 @images |
   build:docker build -t name:tag .
   buildNoCache:docker build --no-cache -t name:tag .
@@ -46,7 +42,6 @@
   save:docker save image > image.tar
   load:docker load < image.tar
 |
-
 @dockerfile |
   from:FROM node:22-alpine
   workdir:WORKDIR /app
@@ -62,7 +57,6 @@
   healthcheck:HEALTHCHECK --interval=30s CMD curl -f http://localhost/
   multiStage:use multiple FROM for smaller images
 |
-
 @compose |
   version:3.8
   up:docker compose up -d
@@ -76,7 +70,6 @@
   restart:docker compose restart service
   scale:docker compose up -d --scale service=3
 |
-
 @volumes |
   create:docker volume create myvol
   list:docker volume ls
@@ -88,7 +81,6 @@
   readOnly:-v /host:/container:ro
   tmpfs:--tmpfs /container/path
 |
-
 @networks |
   create:docker network create mynet
   list:docker network ls
@@ -100,7 +92,6 @@
   none:--network none
   connect:docker network connect mynet container
 |
-
 @multiStage |
   builder:FROM node:22 AS builder
   buildStage:COPY --from=builder /app/dist ./dist
@@ -108,7 +99,6 @@
   alpine:FROM alpine:3.19 (small base)
   distroless:FROM gcr.io/distroless (no shell)
 |
-
 @optimization |
   layerCache:copy package.json before npm install
   multiStage:build in one stage, copy to smaller stage
@@ -117,20 +107,18 @@
   prune:RUN npm cache clean --force
   combine:combine RUN commands with &&
 |
-
 @composeExample |
-  version:"3.8"
-  services.app.build:"."
-  services.app.ports:"3000:3000"
-  services.app.volumes:"./src:/app/src"
-  services.app.environment:"NODE_ENV=development"
-  services.app.depends_on:"db"
-  services.db.image:"postgres:16-alpine"
-  services.db.volumes:"pgdata:/var/lib/postgresql/data"
-  services.db.environment:"POSTGRES_PASSWORD=secret"
+  version:3.8
+  services.app.build:.
+  services.app.ports:3000:3000
+  services.app.volumes:./src:/app/src
+  services.app.environment:NODE_ENV=development
+  services.app.depends_on:db
+  services.db.image:postgres:16-alpine
+  services.db.volumes:pgdata:/var/lib/postgresql/data
+  services.db.environment:POSTGRES_PASSWORD=secret
   volumes.pgdata:defined
 |
-
 @debugging |
   logs:docker logs container
   inspect:docker inspect container
@@ -142,7 +130,6 @@
   top:docker top container
   df:docker system df
 |
-
 @gotchas |
   containerRemoval:docker rm container (stop first or use -f)
   imageCleanup:docker system prune -a (removes all unused)
@@ -157,7 +144,6 @@
   noCurl:alpine images lack curl, use wget or add it
   healthcheck:HEALTHCHECK prevents "unhealthy" in compose
 |
-
 @run buildPush |
   1.cmd:docker build -t $IMAGE:$TAG .
   1.onFail:build failed — check Dockerfile and build context
@@ -167,28 +153,23 @@
   4.cmd:docker image prune -f
   4.note:clean up dangling images
 |
-
 @run composeUp |
   1.cmd:docker compose ps
   1.note:check current state before starting
   2.cmd:docker compose up -d --build
   2.onFail:start failed — check docker compose logs
   3.cmd:docker compose ps
-  3.expect:
   3.onFail:not all containers running — check logs
   4.cmd:docker compose logs --tail=20
   4.note:verify startup output
 |
-
 @run composeRestart |
   1.cmd:docker compose down
   2.cmd:docker compose up -d --build
   2.onFail:restart failed — check docker compose logs
   3.cmd:docker compose ps
-  3.expect:
   3.onFail:containers not healthy — investigate logs
 |
-
 @run cleanSlate |
   1.cmd:docker compose down -v
   1.note:stop containers and remove volumes
@@ -197,7 +178,6 @@
   3.cmd:docker system df
   3.note:verify disk reclaimed
 |
-
 @run healthCheck |
   1.cmd:docker compose ps --format "table {{.Name}}\t{{.Status}}"
   1.note:check all container statuses

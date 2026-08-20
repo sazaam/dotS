@@ -1,7 +1,5 @@
 # Linux Knowledge Base
-
 @meta |topic:linux|lastUpdated:2026-08-17|confidence:high|
-
 @basics |
   shell:zsh (default on macOS), bash
   packageManager:apt (Debian/Ubuntu), dnf (Fedora), pacman (Arch)
@@ -9,7 +7,6 @@
   filesystem:/ (root), /home, /etc, /var, /tmp
   user:whoami, id, groups
 |
-
 @fileOperations |
   list:ls -la
   listTree:tree -L 2
@@ -32,7 +29,6 @@
   xargs:find . -name "*.log" | xargs rm
   parallel:xargs -P 4 -I {} command {}
 |
-
 @filePermissions |
   chmod755:chmod 755 dir/
   chmod644:chmod 644 file
@@ -43,7 +39,6 @@
   stickyBit:chmod +t /tmp (prevent deletion)
   umask:umask 022 (default permissions)
 |
-
 @processes |
   list:ps aux
   listTree:ps auxf
@@ -63,7 +58,6 @@
   pidof:pidof process
   lsof:lsof -i :8080
 |
-
 @systemd |
   status:systemctl status service
   start:systemctl start service
@@ -78,7 +72,6 @@
   daemonReload:systemctl daemon-reload
   edit:systemctl edit service
 |
-
 @networking |
   ipAddr:ip addr show
   ipRoute:ip route show
@@ -97,7 +90,6 @@
   staticIP:ip addr add 192.168.1.100/24 dev eth0
   gateway:ip route add default via 192.168.1.1
 |
-
 @disk |
   usage:df -h
   usageDir:du -sh dir/
@@ -110,7 +102,6 @@
   smartctl:smartctl -a /dev/sda
   temp:ncdu /
 |
-
 @memory |
   free:free -h
   vmstat:vmstat 1 5
@@ -119,7 +110,6 @@
   swap:swapon --show
   addSwap:dd if=/dev/zero of=/swapfile bs=1M count=1024 && mkswap /swapfile && chmod 600 /swapfile && swapon /swapfile
 |
-
 @cron |
   edit:crontab -e
   list:crontab -l
@@ -131,7 +121,6 @@
   monthly:0 2 1 * * command
   reboot:@reboot command
 |
-
 @logAnalysis |
   syslog:tail -f /var/log/syslog
   auth:tail -f /var/log/auth.log
@@ -144,7 +133,6 @@
   lastLog:last -n 20
   failedLog:faillog -r
 |
-
 @compression |
   tarGzip:tar -czf archive.tar.gz dir/
   tarExtract:tar -xzf archive.tar.gz
@@ -155,7 +143,6 @@
   gunzip:gunzip file.gz
   zcat:zcat file.gz | less
 |
-
 @users |
   addUser:adduser username
   deleteUser:userdel username
@@ -168,7 +155,6 @@
   who:who
   w:w
 |
-
 @firewall |
   ufwStatus:ufw status verbose
   ufwAllow:ufw allow 80/tcp
@@ -179,7 +165,6 @@
   firewalld:firewall-cmd --list-all
   firewalldAdd:firewall-cmd --add-port=8080/tcp --permanent
 |
-
 @sshServer |
   config:/etc/ssh/sshd_config
   restart:systemctl restart sshd
@@ -188,7 +173,6 @@
   harden2:PermitRootLogin no
   harden3:MaxAuthTries 3
 |
-
 @gotchas |
   symlink:ln -s target link_name
   readlink:readlink -f link_name
@@ -203,7 +187,6 @@
   noRoute:ip route show, ping gateway
   dnsFail:cat /etc/resolv.conf
 |
-
 @run diskCleanup |
   1.cmd:df -h /
   1.note:check current disk usage
@@ -218,7 +201,6 @@
   6.cmd:df -h /
   6.note:verify space reclaimed
 |
-
 @run logRotate |
   1.cmd:du -sh /var/log/*
   1.note:identify largest log files
@@ -229,7 +211,6 @@
   4.cmd:logrotate -f /etc/logrotate.conf
   4.note:force logrotate to run now
 |
-
 @run processAudit |
   1.cmd:ps aux --sort=-%mem | head -15
   1.note:top memory consumers
@@ -242,7 +223,6 @@
   5.cmd:dmesg | tail -20
   5.note:recent kernel messages
 |
-
 @run securityCheck |
   1.cmd:last -n 20
   1.note:recent logins
@@ -255,7 +235,6 @@
   5.cmd:find / -perm -4000 -type f 2>/dev/null
   5.note:SUID binaries (potential escalation vectors)
 |
-
 @run serverSetup |
   1.cmd:hostnamectl set-hostname $HOSTNAME
   2.cmd:timedatectl set-timezone $TIMEZONE

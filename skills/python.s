@@ -1,7 +1,5 @@
 # Python 3 Knowledge Base
-
 @meta |topic:python3|version:3.12+|lastUpdated:2026-08-17|confidence:high|
-
 @basics |
   version:3.12+
   interpreter:python3
@@ -12,7 +10,6 @@
   activate:source .venv/bin/activate
   deactivate:deactivate
 |
-
 @types |
   none:None
   bool:bool (True, False)
@@ -27,9 +24,8 @@
   frozenset:frozenset (immutable set)
   complex:complex (real, imag)
 |
-
 @strings |
-  create:"hello" or 'hello' or """multi"""
+  create:hello" or 'hello' or """multi""
   fstring:f"Hello, {name}!"
   fexpr:f"{2 + 2}"
   fformat:f"{value:.2f}"
@@ -53,14 +49,13 @@
   decode:b.decode("utf-8")
   format:"{} {}".format(a, b)
   raw:r"hello\nworld"
-  multiline:'''line1\nline2'''
+  multiline:line1\nline2
   slice:s[1:3]
   reverse:s[::-1]
   repeat:s * 3
-  in:"ell" in "hello"
+  in:ell" in "hello
   len:len(s)
 |
-
 @lists |
   create:lst = [1, 2, 3]
   access:lst[0]
@@ -88,10 +83,9 @@
   unpack:first, *rest = lst
   sliceAssign:lst[1:3] = [4, 5]
 |
-
 @tuples |
   create:t = (1, 2, 3)
-  single: t = (1,)  # trailing comma required
+  single:t = (1,)  # trailing comma required
   access:t[0]
   unpack:a, b, c = t
   unpackStar:first, *rest = t
@@ -103,7 +97,6 @@
   namedCreate:Point = namedtuple("Point", ["x", "y"])
   namedAccess:p.x, p.y
 |
-
 @dicts |
   create:d = {"key": "value"}
   access:d["key"]
@@ -121,15 +114,14 @@
   in:"key" in d
   copy:d.copy()
   fromkeys:dict.fromkeys(keys, "default")
-  merge:{**d1, **d2}
+  merge:{**d1:True,**d2:True}
   merge39+:d1 | d2 (Python 3.9+)
-  comprehension:{k: v for k, v in items}
-  filter:{k: v for k, v in d.items() if v > 0}
+  comprehension:{k:v for k,v in items:True}
+  filter:{k:v for k,v in d.items() if v > 0:True}
   nested:d = {"a": {"b": {"c": 1}}}
   accessNested:d["a"]["b"]["c"]
   accessNestedSafe:d.get("a", {}).get("b", {}).get("c")
 |
-
 @sets |
   create:s = {1, 2, 3}
   empty:s = set()  # not {} (that's a dict)
@@ -144,10 +136,9 @@
   symmetricDifference:s1 ^ s2
   isSubset:s1 <= s2
   isSuperset:s1 >= s2
-  comprehension:{x for x in range(10)}
+  comprehension:{x for x in range(10):True}
   frozen:frozenset([1, 2, 3])
 |
-
 @controlFlow |
   if:if condition: ...
   elif:elif condition: ...
@@ -162,7 +153,6 @@
   pass:pass
   match:match value: case pattern: ... (3.10+)
 |
-
 @functions |
   def:def func(a, b=10): ...
   return:return value
@@ -184,7 +174,6 @@
   async:async def func(): await ...
   docstring:def func(): """Description"""
 |
-
 @classBasics |
   class:class Person: ...
   init:def __init__(self, name): ...
@@ -203,7 +192,6 @@
   super:super().__init__()
   mro:Child.__mro__
 |
-
 @contextManagers |
   with:with open("f") as fp: ...
   custom:from contextlib import contextmanager
@@ -212,7 +200,6 @@
   suppress:with contextlib.suppress(FileNotFoundError): ...
   exitStack:with ExitStack() as s: ...
 |
-
 @exceptions |
   try:try: ... except Error as e: ...
   finally:try: ... finally: ...
@@ -225,24 +212,21 @@
   assert:assert condition, "message"
   assertDisabled:python -O script.py
 |
-
 @comprehensions |
   list:[x * 2 for x in range(10)]
   listFilter:[x for x in range(10) if x % 2 == 0]
-  dict:{k: v for k, v in items if v}
-  set:{x for x in range(10)}
+  dict:{k:v for k,v in items if v:True}
+  set:{x for x in range(10):True}
   gen:(x * 2 for x in range(10))
   nested:[y for x in matrix for y in x]
   walrus:[y for x in range(10) if (y := x * 2) > 5]
 |
-
 @walrus |
   assignment:= in expressions
   if:if (n := len(data)) > 10: print(n)
   while:while chunk := f.read(8192): process(chunk)
   comprehension:[y for x in data if (y := process(x))]
 |
-
 @decorators |
   simple:def decorator(func): def wrapper(*a, **k): return func(*a, **k); return wrapper
   args:def decorator(arg): return lambda func: wrapper(func, arg)
@@ -253,7 +237,6 @@
   property:@property def name(self): return self._name
   setter:name.setter def name(self, val): self._name = val
 |
-
 @iterators |
   iterable:for x in collection: ...
   iterator:iter = iter(collection); next(iter)
@@ -268,7 +251,6 @@
   chain:from itertools import chain; chain(iter1, iter2)
   islice:from itertools import islice; islice(iter, 5)
 |
-
 @async |
   async:async def func(): ...
   await:await coroutine()
@@ -284,7 +266,6 @@
   event:asyncio.Event()
   semaphore:asyncio.Semaphore(10)
 |
-
 @fileIO |
   read:with open("f") as f: data = f.read()
   readline:line = f.readline()
@@ -301,7 +282,6 @@
   glob:list(Path(".").glob("*.py"))
   rglob:list(Path(".").rglob("*.py"))
 |
-
 @dataClasses |
   import:from dataclasses import dataclass
   basic:@dataclass class Point: x: float; y: float
@@ -314,7 +294,6 @@
   astuple:from dataclasses import astuple
   astupleUse:astuple(instance)
 |
-
 @typing |
   basic:str, int, float, bool, None
   optional:Optional[str] or str | None
@@ -335,7 +314,6 @@
   cast:cast(int, value)
   assertIsInstance:assert isinstance(x, int)
 |
-
 @gotchas |
   mutDefault:def func(lst=[]): lst.append(1); return lst
   mutDefaultFix:def func(lst=None): lst = lst or []
@@ -357,7 +335,6 @@
   matchCase:match is not switch (3.10+)
   walrus:= is assignment expression (3.8+)
 |
-
 @testing |
   pytest:pytest test_file.py
   pytestMarker:@pytest.mark.parametrize
@@ -371,7 +348,6 @@
   coverage:pytest --cov=src
   coverageReport:pytest --cov=src --cov-report=html
 |
-
 @tooling |
   ruff:ruff check .
   ruffFix:ruff check --fix .

@@ -1,7 +1,5 @@
 # HTML Knowledge Base
-
 @meta |topic:html|versions:HTML4-HTML5|lastUpdated:2026-08-18|confidence:high|
-
 @structure |
   doctype:<!DOCTYPE html>
   html:<html lang="en">
@@ -10,7 +8,6 @@
   closing:most elements need closing tags
   selfClosing:img, br, hr, input, meta, link
 |
-
 @semantic |
   header:page/section header
   nav:navigation
@@ -27,7 +24,6 @@
   address:<address> contact info
   hgroup:<hgroup> heading + subtitle
 |
-
 @forms |
   inputTypes:text, password, email, number, tel, url, search, date, time, checkbox, radio, file, hidden, range, color
   inputAttrs:required, placeholder, pattern, min, max, step, disabled, readonly, autofocus, autocomplete
@@ -40,7 +36,6 @@
   progress:<progress value="50" max="100">
   meter:<meter low="25" high="75" optimum="50">
 |
-
 @accessibility |
   role:role="button", role="dialog", role="alert"
   ariaLabel:aria-label="Close menu"
@@ -53,7 +48,6 @@
   headingOrder:h1 > h2 > h3 (don't skip levels)
   landmark:use semantic elements over role attributes
 |
-
 @media |
   picture:<picture>, <source srcset="..." media="...">
   srcset:img srcset="small.jpg 480w, large.jpg 1024w"
@@ -62,7 +56,6 @@
   fetchPriority:fetchpriority="high|low"
   decoding:decoding="async"
 |
-
 @tables |
   structure:<table>, <thead>, <tbody>, <tfoot>, <tr>, <th>, <td>
   caption:<caption>
@@ -70,7 +63,6 @@
   headers:headers="id" (complex tables)
   layout:don't use for layout, use CSS grid/flex
 |
-
 @scripting |
   defer:defer (execute after parse, before DOMContentLoaded)
   async:async (execute when downloaded, blocks parser)
@@ -80,7 +72,6 @@
   prefetch:<link rel="prefetch">
   dnsPrefetch:<link rel="dns-prefetch">
 |
-
 @gotchas |
   divSpan:don't use div/span for everything, use semantic elements
   alt:always add alt to img (empty for decorative)
@@ -96,7 +87,6 @@
   booleanAttrs:checked, disabled, readonly (no value needed)
   voidElements:don't close void elements: <br>, not <br></br>
 |
-
 @metadata |
   openGraph:og:title, og:description, og:image, og:url
   twitter:twitter:card, twitter:title, twitter:description
@@ -105,7 +95,6 @@
   manifest:<link rel="manifest" href="manifest.json">
   themeColor:<meta name="theme-color" content="#ffffff">
 |
-
 @html5Features |
   canvas:<canvas width="800" height="600">
   audio:<audio controls src="sound.mp3">
@@ -119,7 +108,6 @@
   hidden:hidden (boolean attribute)
   dialog:<dialog open>, dialog.showModal(), dialog.close()
 |
-
 @seo |
   title:title tag (50-60 chars, unique per page)
   description:meta description (150-160 chars, unique per page)
@@ -137,7 +125,6 @@
   canonicalSelf:canonical must match current URL exactly
   noIndexThin:noindex pages with thin/duplicate content
 |
-
 @structuredData |
   jsonLd:<script type="application/ld+json">
   schemaOrg:schema.org vocabulary
@@ -150,7 +137,6 @@
   Product:@type Product, name, description, image, offers
   Organization:@type Organization, name, logo, url
 |
-
 @openGraph |
   required:og:title, og:description, og:image, og:url
   type:og:type (website, article, product)
@@ -162,7 +148,6 @@
   twitterSite:twitter:site (@username)
   twitterCreator:twitter:creator (@author)
 |
-
 @performance |
   preconnect:<link rel="preconnect" href="https://fonts.googleapis.com">
   preload:<link rel="preload" href="font.woff2" as="font">
@@ -173,7 +158,6 @@
   criticalCss:inline above-fold CSS
   lazyLoad:loading="lazy" for images/iframes
 |
-
 @seoGotchas |
   duplicateContent:use canonical or noindex
   thinContent:expand or noindex low-value pages
@@ -186,36 +170,32 @@
   coreWebVitals:LCP, FID, CLS affect ranking
   structuredDataErrors:validate before deploying
 |
-
 @run validate |
   1.cmd:npx htmlhint **/*.html
-  1.note:"run HTML linter"
+  1.note:run HTML linter
   2.cmd:npx html-validate **/*.html
-  2.note:"run W3C HTML validator"
-  3.note:"check for: missing alt, unclosed tags, deprecated elements"
+  2.note:run W3C HTML validator
+  3.note:check for: missing alt, unclosed tags, deprecated elements
 |
-
 @run lint |
   1.cmd:npx htmlhint **/*.html --config .htmlhintrc
-  1.note:"lint with project config"
-  2.note:"common rules: tag-pair, attr-value-double-quotes, id-unique"
+  1.note:lint with project config
+  2.note:common rules: tag-pair, attr-value-double-quotes, id-unique
 |
-
 @run accessibility |
   1.cmd:npx pa11y **/*.html
-  1.note:"check WCAG compliance"
+  1.note:check WCAG compliance
   2.cmd:npx axe **/*.html
-  2.note:"accessibility audit with axe-core"
-  3.note:"check: heading order, label association, color contrast, ARIA"
+  2.note:accessibility audit with axe-core
+  3.note:check: heading order, label association, color contrast, ARIA
 |
-
 @run seoCheck |
   1.cmd:grep -r "<title>" **/*.html
-  1.note:"verify all pages have title tags"
+  1.note:verify all pages have title tags
   2.cmd:grep -r 'meta name="description"' **/*.html
-  2.note:"verify all pages have meta descriptions"
+  2.note:verify all pages have meta descriptions
   3.cmd:grep -r 'rel="canonical"' **/*.html
-  3.note:"verify canonical tags present"
+  3.note:verify canonical tags present
   4.cmd:grep -r 'application/ld+json' **/*.html
-  4.note:"check for structured data"
+  4.note:check for structured data
 |

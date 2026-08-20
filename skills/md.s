@@ -1,7 +1,5 @@
 # Markdown + Obsidian Knowledge Base
-
 @meta |topic:markdown obsidian md|versions:CommonMark-GFM-Obsidian|lastUpdated:2026-08-18|confidence:high|
-
 @basic |
   heading:# H1, ## H2, ### H3, #### H4
   bold:**bold** or __bold__
@@ -19,7 +17,6 @@
   escape:\*not italic\*
   html:inline HTML works in most parsers
 |
-
 @obsidian |
   wikilink:[[note]] or [[note|alias]]
   embed:![[image.png]] or ![[note#heading]]
@@ -37,7 +34,6 @@
   outline:Outline plugin shows heading structure
   commands:Ctrl+P command palette
 |
-
 @obsidianCallouts |
   note:> [!note] Note
   tip:> [!tip] Tip
@@ -52,7 +48,6 @@
   custom:> [!info]- Collapsed\n> Content
   numbered:> [!note]+ Numbered (1. 2. 3.)
 |
-
 @obsidianDataview |
   list:```dataview\nLIST FROM "folder"\n```
   table:```dataview\nTABLE author, date\nFROM "notes"\nSORT date DESC\n```
@@ -65,7 +60,6 @@
   group:GROUP BY category
   limit:LIMIT 10
 |
-
 @obsidianProperties |
   yaml:---\ntitle: My Note\ntags: [project, dev]\ncreated: 2026-08-18\n---
   inlineField:status:: active
@@ -74,17 +68,15 @@
   inlineFieldBool:done:: false
   inlineFieldEmbed:related:: [[other-note]]
 |
-
 @gfm |
-  table:"| Col1 | Col2 |\n|------|------|\n| a    | b    |"
-  alertBlock:"> [!NOTE]\n> Content"
+  table:| Col1 | Col2 |\n|------|------|\n| a    | b    |
+  alertBlock:> [!NOTE]\n> Content
   autoLink:https://example.com (auto-linked)
   footnotes:text[^1] and [^1]: footnote
   taskList:- [x] done, - [ ] todo
   strikethrough:~~deleted~~
   syntaxHighlight:```lang with highlighting
 |
-
 @obsidianFormatting |
   calloutCollapse:> [!tip]- Click to expand\n> Content
   calloutExpand:> [!note]+ Always open\n> Content
@@ -97,7 +89,6 @@
   mermaid:```mermaid\ngraph TD\nA-->B\n```
   latex:```latex\n\\frac{1}{2}\n```
 |
-
 @obsidianFrontmatter |
   title:title: My Note
   aliases:aliases: [alias1, alias2]
@@ -110,7 +101,6 @@
   lang:lang: en
   social-image:image: assets/og.png
 |
-
 @obsidianPlugins |
   dataview:query notes with dataview API
   templater:advanced templates with JS
@@ -124,7 +114,6 @@
   obsidian-git:git sync for vault
   style-settings:customize theme CSS
 |
-
 @obsidianThemes |
   minimal:minimal, clean, popular
   primary:colorful, modern
@@ -135,7 +124,6 @@
   ITS:feature-rich, customizable
   styleSettings:use Style Settings plugin to customize
 |
-
 @obsidianBestPractices |
   structure:use consistent heading hierarchy (H1 > H2 > H3)
   links:use [[wikilinks]] over [markdown](links) for backlinks
@@ -150,15 +138,13 @@
   zettelkasten:atomic notes, one idea per note
   linkDensity:aim for 3-5 internal links per note
 |
-
 @obsidianMOC |
   purpose:Map of Content for navigation hub
   structure:list of [[links]] grouped by topic
-  example:"## Topics\n- [[Topic A]]\n- [[Topic B]]\n\n## Projects\n- [[Project 1]]"
+  example:## Topics\n- [[Topic A]]\n- [[Topic B]]\n\n## Projects\n- [[Project 1]]
   update:regularly review and update links
   naming:use MOC prefix or suffix (MOC-Projects, Projects-MOC)
 |
-
 @markdownGotchas |
   spacing:blank line before/after lists and headings
   indents:use 4 spaces or 1 tab for nested content
@@ -170,7 +156,6 @@
   lineBreaks:two spaces + newline for line break
   unicode:some parsers handle unicode differently
 |
-
 @obsidianGotchas |
   links:Obsidian requires [[wikilinks]] for backlinks
   images:use ![[image.png]] not ![](image.png) for Obsidian

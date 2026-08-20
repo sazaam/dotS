@@ -13,6 +13,7 @@ Usage:
     s diff                  Show changes since last snapshot
     s search <query>        Search across all .s files
     s find <topic>          Smart lookup via index.s routing
+    s optimize <skill> [--dry-run]  Optimize .s files for token savings
 """
 
 import sys
@@ -31,6 +32,7 @@ SNAP_DIR = CTX_DIR / ".snaps"
 STATE_DIR = CTX_DIR / ".state"
 LOADED_FILE = STATE_DIR / "loaded.txt"
 SESSION_LOG = STATE_DIR / "session.log"
+LOCKED_FILE = CTX_DIR / "skills" / ".locked"
 
 
 def resolve_file(filename: str) -> Path:
@@ -86,6 +88,29 @@ def _log_session(cmd: str, args: list, result: str = ""):
     line = f"{ts}|{cmd}|{' '.join(args)}|{result}\n"
     with open(SESSION_LOG, 'a') as f:
         f.write(line)
+
+
+def _get_locked() -> list:
+    """Get list of locked skill files."""
+    if not LOCKED_FILE.exists():
+        return []
+    return [l.strip() for l in LOCKED_FILE.read_text().splitlines() if l.strip() and not l.strip().startswith('#')]
+
+
+def _set_locked(locked: list):
+    """Save list of locked skill files."""
+    LOCKED_FILE.parent.mkdir(parents=True, exist_ok=True)
+    if locked:
+        LOCKED_FILE.write_text('\n'.join(sorted(set(locked))) + '\n')
+    elif LOCKED_FILE.exists():
+        LOCKED_FILE.unlink()
+
+
+def _is_locked(skill_name: str) -> bool:
+    """Check if a skill is locked."""
+    if not skill_name.endswith('.s'):
+        skill_name += '.s'
+    return skill_name in _get_locked()
 
 
 def _auto_load_skills_from_index(index_sf: SFile):
@@ -144,6 +169,7 @@ class Block:
         self.tag = tag
         self.raw = raw
         self.props: dict = {}
+        self.inline = False  # Track if block uses inline format
         self._parse(raw)
 
     def _parse(self, raw: str):
@@ -168,11 +194,21 @@ class Block:
     def _parse_val(self, val: str):
         if val.startswith('[') and val.endswith(']'):
             inner = val[1:-1]
-            return [v.strip().strip('"').strip("'") for v in self._split_list(inner)]
+            result = []
+            for v in self._split_list(inner):
+                v = v.strip()
+                # Only strip outer quotes, not quotes within the value
+                if (v.startswith('"') and v.endswith('"')) or (v.startswith("'") and v.endswith("'")):
+                    v = v[1:-1].strip()
+                result.append(v)
+            return result
         if val.startswith('{') and val.endswith('}'):
             inner = val[1:-1]
             return self._parse_inline_map(inner)
-        return val.strip().strip('"').strip("'")
+        # Only strip outer quotes, not quotes within the value
+        if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+            return val[1:-1].strip()
+        return val.strip()
 
     def _split_list(self, s: str) -> list:
         result = []
@@ -221,8 +257,27 @@ class Block:
         return {self.tag: self.props}
 
     def render(self) -> str:
-        lines = [f'@{self.tag} |']
+        # Get block name if present (don't modify props)
+        block_name = self.props.get('_name')
+        
+        # Check if we can render inline (all props are simple strings, no _name)
+        can_inline = (self.inline and 
+                      '_name' not in self.props and
+                      all(isinstance(v, str) for v in self.props.values()))
+        
+        if can_inline:
+            # Render inline: @tag |key1:val1|key2:val2|
+            parts = []
+            for k, v in self.props.items():
+                parts.append(f'{k}:{v}')
+            return f'@{self.tag} |{"|".join(parts)}|'
+        
+        # Multi-line format
+        name_part = f' {block_name}' if block_name else ''
+        lines = [f'@{self.tag}{name_part} |']
         for k, v in self.props.items():
+            if k == '_name':
+                continue  # Already included in tag line
             lines.append(self._render_kv(k, v))
         lines.append('|')
         return '\n'.join(lines)
@@ -257,14 +312,17 @@ class SFile:
         current_tag = None
         current_lines = []
         header_lines = []
+        current_inline = False  # Track if current block is inline
 
         for line in content.splitlines():
             stripped = line.strip()
             # block start: @tag | or @tag name | with possible inline props
-            m = re.match(r'^@(\S+)(?:\s+(\S+))?\s*\|(.*)\|?\s*$', stripped)
+            m = re.match(r'^@(\S+)(?:\s+(\w+))?\s*\|(.*)\|?\s*$', stripped)
             if m:
                 if current_tag is not None:
-                    self.blocks.append(Block(current_tag, '\n'.join(current_lines)))
+                    block = Block(current_tag, '\n'.join(current_lines))
+                    block.inline = current_inline
+                    self.blocks.append(block)
                 current_tag = m.group(1)
                 # Store the name if present (e.g., "quickCommit" in "@run quickCommit |")
                 block_name = m.group(2)
@@ -272,17 +330,25 @@ class SFile:
                 inline = m.group(3).strip().rstrip('|').strip()
                 if inline:
                     current_lines = [p.strip() for p in inline.split('|') if p.strip()]
+                    current_inline = True
                 else:
                     current_lines = []
+                    current_inline = False
                 # If there's a block name, add it as a property
                 if block_name:
                     current_lines.insert(0, f'_name:{block_name}')
             elif stripped == '|' and current_tag is not None:
-                self.blocks.append(Block(current_tag, '\n'.join(current_lines)))
+                block = Block(current_tag, '\n'.join(current_lines))
+                block.inline = current_inline
+                self.blocks.append(block)
                 current_tag = None
                 current_lines = []
+                current_inline = False
             elif current_tag is not None:
-                current_lines.append(line)
+                # Skip empty lines within blocks (don't reset inline flag)
+                if stripped:
+                    current_lines.append(line)
+                    current_inline = False  # Non-empty content means not inline
             elif stripped.startswith('#'):
                 header_lines.append(line)
             elif stripped:
@@ -1182,6 +1248,344 @@ def cmd_learn(args):
     print(f"    updated @meta.lastUpdated")
 
 
+def _is_obvious_why(key: str, why_value: str, parent_value: str) -> bool:
+    """Determine if a .why value is obvious (restates the directive).
+    
+    Aggressive approach: remove if adds no new info beyond directive name/value.
+    """
+    if not why_value or not parent_value:
+        return False
+    
+    why_lower = why_value.lower().strip()
+    parent_lower = parent_value.lower().strip()
+    
+    # Extract the base directive name from the key
+    # e.g., "headerForward.why" → "headerForward", "proxy_set_header Host $host"
+    base_key = key.rsplit('.why', 1)[0].split('.')[-1]
+    
+    # Normalize for comparison
+    def normalize(s):
+        return set(re.findall(r'[a-z]+', s.lower()))
+    
+    why_words = normalize(why_value)
+    parent_words = normalize(parent_value)
+    key_words = normalize(base_key)
+    
+    # If .why value is mostly restating the parent value words
+    if parent_words and why_words.issubset(parent_words):
+        return True
+    
+    # If .why value is mostly restating the key name words
+    if key_words and why_words.issubset(key_words):
+        return True
+    
+    # If .why is very short (<=4 words) and parent is self-explanatory
+    if len(why_value.split()) <= 4:
+        # Check for common obvious patterns
+        obvious_patterns = [
+            r'hides?.*\b(version|header|server)\b',
+            r'prevents?.*\b(attack|exploit|injection|clickjacking)\b',
+            r'enables?.*\b(feature|option|mode)\b',
+            r'disables?.*\b(feature|option|logging)\b',
+            r'sets?.*\b(timeout|limit|size|port)\b',
+            r'forward(s|ed)?.*\b(header|host|ip)\b',
+            r'preserves?.*\b(header|host|original)\b',
+            r'redirect(s|ed)?.*\b(to|from|www)\b',
+            r'validates?.*\b(config|syntax|input)\b',
+            r'graceful\b.*\b(reload|shutdown)\b',
+            r'hard\b.*\b(restart|reset|stop)\b',
+            r'verbose\b.*\b(log|debug|output)\b',
+            r'simple\b.*\b(check|health|test)\b',
+            r'only\b.*\b(used|applies|works)\b',
+            r'retry\b.*\b(on|backend|failure)\b',
+            r'serve\b.*\b(stale|static|content)\b',
+            r'block(s|ed)?\b.*\b(scraper|bot|known)\b',
+            r'skip\b.*\b(logging|health|check)\b',
+            r'reduce(s)?\b.*\b(noise|disk|I/O|traffic)\b',
+            r'3x\b.*\b(traffic|more)\b',
+            r'session\b.*\b(persistence)\b',
+            r'immutable\b.*\b(tells|browser|revalidate)\b',
+            r'exact\b.*\b(first|match)\b',
+            r'prefix\b.*\b(match|then)\b',
+            r'regex\b.*\b(match)\b',
+        ]
+        for pat in obvious_patterns:
+            if re.search(pat, why_lower):
+                return True
+    
+    # If parent value contains the .why explanation already
+    # e.g., proxy_set_header Host $host → "preserves original host" is obvious
+    parent_tokens = set(parent_lower.split())
+    why_tokens = set(why_lower.split())
+    if len(why_tokens) > 0 and len(why_tokens - parent_tokens) <= 1:
+        # .why adds at most 1 new word beyond parent
+        return True
+    
+    # If .why is just explaining what the directive name already says
+    # e.g., "worker_processes auto" + "auto scales with CPU cores"
+    if base_key.lower() in why_lower or why_lower in base_key.lower():
+        return True
+    
+    return False
+
+
+def _simplify_value(key: str, value: str) -> str:
+    """Simplify a value string without sacrificing clarity."""
+    if not value or value.startswith(('git ', 'npx ', 'certbot ', 'nginx ', 'systemctl ',
+                                      'curl ', 'echo ', 'cat ', 'tail ', 'netstat ',
+                                      'ps ', 'ss ', 'grep ', 'find ', '#', 'http',
+                                      'proxy_', 'ssl_', 'limit_', 'error_', 'access_',
+                                      'open_file_', 'reset_', 'client_', 'send_',
+                                      'keepalive', 'location', 'server', 'upstream',
+                                      'add_header', 'return', 'rewrite', 'if (', 'map ',
+                                      'stub_status', 'allow', 'deny', 'geo ',
+                                      'worker_', 'worker ', 'events', 'http ',
+                                      '<', '{', '}', '=', '~')):
+        return value  # Don't touch code/commands
+    
+    # Simplification rules
+    simplified = value
+    
+    # Remove unnecessary articles
+    simplified = re.sub(r'\bthe\b\s*', '', simplified)
+    simplified = re.sub(r'\ba\b\s*(?=[aeiou])', '', simplified)
+    simplified = re.sub(r'\ban\b\s*', '', simplified)
+    
+    # Collapse multiple spaces
+    simplified = re.sub(r'\s+', ' ', simplified).strip()
+    
+    # Common phrase simplifications
+    simplifications = [
+        (r'\bfor this purpose\b', ''),
+        (r'\bin order to\b', 'to'),
+        (r'\bfor the purpose of\b', 'for'),
+        (r'\bwith regard to\b', 'for'),
+        (r'\bin the event that\b', 'if'),
+        (r'\bat this point in time\b', 'now'),
+        (r'\bdue to the fact that\b', 'because'),
+        (r'\bin the case of\b', 'for'),
+        (r'\bon a daily basis\b', 'daily'),
+        (r'\bat the present time\b', 'now'),
+        (r'\bfor the time being\b', 'temporarily'),
+        (r'\bin the near future\b', 'soon'),
+        (r'\bwith respect to\b', 'for'),
+        (r'\bin the vicinity of\b', 'near'),
+        (r'\bprior to\b', 'before'),
+        (r'\bsubsequent to\b', 'after'),
+        (r'\bin lieu of\b', 'instead of'),
+        (r'\bin the event of\b', 'if'),
+        (r'\bon behalf of\b', 'for'),
+        (r'\bin accordance with\b', 'per'),
+        (r'\bpertaining to\b', 'for'),
+        (r'\bin reference to\b', 'for'),
+        (r'\bin relation to\b', 'for'),
+        (r'\bin connection with\b', 'for'),
+        (r'\bwith the exception of\b', 'except'),
+        (r'\bin excess of\b', 'over'),
+        (r'\blargely due to\b', 'due to'),
+        (r'\bprimarily due to\b', 'due to'),
+        (r'\bmainly due to\b', 'due to'),
+        (r'\bessentially\b', ''),
+        (r'\bbasically\b', ''),
+        (r'\bactually\b', ''),
+        (r'\breally\b', ''),
+        (r'\bvery\b', ''),
+        (r'\bquite\b', ''),
+        (r'\bfairly\b', ''),
+        (r'\brather\b', ''),
+        (r'\bjust\b', ''),
+        (r'\bsimply\b', ''),
+    ]
+    
+    for pattern, replacement in simplifications:
+        simplified = re.sub(pattern, replacement, simplified, flags=re.IGNORECASE)
+    
+    # Collapse multiple spaces again
+    simplified = re.sub(r'\s+', ' ', simplified).strip()
+    
+    # Only use simplified if it's meaningfully shorter and still clear
+    if len(simplified) < len(value) * 0.85 and len(simplified) > 5:
+        return simplified
+    
+    return value
+
+
+def cmd_optimize(args):
+    """Optimize .s files for token savings.
+    
+    Usage: s optimize <skill> [skill2] ... [--dry-run]
+           s optimize --dry-run css html nginx
+    
+    Actions:
+      - Remove obvious .why blocks (restating the directive)
+      - Move non-obvious .why to @gotchas
+      - Remove redundant information
+      - Simplify explanations
+    """
+    dry_run = '--dry-run' in args
+    skill_names = [a for a in args if not a.startswith('--')]
+    
+    if not skill_names:
+        print("Usage: s optimize <skill> [skill2] ... [--dry-run]", file=sys.stderr)
+        sys.exit(1)
+    
+    total_before_tokens = 0
+    total_after_tokens = 0
+    total_removed = 0
+    total_moved = 0
+    total_simplified = 0
+    files_processed = 0
+    
+    for skill_name in skill_names:
+        # Resolve file path
+        if not skill_name.endswith('.s'):
+            skill_name += '.s'
+        
+        # Check if locked
+        if _is_locked(skill_name):
+            print(f"  {skill_name}: locked (skipped)", file=sys.stderr)
+            continue
+        
+        filepath = CTX_DIR / "skills" / skill_name
+        if not filepath.exists():
+            print(f"  file not found: {skill_name}", file=sys.stderr)
+            continue
+        
+        sf = SFile(filepath)
+        before_content = filepath.read_text()
+        before_tokens = _estimate_tokens(before_content)
+        total_before_tokens += before_tokens
+        
+        file_removed = 0
+        file_moved = 0
+        file_simplified = 0
+        
+        # Ensure @gotchas block exists
+        gotchas_block = sf.get_block('gotchas')
+        if not gotchas_block:
+            gotchas_block = Block('gotchas', '')
+        
+        # ── Pass 1: Analyze .why keys ──
+        for block in sf.blocks:
+            why_keys = [k for k in block.props.keys() if k.endswith('.why')]
+            
+            for why_key in why_keys:
+                why_value = block.props[why_key]
+                if not isinstance(why_value, str):
+                    continue
+                
+                # Find parent key
+                base_key = why_key.rsplit('.why', 1)[0]
+                parent_value = block.props.get(base_key, '')
+                if not isinstance(parent_value, str):
+                    parent_value = str(parent_value) if parent_value else ''
+                
+                if _is_obvious_why(why_key, why_value, parent_value):
+                    # Remove obvious .why
+                    del block.props[why_key]
+                    file_removed += 1
+                else:
+                    # Move non-obvious .why to @gotchas
+                    # Format: "key: explanation"
+                    gotcha_key = f"{block.tag}.{base_key}"
+                    gotchas_block.set(gotcha_key, why_value)
+                    del block.props[why_key]
+                    file_moved += 1
+        
+        # ── Pass 2: Remove redundancy across blocks ──
+        # Check if @gotchas entries duplicate info in other blocks
+        gotchas_to_remove = []
+        for gkey, gval in gotchas_block.props.items():
+            if not isinstance(gval, str):
+                continue
+            
+            gval_lower = gval.lower()
+            gval_words = set(re.findall(r'[a-z]+', gval_lower))
+            
+            # Check other blocks for duplicate info
+            for block in sf.blocks:
+                if block.tag == 'gotchas' or block.tag == 'meta':
+                    continue
+                
+                for bkey, bval in block.props.items():
+                    if bkey.endswith('.why') or not isinstance(bval, str):
+                        continue
+                    
+                    bval_lower = bval.lower()
+                    bval_words = set(re.findall(r'[a-z]+', bval_lower))
+                    
+                    # If gotcha value is mostly contained in another block's value
+                    if gval_words and bval_words and gval_words.issubset(bval_words):
+                        gotchas_to_remove.append(gkey)
+                        break
+                
+                if gkey in gotchas_to_remove:
+                    break
+        
+        for gkey in gotchas_to_remove:
+            if gkey in gotchas_block.props:
+                del gotchas_block.props[gkey]
+                file_removed += 1
+        
+        # ── Pass 3: Simplify explanations ──
+        for block in sf.blocks:
+            for key, val in block.props.items():
+                if key.endswith('.why') or key.startswith('_'):
+                    continue
+                if isinstance(val, str) and len(val) > 15:
+                    simplified = _simplify_value(key, val)
+                    if simplified != val:
+                        block.props[key] = simplified
+                        file_simplified += 1
+        
+        # Set the updated gotchas block
+        if gotchas_block.props:
+            sf.set_block(gotchas_block)
+        elif sf.get_block('gotchas'):
+            # Remove empty gotchas block
+            sf.blocks = [b for b in sf.blocks if b.tag != 'gotchas']
+        
+        # Save or preview
+        after_content = sf.render()
+        after_tokens = _estimate_tokens(after_content)
+        total_after_tokens += after_tokens
+        total_removed += file_removed
+        total_moved += file_moved
+        total_simplified += file_simplified
+        files_processed += 1
+        
+        if dry_run:
+            print(f"\n  {skill_name} (dry-run):")
+            print(f"    before: {before_tokens} tokens ({len(before_content)} bytes)")
+            print(f"    after:  {after_tokens} tokens ({len(after_content)} bytes)")
+            print(f"    saved:  {before_tokens - after_tokens} tokens ({(before_tokens - after_tokens) / max(before_tokens, 1) * 100:.1f}%)")
+            print(f"    actions: {file_removed} removed, {file_moved} moved to @gotchas, {file_simplified} simplified")
+            
+            # Show diff preview
+            old_lines = before_content.splitlines()
+            new_lines = after_content.splitlines()
+            diff = list(difflib.unified_diff(old_lines, new_lines, lineterm='', n=1))
+            if diff:
+                print(f"    changes:")
+                for line in diff[:20]:
+                    print(f"      {line}")
+                if len(diff) > 20:
+                    print(f"      ... ({len(diff) - 20} more lines)")
+        else:
+            sf.save()
+            print(f"  ✓ {skill_name}: {before_tokens} → {after_tokens} tokens (-{before_tokens - after_tokens}, {file_removed} removed, {file_moved} moved, {file_simplified} simplified)")
+    
+    # Summary
+    if files_processed > 0:
+        saved = total_before_tokens - total_after_tokens
+        print(f"\n  optimization {'preview' if dry_run else 'complete'}:")
+        print(f"    files: {files_processed}")
+        print(f"    tokens: {total_before_tokens} → {total_after_tokens} (-{saved}, {saved / max(total_before_tokens, 1) * 100:.1f}%)")
+        print(f"    actions: {total_removed} removed, {total_moved} moved to @gotchas, {total_simplified} simplified")
+        if dry_run:
+            print(f"\n  run without --dry-run to apply changes")
+
+
 def cmd_help(args):
     """Show help for a command."""
     if args and args[0] in COMMANDS:
@@ -1516,6 +1920,114 @@ def cmd_loaded(args):
         print(f"\n  use 's unload <file>' to unload")
 
 
+def cmd_lock(args):
+    """Lock skills to prevent optimization.
+    
+    Usage: s lock <skill> [skill2] ...
+           s lock writing-skill blender-python
+    """
+    if not args:
+        print("Usage: s lock <skill> [skill2] ...", file=sys.stderr)
+        sys.exit(1)
+    
+    locked = _get_locked()
+    added = 0
+    
+    for skill_name in args:
+        if not skill_name.endswith('.s'):
+            skill_name += '.s'
+        
+        # Check if file exists
+        filepath = CTX_DIR / "skills" / skill_name
+        if not filepath.exists():
+            print(f"  {skill_name}: file not found", file=sys.stderr)
+            continue
+        
+        if skill_name not in locked:
+            locked.append(skill_name)
+            added += 1
+            # Make file read-only
+            try:
+                filepath.chmod(0o444)
+                print(f"  {skill_name}: locked")
+            except Exception as e:
+                print(f"  {skill_name}: locked (chmod failed: {e})")
+        else:
+            print(f"  {skill_name}: already locked")
+    
+    if added > 0:
+        _set_locked(locked)
+        print(f"\n  {added} skill(s) locked")
+
+
+def cmd_unlock(args):
+    """Unlock skills to allow optimization.
+    
+    Usage: s unlock <skill> [skill2] ...
+           s unlock writing-skill blender-python
+           s unlock --all
+    """
+    if not args:
+        print("Usage: s unlock <skill> [skill2] ... | --all", file=sys.stderr)
+        sys.exit(1)
+    
+    locked = _get_locked()
+    
+    if '--all' in args:
+        count = len(locked)
+        # Make all locked files writable
+        for skill_name in locked:
+            filepath = CTX_DIR / "skills" / skill_name
+            if filepath.exists():
+                try:
+                    filepath.chmod(0o644)
+                except:
+                    pass
+        _set_locked([])
+        print(f"  unlocked all {count} skill(s)")
+        return
+    
+    removed = 0
+    for skill_name in args:
+        if not skill_name.endswith('.s'):
+            skill_name += '.s'
+        
+        if skill_name in locked:
+            locked.remove(skill_name)
+            removed += 1
+            # Make file writable
+            filepath = CTX_DIR / "skills" / skill_name
+            if filepath.exists():
+                try:
+                    filepath.chmod(0o644)
+                    print(f"  {skill_name}: unlocked")
+                except Exception as e:
+                    print(f"  {skill_name}: unlocked (chmod failed: {e})")
+            else:
+                print(f"  {skill_name}: unlocked")
+        else:
+            print(f"  {skill_name}: not locked")
+    
+    if removed > 0:
+        _set_locked(locked)
+        print(f"\n  {removed} skill(s) unlocked")
+
+
+def cmd_locked(args):
+    """List locked skills.
+    
+    Usage: s locked
+    """
+    locked = _get_locked()
+    if not locked:
+        print("  no skills locked")
+    else:
+        print(f"  locked skills ({len(locked)}):")
+        for f in locked:
+            print(f"    {f}")
+        print(f"\n  use 's unlock <skill>' to unlock")
+
+
 def cmd_run(args):
     """Execute a @run playbook from a .s file.
     
@@ -1701,6 +2213,10 @@ COMMANDS = {
     'compact': cmd_compact,
     'loaded': cmd_loaded,
     'run': cmd_run,
+    'optimize': cmd_optimize,
+    'lock': cmd_lock,
+    'unlock': cmd_unlock,
+    'locked': cmd_locked,
     'help': cmd_help,
 }
 

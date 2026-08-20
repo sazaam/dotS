@@ -1,7 +1,5 @@
 # CSS Knowledge Base
-
 @meta |topic:css|versions:CSS2-CSS3-Modern|lastUpdated:2026-08-18|confidence:high|
-
 @selectors |
   universal:*
   element:div
@@ -29,7 +27,6 @@
   pseudoSelection::selection
   pseudoFocus-visible:focus-visible
 |
-
 @boxModel |
   contentBox:default, width/height = content only
   borderBox:*, width/height = content + padding + border
@@ -39,7 +36,6 @@
   margin:auto:center horizontally
   marginNeg:negative margin pulls element
 |
-
 @flexbox |
   display:flex
   direction:row | row-reverse | column | column-reverse
@@ -54,7 +50,6 @@
   flex:1 1 0 (grow shrink basis)
   order:-1 (before), 0 (default), 1 (after)
 |
-
 @grid |
   display:grid
   template:grid-template-columns: 1fr 2fr 1fr
@@ -67,7 +62,6 @@
   area:grid-template-areas: "header header" "nav main"
   areaName:grid-area: header
 |
-
 @position |
   static:default, no positioning
   relative:position relative to normal flow
@@ -78,7 +72,6 @@
   zIndex:z-index works only on positioned elements (not static)
   stacking:stacking context: z-index, opacity<1, transform, filter
 |
-
 @units |
   px:1px = 1 device pixel (usually)
   em:relative to parent font-size
@@ -93,7 +86,6 @@
   ch:width of "0" character
   ex:x-height of font
 |
-
 @media |
   width:max-width: 768px (mobile first: min-width)
   height:max-height: 500px
@@ -104,7 +96,6 @@
   print:@media print
   feature:@media (feature: value)
 |
-
 @specificity |
   calculation:(0, 0, 0) for inline, IDs, classes/attrs/pseudo-classes, elements/pseudo-elements
   inheritance:inherited properties pass to children
@@ -113,11 +104,9 @@
   unset:remove: property: unset
   revert:revert to stylesheet: property: revert
 |
-
 @gotchas |
   marginCollapse:vertical margins collapse, horizontal don't
   marginCollapseFix:use padding, BFC, or gap
-  zIndex:z-index only works on positioned elements
   zIndexFix:position: relative on parent
   flexGap:flex-gap creates BFC, breaks margin collapse
   gridAutoFlow:dense packing can reorder items
@@ -132,7 +121,6 @@
   vh:100vh includes scrollbar, use dvh
   darkMode:prefers-color-scheme, not class toggle
 |
-
 @modern |
   containerQueries:@container (inline-size > 300px) { ... }
   has:has(.child) (parent selector)
@@ -147,31 +135,27 @@
   minMax:width: min(100%, 500px)
   gap:gap in flexbox (no more margin hacks)
 |
-
 @run lint |
   1.cmd:npx stylelint **/*.css
-  1.note:"run CSS linter"
+  1.note:run CSS linter
   2.cmd:npx stylelint **/*.css --config .stylelintrc
-  2.note:"lint with project config"
-  3.note:"common rules: no-duplicate-selectors, no-empty-blocks, color-hex-length"
+  2.note:lint with project config
+  3.note:common rules: no-duplicate-selectors, no-empty-blocks, color-hex-length
 |
-
 @run validate |
   1.cmd:npx stylelint **/*.css --config .stylelintrc
-  1.note:"validate CSS syntax"
-  2.note:"check for: unknown properties, invalid values, deprecated features"
+  1.note:validate CSS syntax
+  2.note:check for: unknown properties, invalid values, deprecated features
 |
-
 @run specificity |
   1.cmd:npx specificity **/*.css
-  1.note:"analyze selector specificity"
-  2.note:"flag: IDs, inline styles, !important, deep nesting"
-  3.note:"target: all selectors under (0, 1, 0) specificity"
+  1.note:analyze selector specificity
+  2.note:flag: IDs, inline styles, !important, deep nesting
+  3.note:target: all selectors under (0, 1, 0) specificity
 |
-
 @run audit |
   1.cmd:npx stylelint **/*.css --config .stylelintrc --formatter verbose
-  1.note:"full CSS audit"
-  2.note:"check: unused variables, color consistency, unit consistency"
-  3.note:"check: responsive breakpoints, z-index stacking"
+  1.note:full CSS audit
+  2.note:check: unused variables, color consistency, unit consistency
+  3.note:check: responsive breakpoints, z-index stacking
 |

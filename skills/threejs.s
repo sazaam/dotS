@@ -1,7 +1,5 @@
 # Three.js Knowledge Base
-
 @meta |topic:threejs 3d webgl|versions:r150-r170+|lastUpdated:2026-08-18|confidence:high|
-
 @core |
   scene:new THREE.Scene()
   camera:PerspectiveCamera(fov, aspect, near, far)
@@ -16,7 +14,6 @@
   clockGetDelta:clock.getDelta() (time since last call)
   clockGetElapsedTime:clock.getElapsedTime() (total time)
 |
-
 @scene |
   add:scene.add(mesh)
   remove:scene.remove(mesh)
@@ -26,9 +23,8 @@
   traverse:scene.traverse(child => { })
   children:scene.children (array)
 |
-
 @renderer |
- .setSize:renderer.setSize(w, h)
+  .setSize:renderer.setSize(w, h)
   setPixelRatio:renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
   render:renderer.render(scene, camera)
   shadows:renderer.shadowMap.enabled = true
@@ -39,7 +35,6 @@
   dispose:renderer.dispose()
   resize:onResize: renderer.setSize(w, h); camera.aspect = w/h; camera.updateProjectionMatrix()
 |
-
 @geometry |
   box:BoxGeometry(w, h, d, wSeg, hSeg, dSeg)
   sphere:SphereGeometry(radius, wSeg, hSeg, phiStart, phiLen, thetaStart, thetaLen)
@@ -62,7 +57,6 @@
   computeVertexNormals:geo.computeVertexNormals()
   dispose:geo.dispose()
 |
-
 @material |
   basic:MeshBasicMaterial({ color, map, wireframe })
   lambert:MeshLambertMaterial({ color, map })
@@ -81,7 +75,6 @@
   dispose:material.dispose()
   needsUpdate:material.needsUpdate = true
 |
-
 @physical |
   clearcoat:clearcoat: 1.0 (car paint effect)
   clearcoatRoughness:clearcoatRoughness: 0.1
@@ -94,7 +87,6 @@
   anisotropy:anisotropy: 1.0 (brushed metal)
   dispersion:dispersion: 0.1 (rainbow glass)
 |
-
 @texture |
   load:textureLoader.load(url)
   rgbLoader:RGBELoader.load(url) (HDR)
@@ -108,7 +100,6 @@
   colorSpace:texture.colorSpace = THREE.SRGBColorSpace
   dispose:texture.dispose()
 |
-
 @light |
   ambient:AmbientLight(color, intensity)
   directional:DirectionalLight(color, intensity)
@@ -121,7 +112,6 @@
   shadowCamera:light.shadow.camera.left/right/top/bottom
   followTarget:light.target = targetObject
 |
-
 @mesh |
   new:Mesh(geometry, material)
   position:mesh.position.set(x, y, z)
@@ -136,7 +126,6 @@
   traverse:mesh.traverse(child => { })
   dispose:mesh.geometry.dispose(); mesh.material.dispose()
 |
-
 @group |
   new:group = new THREE.Group()
   add:group.add(mesh1, mesh2)
@@ -147,7 +136,6 @@
   naming:group.name = 'myGroup'
   findByName:group.getObjectByName('name')
 |
-
 @animation |
   mixer:new THREE.AnimationMixer(model)
   clipAction:mixer.clipAction(clip)
@@ -159,7 +147,6 @@
   mixerUpdate:mixer.update(delta)
   clipFind:THREE.AnimationUtils.subclip(clip, 'name', start, end)
 |
-
 @controls |
   orbit:OrbitControls(camera, domElement)
   orbitTarget:controls.target.set(x, y, z)
@@ -172,7 +159,6 @@
   transform:TransformControls(camera, domElement)
   dispose:controls.dispose()
 |
-
 @loader |
   gltfLoader:GLTFLoader.load(url, onLoad, onProgress, onError)
   gltfAnimations:gltf.animations (AnimationClip[])
@@ -188,7 +174,6 @@
   fileLoader:FileLoader.load(url)
   loaderSetPath:loader.setPath('/models/')
 |
-
 @raycasting |
   setFromCamera:raycaster.setFromCamera(mouse, camera)
   intersectObjects:raycaster.intersectObjects(objects, recursive)
@@ -198,7 +183,6 @@
   face:intersects[0]?.face (Face3)
   uv:intersects[0]?.uv (Vector2)
 |
-
 @postprocessing |
   effectComposer:EffectComposer(renderer)
   renderPass:RenderPass(scene, camera)
@@ -213,7 +197,6 @@
   render:composer.render()
   dispose:composer.dispose()
 |
-
 @InstancedMesh |
   new:InstancedMesh(geometry, material, count)
   setMatrixAt:mesh.setMatrixAt(index, matrix)
@@ -222,7 +205,6 @@
   instanceMatrix:mesh.instanceMatrix (InstancedBufferAttribute)
   dispose:mesh.dispose()
 |
-
 @performance |
   frustumCulling:camera.frustumCulling = true (default)
   lod:LOD() (level of detail)
@@ -235,7 +217,6 @@
   shadowMapSize:reduce shadow.mapSize for performance
   textureSize:use power-of-two textures (256, 512, 1024)
 |
-
 @webgpu |
   renderer:WebGPURenderer() (experimental)
   webglFallback:WebGLRenderer() (still primary)
@@ -243,7 +224,6 @@
   compute:GPUComputePipeline (compute shaders)
   storageBuffer:StorageBuffer (GPU-side data)
 |
-
 @gotchas |
   dispose:always dispose geometry, material, texture
   disposeMemory:check renderer.info.memory for leaks
@@ -261,7 +241,6 @@
   toneMapping:use ACESFilmic for realistic look
   disposalRecursive:dispose children manually or use traverse
 |
-
 @math |
   clamp:THREE.MathUtils.clamp(value, min, max)
   lerp:THREE.MathUtils.lerp(a, b, t)
@@ -273,13 +252,12 @@
   inverseLerp:THREE.MathUtils.inverseLerp(a, b, v)
   smoothstep:THREE.MathUtils.smoothstep(x, min, max)
 |
-
 @examples |
-  basicSetup:"renderer + scene + camera + cube + animate loop"
-  loadModel:"GLTFLoader + draco + animation mixer"
-  raycastClick:"raycaster + mouse position + intersectObjects"
-  shadows:"renderer.shadowMap + directionalLight + mesh.receiveShadow"
-  postprocess:"EffectComposer + RenderPass + UnrealBloomPass"
-  instancing:"InstancedMesh + setMatrixAt + colorAt"
-  responsive:"window resize listener + camera.aspect + renderer.setSize"
+  basicSetup:renderer + scene + camera + cube + animate loop
+  loadModel:GLTFLoader + draco + animation mixer
+  raycastClick:raycaster + mouse position + intersectObjects
+  shadows:renderer.shadowMap + directionalLight + mesh.receiveShadow
+  postprocess:EffectComposer + RenderPass + UnrealBloomPass
+  instancing:InstancedMesh + setMatrixAt + colorAt
+  responsive:window resize listener + camera.aspect + renderer.setSize
 |

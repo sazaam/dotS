@@ -1,7 +1,5 @@
 # Shell (sh/bash/zsh) Knowledge Base
-
 @meta |topic:shell|shells:sh,bash,zsh|lastUpdated:2026-08-17|confidence:high|
-
 @basics |
   shebang:#!/bin/sh (POSIX) or #!/bin/bash or #!/usr/bin/env bash
   execute:chmod +x script.sh && ./script.sh
@@ -10,7 +8,6 @@
   strict:set -euo pipefail (bash)
   posix:#!/bin/sh (no bashisms)
 |
-
 @variables |
   assign:name="value" (no spaces around =)
   access:"$name" or ${name}
@@ -32,7 +29,6 @@
   readonly:readonly NAME="value"
   env:ENV_VAR=value command
 |
-
 @arrays |
   create:arr=(one two three)
   access:${arr[0]}
@@ -44,38 +40,36 @@
   join:IFS=", "; echo "${arr[*]}"
   split:IFS="," read -ra arr <<< "$string"
 |
-
 @conditionals |
   if:if [ condition ]; then ...; fi
   ifElse:if [ cond ]; then ...; else ...; fi
   ifElif:if [ c1 ]; then ...; elif [ c2 ]; then ...; fi
   test:[ -f file ] (same as test -f file)
-  stringEqual:[ "$a" = "$b" ]
-  stringNotEqual:[ "$a" != "$b" ]
-  stringEmpty:[ -z "$a" ]
-  stringNotEmpty:[ -n "$a" ]
-  numEqual:[ "$a" -eq "$b" ]
-  numNotEqual:[ "$a" -ne "$b" ]
-  numGreater:[ "$a" -gt "$b" ]
-  numGreaterEqual:[ "$a" -ge "$b" ]
-  numLess:[ "$a" -lt "$b" ]
-  numLessEqual:[ "$a" -le "$b" ]
-  fileExists:[ -f "$file" ]
-  dirExists:[ -d "$dir" ]
-  fileNotEmpty:[ -s "$file" ]
-  fileReadable:[ -r "$file" ]
-  fileWritable:[ -w "$file" ]
-  fileExecutable:[ -x "$file" ]
-  linkExists:[ -L "$link" ]
+  stringEqual:[$a" = "$b]
+  stringNotEqual:[$a" != "$b]
+  stringEmpty:[-z "$a"]
+  stringNotEmpty:[-n "$a"]
+  numEqual:[$a" -eq "$b]
+  numNotEqual:[$a" -ne "$b]
+  numGreater:[$a" -gt "$b]
+  numGreaterEqual:[$a" -ge "$b]
+  numLess:[$a" -lt "$b]
+  numLessEqual:[$a" -le "$b]
+  fileExists:[-f "$file"]
+  dirExists:[-d "$dir"]
+  fileNotEmpty:[-s "$file"]
+  fileReadable:[-r "$file"]
+  fileWritable:[-w "$file"]
+  fileExecutable:[-x "$file"]
+  linkExists:[-L "$link"]
   stringMatch:[[ "$a" == pattern ]]
   regexMatch:[[ "$a" =~ regex ]]
-  logicalAnd:[ cond1 ] && [ cond2 ]
-  logicalOr:[ cond1 ] || [ cond2 ]
-  logicalNot:[ ! cond ]
+  logicalAnd:[cond1 ] && [ cond2]
+  logicalOr:[cond1 ] || [ cond2]
+  logicalNot:[! cond]
   bashDouble:[[ -f file ]] (bash: pattern match, regex)
   case:case "$var" in pattern) ...;; esac
 |
-
 @loops |
   for:for i in 1 2 3; do echo "$i"; done
   forRange:for i in $(seq 1 10); do echo "$i"; done
@@ -86,23 +80,21 @@
   break:break
   continue:continue
   seq:seq 1 10, seq 1 2 10
-  braceExpand:{1..10}, {a..z}, {1..10..2}
+  braceExpand:{1..10}:True,{a..z}:True,{1..10..2:True}
 |
-
 @functions |
   def:func() { echo "hello"; }
   call:func
   args:func arg1 arg2
   accessArgs:$1 $2 $3
   accessAll:$@
-  accessAllQuoted:"$@"
+  accessAllQuoted:$@
   numArgs:$#
   return:return 0 (exit code)
   local:local var="value"
   export:export func() { ... }
   recursive:func() { func; }
 |
-
 @pipesRedirection |
   pipe:cmd1 | cmd2
   stdout:cmd > file (overwrite)
@@ -119,7 +111,6 @@
   null:cmd > /dev/null 2>&1
   pipeFail:set -o pipefail (bash, catches pipe errors)
 |
-
 @commandSubstitution |
   backticks:`cmd` (old, avoid)
   dollarParen:$(cmd) (preferred)
@@ -128,18 +119,16 @@
   process:<(cmd) process substitution (bash)
   fileDescriptor:cmd <(cmd1) <(cmd2)
 |
-
 @quoting |
   double:"$var" (expands variables, preserves spaces)
   single:'$var' (literal, no expansion)
   escape:\$var (escapes single char)
   dollarSingle:$'...' (escape sequences: \n, \t, etc.)
-  backslash:"hello \"world\""
+  backslash:hello \"world\"
   whenDouble:always use "$var" for variables
   whenSingle:when you need literal string
   whenEscape:for individual special chars
 |
-
 @strings |
   length:${#string}
   substring:${string:position:length}
@@ -155,7 +144,6 @@
   endsWith:[[ "$string" == *suffix ]]
   indexOf:expr index "$string" "substring"
 |
-
 @numbers |
   arithmetic:$((a + b))
   multiply:$((a * b))
@@ -164,7 +152,7 @@
   increment:((a++))
   decrement:((a--))
   float:echo "scale=2; $a / $b" | bc
-  compare:[ "$a" -gt "$b" ]
+  compare:[$a" -gt "$b]
   min:max:[ $(( a < b ? a : b )) ] / [ $(( a > b ? a : b )) ]
   random:$RANDOM
   hex:printf '%x\n' 255
@@ -172,7 +160,6 @@
   binary:dc -e 2 o p
   format:printf '%05d\n' 42
 |
-
 @fileOperations |
   create:touch file
   createDir:mkdir -p dir/subdir
@@ -212,7 +199,6 @@
   paste:paste -d',' file1 file2
   column:column -t -s','
 |
-
 @processControl |
   background:cmd &
   backgroundPID:$!
@@ -234,7 +220,6 @@
   screen:screen -S name
   tmux:tmux new -s name
 |
-
 @jobControl |
   suspend:Ctrl+Z
   resume:bg %1
@@ -244,7 +229,6 @@
   nice:nice -n 10 cmd
   renice:renice -n 10 -p PID
 |
-
 @networking |
   download:wget url
   downloadQuiet:wget -q url
@@ -262,7 +246,6 @@
   dig:dig example.com
   nslookup:nslookup example.com
 |
-
 @security |
   checkRoot:if [ "$(id -u)" -ne 0 ]; then echo "Run as root"; exit 1; fi
   sanitize:input validation, quote variables
@@ -274,7 +257,6 @@
   randomHex:openssl rand -hex 16
   sslCheck:echo | openssl s_client -connect host:443
 |
-
 @logging |
   info:echo "[INFO] message"
   warn:echo "[WARN] message" >&2
@@ -285,7 +267,6 @@
   colorRed:echo -e "\033[0;31mFAIL\033[0m"
   colorYellow:echo -e "\033[0;33mWARN\033[0m"
 |
-
 @commonPatterns |
   exitOnError:set -euo pipefail
   requireCommand:command -v cmd >/dev/null 2>&1 || { echo "cmd required"; exit 1; }
@@ -300,11 +281,9 @@
   progressBar:printf '\r[%-50s] %d%%' $(printf '#%.0s' {1..$pct}) $pct
   confirmDestructive:read -p "Delete ALL? (type 'yes'): " confirm; [ "$confirm" = "yes" ]
 |
-
 @gotchas |
   unquotedVars:$var breaks on spaces → always "$var"
   wordSplitting:for i in $list → use "${arr[@]}"
-  globExpansion:rm $file → rm "$file"
   iFS:IFS=',' read -ra arr <<< "a,b,c"
   exitCode:$? is exit code of last command
   errexit:set -e doesn't catch all failures

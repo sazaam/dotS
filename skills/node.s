@@ -1,7 +1,5 @@
 # Node.js Knowledge Base
-
 @meta |topic:node|lastUpdated:2026-08-17|confidence:high|
-
 @basics |
   version:22.x LTS
   runtime:V8 engine
@@ -10,7 +8,6 @@
   configFile:package.json
   lockFile:package-lock.json, pnpm-lock.yaml, yarn.lock
 |
-
 @debugging |
   inspect:node --inspect server.js
   inspectBrk:node --inspect-brk server.js
@@ -23,7 +20,6 @@
   --trace-warnings:show stack traces for warnings
   --throw-warnings:throw on warnings
 |
-
 @performance |
   profiling:node --prof server.js
   processV8:node --prof-process isolate-*.log
@@ -35,7 +31,6 @@
   io:clinic bubbleprof
   memory2:clinic heapprofile
 |
-
 @errors |
   uncaught:process.on('uncaughtException', handler)
   unhandled:process.on('unhandledRejection', handler)
@@ -46,7 +41,6 @@
   tryCatch:try { ... } catch (e) { ... }
   asyncCatch:unhandled in promises
 |
-
 @streaming |
   readable:fs.createReadStream('file.txt')
   writable:fs.createWriteStream('file.txt')
@@ -57,7 +51,6 @@
   highWaterMark:default 16KB
   asyncIter:for await (const chunk of stream)
 |
-
 @http |
   createServer:http.createServer(handler)
   express:const app = express()
@@ -68,7 +61,6 @@
   helmet:app.use(helmet())
   rateLimit:express-rate-limit
 |
-
 @fileSystem |
   readFile:fs.readFileSync('file.txt', 'utf8')
   writeFile:fs.writeFileSync('file.txt', 'data')
@@ -82,7 +74,6 @@
   watch:fs.watch('dir', handler)
   tempDir:fs.mkdtempSync(os.tmpdir())
 |
-
 @async |
   promise:new Promise((resolve, reject) => {...})
   async:async function name() { await ... }
@@ -93,7 +84,6 @@
   delay:new Promise(r => setTimeout(r, ms))
   queue:p-limit for concurrency control
 |
-
 @process |
   argv:process.argv
   env:process.env
@@ -107,7 +97,6 @@
   queueMicrotask:queueMicrotask(cb)
   stdout:process.stdout.write('data')
 |
-
 @childProcess |
   exec:child_process.exec(cmd, cb)
   execSync:child_process.execSync(cmd)
@@ -117,7 +106,6 @@
   execFile:child_process.execFile(file, args)
   detach:detached: true, stdio: 'ignore'
 |
-
 @modules |
   create:module.exports = {...}
   import:import pkg from 'package'
@@ -128,7 +116,6 @@
   dirname:import.meta.dirname
   filename:import.meta.filename
 |
-
 @networking |
   dns:dns.lookup('example.com', cb)
   dnsResolve:dns.resolve4('example.com', cb)
@@ -138,7 +125,6 @@
   websocket:ws package
   fetch:globalThis.fetch(url) (built-in)
 |
-
 @security |
   crypto:crypto.createHash('sha256')
   randomBytes:crypto.randomBytes(32)
@@ -150,7 +136,6 @@
   sanitize:user input validation
   cors:configure allowed origins
 |
-
 @gotchas |
   eventLoop:blocking: sync operations in handler
   eventLoopFix:use async/await, worker threads
@@ -159,12 +144,10 @@
   requireCyclic:circular dependencies
   requireCyclicFix:lazy require, restructure
   unhandledPromise:missing .catch()
-  unhandledPromiseFix:process.on('unhandledRejection')
   encoding:always specify 'utf8' in readFile
   pathJoin:path.join() not string concat
   pathRelative:path.relative() for relative paths
 |
-
 @testing |
   jest:npm test (jest.config.js)
   vitest:npx vitest
@@ -176,7 +159,6 @@
   watch:npx jest --watch
   snapshot:npx jest --updateSnapshot
 |
-
 @tooling |
   nodemon:nodemon server.js
   tsx:tsx watch server.ts
@@ -187,7 +169,6 @@
   prettier:npx prettier --write src/
   typescript:tsc for type checking
 |
-
 @run buildDeploy |
   1.cmd:npm ci --production
   1.onFail:install failed — check package-lock.json
@@ -201,7 +182,6 @@
   5.expect:200
   5.onFail:site not responding — check server logs
 |
-
 @run devSetup |
   1.cmd:npm ci
   1.onFail:install failed — delete node_modules and retry
@@ -210,7 +190,6 @@
   3.cmd:npm run dev
   3.note:starts dev server with hot reload
 |
-
 @run testSuite |
   1.cmd:npm test
   1.onFail:tests failed — check output for details
@@ -219,7 +198,6 @@
   3.cmd:npx tsc --noEmit 2>/dev/null
   3.onFail:type errors — fix before committing
 |
-
 @run productionCheck |
   1.cmd:node --max-old-space-size=4096 server.js &
   1.note:start with increased heap if needed
