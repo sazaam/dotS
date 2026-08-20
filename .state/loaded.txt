@@ -19,3 +19,5 @@ skills/strawexpress.s
 skills/strawnode.s
 skills/betweenjs.s
 skills/type.s
+skills/writing-skill.s
+skills/blender-python.s

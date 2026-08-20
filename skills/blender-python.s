@@ -6,6 +6,9 @@
   lastUpdated:2026-08-21
   python:3.13
 |
+@dependencies |
+  requires:python.s
+|
 @core |
   module:bpy
   purpose:Python access to Blender's internal data via RNA system

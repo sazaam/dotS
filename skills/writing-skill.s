@@ -6,6 +6,9 @@
   confidence:high
   lastUpdated:2026-08-21
 |
+@dependencies |
+  requires:index.s
+|
 @core |
   purpose:Reference for creating and optimizing .s skill files
   usage:load only when writing or optimizing skills, not for general queries
@@ -68,6 +71,7 @@
   sections:group logically (core, data, runtime, gotchas)
   includeAll:every block should appear in exactly one section
   quickRef:s get skill.s @blockName - show how to load
+  newBlocks:@dependencies @mega @mutations @pollination
 |
 @versioning |
   versionDetect:bpy.app.version returns (major, minor, patch)
@@ -99,6 +103,32 @@
   useOptimizer:always use `s optimize` for optimization, never manual edits
   appendOnly:may append NEW content to locked files, but never modify existing
   osProtect:s lock makes files read-only (chmod -w), unlock restores (chmod +w)
+|
+@dependencies |
+  requires:index.s
+  addBlock:add @dependencies block with requires:key
+  resolve:s deps <skill> shows dependencies
+  loadAll:s load <skill> loads skill + all dependencies
+  graph:s graph shows all dependency relationships
+|
+@mega |
+  purpose:combine multiple skills into composite bundles
+  create:s mega create <name> <skill1> <skill2> ...
+  list:s mega list shows all mega-skills
+  load:s mega load <name> loads all skills in bundle
+  show:s mega show <name> shows bundle contents
+|
+@mutations |
+  purpose:create skill variants for specific contexts
+  create:s mutate create <base_skill> <context> [name]
+  list:s mutate list shows all mutations
+  show:s mutate show <name> shows mutation details
+|
+@pollination |
+  purpose:cross-pollinate skills by sharing patterns
+  list:s pollinate list shows all skills with their blocks
+  compare:s pollinate <skill1> <skill2> shows common/different blocks
+  all:s pollinate --all shows all cross-pollination opportunities
 |
 @gotchas |
   pipeInValue:pipe inside a value is SAFE only if not alone on line

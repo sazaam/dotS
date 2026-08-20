@@ -89,6 +89,17 @@
   typeSlots:s get skills/type.s @slots
   typeUsage:s get skills/type.s @usage
   typeQuirks:s get skills/type.s @quirks
+  blenderDeps:s deps blender-python
+  blenderLoad:s load blender-python
+  graphShow:s graph
+  graphDeps:s graph --deps
+  megaList:s mega list
+  megaCreate:s mega create web-stack node.s docker.s nginx.s
+  megaLoad:s mega load web-stack
+  mutateList:s mutate list
+  mutateCreate:s mutate create blender-python "game development"
+  pollinateList:s pollinate list
+  pollinateAll:s pollinate --all
 |
 
 @runQuickRef |
@@ -227,5 +238,7 @@
   strawnode.s:blocks:7|topic:strawnode boot framework|keyBlocks:@boot @modules @sectionSystem @jadeTemplates
   betweenjs.s:blocks:11|topic:BetweenJS animation engine|keyBlocks:@tweenHierarchy @easing @publicAPI @color @modernEnhancements
   type.s:blocks:8|topic:Type.js OOP class system|keyBlocks:@core @packages @slots @usage @quirks
+  blender-python.s:blocks:17|topic:blender python API bpy 5.2+|keyBlocks:@core @modules @operators @bmesh @gpu @gotchas
+  writing-skill.s:blocks:17|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @patterns @optimize @gotchas @dependencies @mega @mutations @pollination
   index.s:blocks:4|topic:dotS knowledge base index|keyBlocks:@index @byTask @quickRef @runQuickRef
 |

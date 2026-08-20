@@ -33,6 +33,9 @@ STATE_DIR = CTX_DIR / ".state"
 LOADED_FILE = STATE_DIR / "loaded.txt"
 SESSION_LOG = STATE_DIR / "session.log"
 LOCKED_FILE = CTX_DIR / "skills" / ".locked"
+DEPS_DIR = CTX_DIR / "skills" / ".deps"
+MEGA_DIR = CTX_DIR / "skills" / ".mega"
+MUTATIONS_DIR = CTX_DIR / "skills" / ".mutations"
 
 
 def resolve_file(filename: str) -> Path:
@@ -111,6 +114,147 @@ def _is_locked(skill_name: str) -> bool:
     if not skill_name.endswith('.s'):
         skill_name += '.s'
     return skill_name in _get_locked()
+
+
+# ── Dependency Graph ──────────────────────────────────────────────────────────
+
+def _get_skill_deps(skill_name: str) -> list:
+    """Get dependencies for a skill from its @dependencies block."""
+    if not skill_name.endswith('.s'):
+        skill_name += '.s'
+    
+    filepath = CTX_DIR / "skills" / skill_name
+    if not filepath.exists():
+        return []
+    
+    sf = SFile(filepath)
+    deps_block = sf.get_block('dependencies')
+    if not deps_block:
+        return []
+    
+    deps = []
+    for key, val in deps_block.props.items():
+        if isinstance(val, str) and val:
+            deps.append(val)
+        elif isinstance(val, list):
+            deps.extend(val)
+    return deps
+
+
+def _resolve_all_deps(skill_name: str, visited: set = None) -> list:
+    """Recursively resolve all dependencies for a skill."""
+    if visited is None:
+        visited = set()
+    
+    if not skill_name.endswith('.s'):
+        skill_name += '.s'
+    
+    if skill_name in visited:
+        return []
+    visited.add(skill_name)
+    
+    deps = _get_skill_deps(skill_name)
+    all_deps = []
+    
+    for dep in deps:
+        if not dep.endswith('.s'):
+            dep += '.s'
+        if dep not in visited:
+            all_deps.append(dep)
+            all_deps.extend(_resolve_all_deps(dep, visited))
+    
+    return list(dict.fromkeys(all_deps))  # Remove duplicates, preserve order
+
+
+def _save_deps_graph(skill_name: str, deps: list):
+    """Save resolved dependencies to cache file."""
+    DEPS_DIR.mkdir(parents=True, exist_ok=True)
+    cache_file = DEPS_DIR / f"{skill_name}.deps"
+    cache_file.write_text('\n'.join(deps))
+
+
+def _load_deps_cache(skill_name: str) -> list:
+    """Load cached dependencies if available."""
+    if not skill_name.endswith('.s'):
+        skill_name += '.s'
+    
+    cache_file = DEPS_DIR / f"{skill_name}.deps"
+    if cache_file.exists():
+        return [l.strip() for l in cache_file.read_text().splitlines() if l.strip()]
+    return None
+
+
+# ── MegaSkills ────────────────────────────────────────────────────────────────
+
+def _get_mega_skills() -> dict:
+    """Get all mega-skills from .mega directory."""
+    mega = {}
+    if MEGA_DIR.exists():
+        for f in MEGA_DIR.glob("*.mega"):
+            skills = [l.strip() for l in f.read_text().splitlines() if l.strip()]
+            mega[f.stem] = skills
+    return mega
+
+
+def _create_mega_skill(name: str, skills: list):
+    """Create a mega-skill file."""
+    MEGA_DIR.mkdir(parents=True, exist_ok=True)
+    mega_file = MEGA_DIR / f"{name}.mega"
+    mega_file.write_text('\n'.join(skills) + '\n')
+
+
+def _load_mega_skill(name: str) -> list:
+    """Load all skills in a mega-skill."""
+    mega = _get_mega_skills()
+    if name not in mega:
+        return []
+    
+    skills = mega[name]
+    loaded = _get_loaded()
+    loaded_count = 0
+    
+    for skill in skills:
+        if not skill.endswith('.s'):
+            skill += '.s'
+        
+        skill_path = f"skills/{skill}"
+        if skill_path not in loaded:
+            filepath = CTX_DIR / "skills" / skill
+            if filepath.exists():
+                _track_loaded(skill_path)
+                loaded_count += 1
+    
+    return skills
+
+
+# ── Skill Mutations ───────────────────────────────────────────────────────────
+
+def _get_mutations() -> dict:
+    """Get all skill mutations from .mutations directory."""
+    mutations = {}
+    if MUTATIONS_DIR.exists():
+        for f in MUTATIONS_DIR.glob("*.mut"):
+            lines = f.read_text().splitlines()
+            if len(lines) >= 2:
+                parent = lines[0].strip()
+                context = lines[1].strip()
+                mutations[f.stem] = {"parent": parent, "context": context}
+    return mutations
+
+
+def _create_mutation(base_skill: str, context: str, name: str = None) -> str:
+    """Create a mutation of a skill for a specific context."""
+    if not base_skill.endswith('.s'):
+        base_skill += '.s'
+    
+    if not name:
+        name = f"{base_skill.replace('.s', '')}-{context.lower().replace(' ', '-')}"
+    
+    MUTATIONS_DIR.mkdir(parents=True, exist_ok=True)
+    mut_file = MUTATIONS_DIR / f"{name}.mut"
+    mut_file.write_text(f"{base_skill}\n{context}\n")
+    
+    return name
 
 
 def _auto_load_skills_from_index(index_sf: SFile):
@@ -844,6 +988,9 @@ def cmd_find(args):
                                 print(block.render())
                 else:
                     print(f"  file not found: {fname}", file=sys.stderr)
+        elif len(parts) >= 2 and parts[0] == 's' and parts[1] not in ('get', 'run'):
+            # command like "s graph", "s deps blender-python", etc.
+            print(f"  {key}: {val}")
         elif isinstance(val, str):
             # bare file reference like "docker.s linux.s ssh.s" or "strawexpress.s@express"
             for token in val.split():
@@ -2028,6 +2175,302 @@ def cmd_locked(args):
         print(f"\n  use 's unlock <skill>' to unlock")
 
 
+def cmd_deps(args):
+    """Show dependencies for a skill.
+    
+    Usage: s deps <skill>
+           s deps blender-python
+           s deps --all
+    """
+    if not args:
+        print("Usage: s deps <skill> | --all", file=sys.stderr)
+        sys.exit(1)
+    
+    if '--all' in args:
+        # Show all skills and their dependencies
+        skills_dir = CTX_DIR / "skills"
+        print("  dependency graph:")
+        for f in sorted(skills_dir.glob("*.s")):
+            if f.name.startswith('.'):
+                continue
+            deps = _get_skill_deps(f.name)
+            if deps:
+                print(f"    {f.name} -> {', '.join(deps)}")
+        return
+    
+    skill_name = args[0]
+    if not skill_name.endswith('.s'):
+        skill_name += '.s'
+    
+    deps = _get_skill_deps(skill_name)
+    if not deps:
+        print(f"  {skill_name}: no dependencies")
+    else:
+        print(f"  {skill_name} depends on:")
+        for dep in deps:
+            print(f"    - {dep}")
+
+
+def cmd_load(args):
+    """Load a skill and all its dependencies.
+    
+    Usage: s load <skill>
+           s load blender-python
+    """
+    if not args:
+        print("Usage: s load <skill>", file=sys.stderr)
+        sys.exit(1)
+    
+    skill_name = args[0]
+    if not skill_name.endswith('.s'):
+        skill_name += '.s'
+    
+    # Resolve all dependencies
+    all_deps = _resolve_all_deps(skill_name)
+    
+    # Add the skill itself
+    to_load = [skill_name] + all_deps
+    loaded = _get_loaded()
+    loaded_count = 0
+    
+    for skill in to_load:
+        skill_path = f"skills/{skill}"
+        if skill_path not in loaded:
+            filepath = CTX_DIR / "skills" / skill
+            if filepath.exists():
+                _track_loaded(skill_path)
+                loaded_count += 1
+                print(f"  loaded: {skill}")
+            else:
+                print(f"  not found: {skill}")
+        else:
+            print(f"  already loaded: {skill}")
+    
+    if loaded_count > 0:
+        print(f"\n  {loaded_count} skill(s) loaded")
+    else:
+        print("\n  all skills already loaded")
+
+
+def cmd_graph(args):
+    """Show dependency graph.
+    
+    Usage: s graph
+           s graph --deps
+    """
+    show_deps = '--deps' in args
+    
+    print("  skill dependency graph:")
+    print()
+    
+    skills_dir = CTX_DIR / "skills"
+    for f in sorted(skills_dir.glob("*.s")):
+        if f.name.startswith('.'):
+            continue
+        deps = _get_skill_deps(f.name)
+        if deps:
+            print(f"  {f.name}")
+            for dep in deps:
+                print(f"    -> {dep}")
+    
+    if show_deps:
+        print()
+        print("  resolved dependencies:")
+        for f in sorted(skills_dir.glob("*.s")):
+            if f.name.startswith('.'):
+                continue
+            all_deps = _resolve_all_deps(f.name)
+            if all_deps:
+                print(f"  {f.name}: {', '.join(all_deps)}")
+
+
+def cmd_mega(args):
+    """Manage mega-skills (skill bundles).
+    
+    Usage: s mega list
+           s mega create <name> <skill1> <skill2> ...
+           s mega load <name>
+           s mega show <name>
+    """
+    if not args:
+        print("Usage: s mega <list|create|load|show>", file=sys.stderr)
+        sys.exit(1)
+    
+    action = args[0]
+    
+    if action == 'list':
+        mega = _get_mega_skills()
+        if not mega:
+            print("  no mega-skills defined")
+        else:
+            print(f"  mega-skills ({len(mega)}):")
+            for name, skills in mega.items():
+                print(f"    {name}: {', '.join(skills)}")
+    
+    elif action == 'create':
+        if len(args) < 3:
+            print("Usage: s mega create <name> <skill1> <skill2> ...", file=sys.stderr)
+            sys.exit(1)
+        
+        name = args[1]
+        skills = args[2:]
+        _create_mega_skill(name, skills)
+        print(f"  created mega-skill: {name}")
+    
+    elif action == 'load':
+        if len(args) < 2:
+            print("Usage: s mega load <name>", file=sys.stderr)
+            sys.exit(1)
+        
+        name = args[1]
+        skills = _load_mega_skill(name)
+        if skills:
+            print(f"  loaded mega-skill: {name} ({len(skills)} skills)")
+        else:
+            print(f"  mega-skill not found: {name}")
+    
+    elif action == 'show':
+        if len(args) < 2:
+            print("Usage: s mega show <name>", file=sys.stderr)
+            sys.exit(1)
+        
+        name = args[1]
+        mega = _get_mega_skills()
+        if name in mega:
+            print(f"  mega-skill: {name}")
+            for skill in mega[name]:
+                print(f"    - {skill}")
+        else:
+            print(f"  mega-skill not found: {name}")
+    
+    else:
+        print(f"  unknown action: {action}", file=sys.stderr)
+        print("  available: list, create, load, show", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_mutate(args):
+    """Create or list skill mutations.
+    
+    Usage: s mutate list
+           s mutate create <base_skill> <context> [name]
+           s mutate show <name>
+    """
+    if not args:
+        print("Usage: s mutate <list|create|show>", file=sys.stderr)
+        sys.exit(1)
+    
+    action = args[0]
+    
+    if action == 'list':
+        mutations = _get_mutations()
+        if not mutations:
+            print("  no mutations defined")
+        else:
+            print(f"  mutations ({len(mutations)}):")
+            for name, info in mutations.items():
+                print(f"    {name}: {info['parent']} for {info['context']}")
+    
+    elif action == 'create':
+        if len(args) < 3:
+            print("Usage: s mutate create <base_skill> <context> [name]", file=sys.stderr)
+            sys.exit(1)
+        
+        base_skill = args[1]
+        context = args[2]
+        name = args[3] if len(args) > 3 else None
+        
+        mut_name = _create_mutation(base_skill, context, name)
+        print(f"  created mutation: {mut_name}")
+    
+    elif action == 'show':
+        if len(args) < 2:
+            print("Usage: s mutate show <name>", file=sys.stderr)
+            sys.exit(1)
+        
+        name = args[1]
+        mutations = _get_mutations()
+        if name in mutations:
+            info = mutations[name]
+            print(f"  mutation: {name}")
+            print(f"    base: {info['parent']}")
+            print(f"    context: {info['context']}")
+        else:
+            print(f"  mutation not found: {name}")
+    
+    else:
+        print(f"  unknown action: {action}", file=sys.stderr)
+        print("  available: list, create, show", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_pollinate(args):
+    """Cross-pollinate skills (share patterns).
+    
+    Usage: s pollinate list
+           s pollinate <skill1> <skill2>
+           s pollinate --all
+    """
+    if not args:
+        print("Usage: s pollinate <skill1> <skill2> | --all", file=sys.stderr)
+        sys.exit(1)
+    
+    if args[0] == 'list':
+        # Show all skills with their patterns
+        print("  skill patterns:")
+        skills_dir = CTX_DIR / "skills"
+        for f in sorted(skills_dir.glob("*.s")):
+            if f.name.startswith('.'):
+                continue
+            sf = SFile(f)
+            blocks = [b.tag for b in sf.blocks if not b.tag.startswith('_')]
+            if blocks:
+                print(f"    {f.name}: {', '.join(blocks[:5])}")
+        return
+    
+    if args[0] == '--all':
+        # Show all possible cross-pollinations
+        skills_dir = CTX_DIR / "skills"
+        skills = [f.name for f in sorted(skills_dir.glob("*.s")) if not f.name.startswith('.')]
+        
+        print("  cross-pollination opportunities:")
+        for i, s1 in enumerate(skills):
+            for s2 in skills[i+1:]:
+                sf1 = SFile(CTX_DIR / "skills" / s1)
+                sf2 = SFile(CTX_DIR / "skills" / s2)
+                blocks1 = set(b.tag for b in sf1.blocks)
+                blocks2 = set(b.tag for b in sf2.blocks)
+                common = blocks1 & blocks2
+                if common:
+                    print(f"    {s1} <-> {s2}: {', '.join(common)}")
+        return
+    
+    if len(args) < 2:
+        print("Usage: s pollinate <skill1> <skill2>", file=sys.stderr)
+        sys.exit(1)
+    
+    skill1, skill2 = args[0], args[1]
+    if not skill1.endswith('.s'):
+        skill1 += '.s'
+    if not skill2.endswith('.s'):
+        skill2 += '.s'
+    
+    sf1 = SFile(CTX_DIR / "skills" / skill1)
+    sf2 = SFile(CTX_DIR / "skills" / skill2)
+    
+    blocks1 = set(b.tag for b in sf1.blocks)
+    blocks2 = set(b.tag for b in sf2.blocks)
+    
+    common = blocks1 & blocks2
+    only1 = blocks1 - blocks2
+    only2 = blocks2 - blocks1
+    
+    print(f"  cross-pollination: {skill1} <-> {skill2}")
+    print(f"    common blocks: {', '.join(common) if common else 'none'}")
+    print(f"    only in {skill1}: {', '.join(only1) if only1 else 'none'}")
+    print(f"    only in {skill2}: {', '.join(only2) if only2 else 'none'}")
+
+
 def cmd_run(args):
     """Execute a @run playbook from a .s file.
     
@@ -2217,6 +2660,11 @@ COMMANDS = {
     'lock': cmd_lock,
     'unlock': cmd_unlock,
     'locked': cmd_locked,
+    'load': cmd_load,
+    'deps': cmd_deps,
+    'mega': cmd_mega,
+    'mutate': cmd_mutate,
+    'pollinate': cmd_pollinate,
     'help': cmd_help,
 }
 
