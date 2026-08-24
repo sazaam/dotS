@@ -14,3 +14,8 @@
 2026-08-21T06:50:47.665347|get|index.s @quickRef|
 2026-08-21T06:50:50.853367|get|index.s @quickRef|
 2026-08-21T06:54:56.937151|get|skills/writing-skill.s @index|
+2026-08-22T16:28:52.945705|get|skills/ffmpeg.s @pitchFormant|
+2026-08-23T15:08:39.373844|add|skills/ffmpeg.s @trimSilence calibrate:sweep silencedetect noise=-40/-35/-30 d=0.15 on RAW takes first; onset must stay stable as threshold rises - if onset JUMPS LATER, floor is above that threshold (AC hum) - pick highest threshold where every sampled head reads clean (~0.2-0.5s)|@trimSilence.None+=calibrate:sweep silencedetect noise=-40/-35/-30 d=0.15 on RAW takes first; onset must stay stable as threshold rises - if onset JUMPS LATER, floor is above that threshold (AC hum) - pick highest threshold where every sampled head reads clean (~0.2-0.5s)
+2026-08-23T15:08:39.466015|add|skills/ffmpeg.s @gotchas agcFloor:recorders with AGC + room noise defeat fixed dB thresholds - verify against raw sources not trimmed output; trimmed files have <PAD seconds of silence left, detection window d must be smaller than that|@gotchas.None+=agcFloor:recorders with AGC + room noise defeat fixed dB thresholds - verify against raw sources not trimmed output; trimmed files have <PAD seconds of silence left, detection window d must be smaller than that
+2026-08-23T15:08:39.546706|set|skills/ffmpeg.s @meta lastUpdated 2026-08-23|@meta.None=lastUpdated 2026-08-23
+2026-08-24T11:58:23.183341|get|skills/audio-drama-pipeline.s @gotchas|

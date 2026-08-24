@@ -22,6 +22,7 @@
   betweenjs.s:blocks:11|topic:BetweenJS animation engine|keyBlocks:@tweenHierarchy @easing @publicAPI @color @modernEnhancements
   blender-python.s:blocks:19|topic:blender python API bpy 5.2+|keyBlocks:@core @modules @operators @bmesh @gpu @vse @gotchas
   ffmpeg.s:blocks:13|topic:ffmpeg audio video processing|keyBlocks:@trimSilence @pitchFormant @loudness @concat @gotchas @run
+  audio-drama-pipeline.s:blocks:9|topic:per-line theatrical audio drama recording pipeline|keyBlocks:@flow @trim @pacing @loudness @gotchas @futureProject
   writing-skill.s:blocks:17|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @patterns @optimize @gotchas @dependencies @mega @mutations @pollination
 |
 @byTask |
@@ -62,6 +63,9 @@
   audioProcessing:ffmpeg.s@trimSilence ffmpeg.s@loudness
   pitchShift:ffmpeg.s@pitchFormant
   audioConcat:ffmpeg.s@concat
+  dramaRecording:audio-drama-pipeline.s
+  dramaTrim:audio-drama-pipeline.s@trim ffmpeg.s@trimSilence
+  dramaAssembly:audio-drama-pipeline.s@flow audio-drama-pipeline.s@loudness
   blenderVSE:blender-python.s@vse
   writeSkill:writing-skill.s
   optimizeSkill:writing-skill.s@tokens writing-skill.s@optimize

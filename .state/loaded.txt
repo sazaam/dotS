@@ -21,3 +21,5 @@ skills/betweenjs.s
 skills/type.s
 skills/writing-skill.s
 skills/blender-python.s
+skills/ffmpeg.s
+skills/audio-drama-pipeline.s

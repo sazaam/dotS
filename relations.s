@@ -3,3 +3,4 @@
 # $a < $b  means a is used by b
 # $a ! $b  means a conflicts with b
 # $a ~ $b  means a is related to b
+$ffmpeg ~ $blender-python  # ffmpeg DSP feeds VSE timeline assembly
