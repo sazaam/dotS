@@ -3,8 +3,9 @@
   topic:blender-python
   versions:5.2+
   confidence:high
-  lastUpdated:2026-08-21
+  lastUpdated:2026-08-22
   python:3.13
+  verified:"VSE audio strips, markers, headless -b -P on 4.5.12-lts"
 |
 @dependencies |
   requires:python.s
@@ -209,6 +210,10 @@
   fileIcon:StringProperty(subtype='FILE_PATH') auto-adds folder icon - don't add another
   iconCrash:invalid icon name crashes silently - panel won't render
   wmPropCleanup:always del bpy.types.WindowManager.my_prop in unregister()
+  pythonExpr:--python-expr does NOT auto-import bpy — start expression with "import bpy"
+  markers:scene.marker_new() does not exist — use scene.timeline_markers.new(name, frame=N)
+  seqAttr:SequenceEditor has no show_frame_overlay — AttributeError on save-time scripts
+  vseView:strips far from frame 0 look "missing" in GUI until Home/Frame All — set scene.frame_end and tell users to Frame All
 |
 @versionGotchas |
   4_0:Principled BSDF socket renames (Subsurface→Subsurface Weight)
@@ -292,6 +297,25 @@
   data:@dataLifeCycle @idProperties @animation @materialNodes @geometryNodes
   internal:@bmesh @gpu @blf @imbuf
   runtime:@handlers @timers @msgbus @depsgraph @renderEngine
+  vse:@vse @audioVST
   addons:@extensions @properties @gotchas @versionGotchas @backgroundMode
   execution:@run
 |
+@vse |
+  purpose:Video Sequence Editor automation for timelines, rough cuts, audio assembly
+  create:bpy.context.scene.sequence_editor_create()
+  access:se = scene.sequence_editor; strips = getattr(se,'strips',None) or se.sequences (4.4+ renamed)
+  soundStrip:coll.new_sound(name="C01_L001_ROLE", filepath="/abs/take.wav", channel=1, frame_start=N)
+  readBack:strip.frame_final_start / frame_final_end after creation (frames at scene fps)
+  markers:scene.timeline_markers.new("제1장", frame=round(t*fps)) — chapter/section jumps
+  sceneLength:scene.frame_start=0; scene.frame_end=max_strip_end (else duration lies)
+  save:bpy.ops.wm.save_as_mainfile(filepath="/abs/path.blend") — absolute path required
+  generatedFile:regeneration overwrites manual edits — keep tweaks in a Save As copy
+  namingConvention:encode sort keys in strip names (chapter_line_role) for ordered iteration
+|
+@audioVST |
+  vstSupport:Blender has NO native VST/LADSPA plugin hosting — do not attempt bpy.audio.vst
+  builtIn:VSE audio effects limited to volume/pan animation on strips via keyframes
+  workflow:do DSP (formant shift, loudnorm) in ffmpeg BEFORE creating sound strips
+  audModule:bpy.data.aud.Sound for playback analysis only, not processing/export
+  external:pipe final mix through ffmpeg/DAW for real effects; Blender = timeline + preview

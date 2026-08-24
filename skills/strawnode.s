@@ -83,7 +83,7 @@
   user:routes/user.js 8 lines stub user route
 |
 @dependencyGraph |
-  strawnode.js:requires type.js and all strawnode_modules/*
+  strawnode.js:requires type.js and all strawnode_modules
   package.json:maps aliases type Express Jade BetweenJS jquery hashchange i18next shadertoylite lazyload
   modgraph:visualizes require.getGraph() edges as interactive SVG tree
 |

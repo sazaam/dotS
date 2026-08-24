@@ -1,5 +1,5 @@
 # dotS Knowledge Base Index
-@meta |type:index|lastUpdated:2026-08-21|totalFiles:15|
+@meta |type:index|lastUpdated:2026-08-22|totalFiles:16|
 @constraints |
   pipe:"|" has three roles: block delimiter, metadata separator, value content
   pipeRule:block ends only when a line is JUST "|" — pipes inside key:value are safe
@@ -20,7 +20,8 @@
   strawexpress.s:blocks:12|topic:strawexpress SPA router|keyBlocks:@architecture @step @express @response @formulate
   strawnode.s:blocks:7|topic:strawnode boot framework|keyBlocks:@boot @modules @sectionSystem @jadeTemplates
   betweenjs.s:blocks:11|topic:BetweenJS animation engine|keyBlocks:@tweenHierarchy @easing @publicAPI @color @modernEnhancements
-  blender-python.s:blocks:17|topic:blender python API bpy 5.2+|keyBlocks:@core @modules @operators @bmesh @gpu @gotchas
+  blender-python.s:blocks:19|topic:blender python API bpy 5.2+|keyBlocks:@core @modules @operators @bmesh @gpu @vse @gotchas
+  ffmpeg.s:blocks:13|topic:ffmpeg audio video processing|keyBlocks:@trimSilence @pitchFormant @loudness @concat @gotchas @run
   writing-skill.s:blocks:17|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @patterns @optimize @gotchas @dependencies @mega @mutations @pollination
 |
 @byTask |
@@ -57,6 +58,11 @@
   blenderNodes:blender-python.s@geometryNodes blender-python.s@materialNodes
   blenderAnim:blender-python.s@animation
   blenderContext:blender-python.s@context blender-python.s@depsgraph
+  audio:ffmpeg.s
+  audioProcessing:ffmpeg.s@trimSilence ffmpeg.s@loudness
+  pitchShift:ffmpeg.s@pitchFormant
+  audioConcat:ffmpeg.s@concat
+  blenderVSE:blender-python.s@vse
   writeSkill:writing-skill.s
   optimizeSkill:writing-skill.s@tokens writing-skill.s@optimize
 |
@@ -74,6 +80,16 @@
   blenderBMesh:s get blender-python.s @bmesh
   blenderGPU:s get blender-python.s @gpu
   blenderAddon:s get blender-python.s @extensions
+  blenderVSE:s get blender-python.s @vse
+  ffmpegTrim:s get ffmpeg.s @trimSilence
+  ffmpegPitch:s get ffmpeg.s @pitchFormant
+  ffmpegLoudness:s get ffmpeg.s @loudness
+  ffmpegConcat:s get ffmpeg.s @concat
+  ffmpegGotchas:s get ffmpeg.s @gotchas
+  formant:s get ffmpeg.s @pitchFormant
+  loudness:s get ffmpeg.s @loudness
+  trimSilence:s get ffmpeg.s @trimSilence
+  vse:s get blender-python.s @vse
   jsAsync:s get javascript.s @async
   jsArrays:s get javascript.s @arrays
   pythonTypes:s get python.s @types
@@ -152,4 +168,6 @@
   nodeDev:s run node.s @run.devSetup
   nodeTest:s run node.s @run.testSuite
   nodeHealth:s run node.s @run.productionCheck
+  ffmpegNormalize:s run ffmpeg.s @run.normalizeDir
+  ffmpegTrimDir:s run ffmpeg.s @run.trimAllWavs
 |

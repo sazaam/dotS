@@ -123,7 +123,7 @@
   contentType:add_header X-Content-Type-Options nosniff
   xss:add_header X-XSS-Protection '1; mode=block
   referrerPolicy:add_header Referrer-Policy strict-origin-when-cross-origin
-  csp:add_header Content-Security-Policy \"default-src 'self'\
+  csp:add_header Content-Security-Policy default-src 'self'
   disallowMethods:if ($request_method !~ ^(GET|HEAD|POST)$) { return 405; }
   disallowUploadSize:client_max_body_size 10m
   geoBlocking:geo $blocked { default 0; 1.2.3.0/24 1; }
@@ -156,7 +156,7 @@
 @logging |
   accessLog:access_log /var/log/nginx/access.log combined
   errorLog:error_log /var/log/nginx/error.log warn
-  logFormatCustom:log_format custom '$remote_addr - $remote_user [$time_local] \"$request\" $status $body_bytes_sent \"$http_referer\" \"$http_user_agent\" $request_time
+  logFormatCustom:log_format custom '$remote_addr - $remote_user [$time_local] $request $status $body_bytes_sent $http_referer $http_user_agent $request_time
   logFormatWhy:adds request_time for performance tracking
   perSite:access_log /var/log/nginx/mysite.access.log combined if=$loggable
   perSiteCondition:map $request_uri $loggable { default 1; /health 0; /metrics 0; }
