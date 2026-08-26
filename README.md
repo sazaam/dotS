@@ -26,10 +26,10 @@ dotS is a **Python script** that stores knowledge in `.s` files. Instead of verb
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/dots.git
+git clone https://github.com/sazaam/dots.git
 
 # Use the installer (auto-detects location, adds to PATH)
-cd ~/.dotS && ./install-s.sh
+cd ~/.dotS && ./install-dots.sh
 
 source ~/.zshrc  # or ~/.bashrc
 ```
@@ -38,7 +38,7 @@ source ~/.zshrc  # or ~/.bashrc
 
 ```bash
 dots help
-# dotS v0.1.0
+# dots.py - compact state DSL for AI-assisted projects
 ```
 
 ### Portable
@@ -325,7 +325,7 @@ Store your .s files in Obsidian for visual browsing:
 dotS/
 ├── s.py              # main CLI script
 ├── s                 # bash wrapper
-├── install-s.sh      # installer
+├── install-dots.sh      # installer
 ├── index.s           # project index (read first, ~200 tokens)
 ├── relations.s       # dependency graph
 ├── changelog.s       # change history
