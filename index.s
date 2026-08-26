@@ -89,6 +89,10 @@
   typeSlots:s get skills/type.s @slots
   typeUsage:s get skills/type.s @usage
   typeQuirks:s get skills/type.s @quirks
+  mise:s get skills/mise.s
+  miseTools:s get skills/mise.s @tools
+  misePython:s get skills/mise.s @python
+  miseTasks:s get skills/mise.s @tasks
   blenderDeps:s deps blender-python
   blenderLoad:s load blender-python
   graphShow:s graph
@@ -135,6 +139,7 @@
   nodeDev:s run skills/node.s @run.devSetup
   nodeTest:s run skills/node.s @run.testSuite
   nodeHealth:s run skills/node.s @run.productionCheck
+  miseSetup:s run skills/mise.s @run.setup
 |
 
 @byTask |
@@ -189,6 +194,10 @@
   debugging:skills/node.s @debugging
   python:skills/python.s
   python3:skills/python.s
+  mise:skills/mise.s
+  versionManager:skills/mise.s
+  toolVersions:skills/mise.s @tools @config
+  taskRunner:skills/mise.s @tasks
   shell:skills/sh.s
   scripting:skills/sh.s
   bash:skills/sh.s
@@ -239,6 +248,7 @@
   betweenjs.s:blocks:11|topic:BetweenJS animation engine|keyBlocks:@tweenHierarchy @easing @publicAPI @color @modernEnhancements
   type.s:blocks:8|topic:Type.js OOP class system|keyBlocks:@core @packages @slots @usage @quirks
   blender-python.s:blocks:17|topic:blender python API bpy 5.2+|keyBlocks:@core @modules @operators @bmesh @gpu @gotchas
-  writing-skill.s:blocks:17|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @patterns @optimize @gotchas @dependencies @mega @mutations @pollination
+  writing-skill.s:blocks:20|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @honesty @patterns @optimize @gotchas @dependencies @mega @mutations @pollination
+  mise.s:blocks:14|topic:mise tool version manager env tasks|keyBlocks:@tools @config @python @node @env @tasks @gotchas @run
   index.s:blocks:4|topic:dotS knowledge base index|keyBlocks:@index @byTask @quickRef @runQuickRef
 |

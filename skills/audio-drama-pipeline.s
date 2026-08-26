@@ -53,6 +53,7 @@
   trackerLies:progress must read processed/ ids incl batch ranges, not recordings/ raw names
   timestampFiles:recorders emit default names like 2026_08_22_20_03_01.mp3 - flag for user identification
   mp3Tail:libavformat benign final-frame errors on mp3 decode, ignore stderr noise
+  vseEnd:strip.frame_final_end is EXCLUSIVE, scene.frame_end INCLUSIVE - set frame_end to max(frame_final_end)-1 or last clip duration is cut off
 |
 @futureProject |
   copy:scripts + README.md skeleton, drop old recordings/processed/cache/show/backups

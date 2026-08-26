@@ -23,3 +23,5 @@ skills/writing-skill.s
 skills/blender-python.s
 skills/ffmpeg.s
 skills/audio-drama-pipeline.s
+skills/index.s
+skills/mise.s

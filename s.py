@@ -4,6 +4,7 @@
 Usage:
     s init                  Scaffold dotS/ structure
     s get <file> [block]    Read file or specific block
+    s get index.s *         Load index + ALL skills (quote * or it may expand)
     s set <file> <path> <value>  Set a value (path: block.key or block.key.subkey)
     s add <file> <path> <value>  Append to a list
     s list <file>           List all blocks in a file
@@ -568,11 +569,59 @@ def cmd_init(args):
     print(f"  Run: s get index.s")
 
 
-def cmd_get(args):
-    """Read a file or specific block."""
+def _load_all_skills():
+    """Print the index plus every skill file in skills/, tracking each."""
+    idx = resolve_file('index.s')
+    if idx.exists():
+        _track_loaded('index.s')
+        print(idx.read_text(), end='')
+    count = 0
+    for fp in sorted(CTX_DIR.glob("skills/*.s")):
+        rel_name = f"skills/{fp.name}"
+        _track_loaded(rel_name)
+        print(f"\n{'─' * 60}\n  {rel_name}\n{'─' * 60}\n")
+        print(fp.read_text(), end='')
+        count += 1
+    print(f"\n\n  ✓ loaded index + {count} skill(s)")
+
+
+def _is_load_all(args: list) -> bool:
+    """Detect a load-all request, tolerating shell glob expansion.
+
+    Matches 's get *' and 's get index.s *'. When the shell expands
+    '*' into filenames, extra junk args follow; if none resolve to a
+    block of index.s we treat it as an intended wildcard.
+    """
     if not args:
-        print("Usage: s get <file> [block]", file=sys.stderr)
+        return False
+    if args[0] == '*':
+        return True
+    if Path(args[0]).name != 'index.s':
+        return False
+    extras = args[1:]
+    if not extras:
+        return False
+    if '*' in extras:
+        return True
+    # shell-expanded case: no extra arg resolves to a real block
+    filepath = resolve_file('index.s')
+    blocks = {b.tag for b in SFile(filepath).blocks}
+    return all(a.lstrip('@') not in blocks for a in extras)
+
+
+def cmd_get(args):
+    """Read a file, specific block, or all skills via wildcard."""
+    if not args:
+        print("Usage: s get <file> [block|*]", file=sys.stderr)
         sys.exit(1)
+
+    # Wildcard shortcuts (quote the * or rely on expansion tolerance):
+    #   s get index.s *   -> load every skill in skills/
+    #   s get *           -> same
+    if _is_load_all(args):
+        _log_session('get', ['index.s', '*'], f"all:{len(list(CTX_DIR.glob('skills/*.s')))}")
+        _load_all_skills()
+        return
 
     filepath = resolve_file(args[0])
     if not filepath.exists():
@@ -1148,7 +1197,7 @@ def cmd_tokens(args):
             print(f"    {'─' * 55}")
             print(f"    {'TOTAL':30s} {total_tokens:6d} tokens  ({total_chars:6d} bytes)")
             print(f"\n  prose equivalent: ~{total_tokens * 3} tokens (3x)")
-            print(f"  savings per task: ~99% (selective loading)")
+            print(f"  savings per task: ~30-99% (depends on task scope)")
         return
 
     # count specific file/block
@@ -1296,7 +1345,7 @@ def cmd_stats(args):
     print(f"    tokens used (.s):   {tokens_saved:8d}")
     print(f"    tokens saved:       {tokens_saved:8d}  (vs loading full prose)")
     print(f"    prose equivalent:   {prose_tokens * 3:8d}")
-    print(f"    savings ratio:      {99}%")
+    print(f"    savings ratio:      ~30-99% (varies with task scope)")
     print(f"")
     print(f"  cost impact (at ${cost_per_1m}/1M tokens):")
     print(f"    with prose only:    ${cost_with_prose:.4f}")
@@ -1746,6 +1795,7 @@ def cmd_help(args):
         print(f"\n  dotS dir: {CTX_DIR}")
         print(f"\n  examples:")
         print(f"    s get index.s           # read project index")
+        print(f"    s get index.s *         # load index + ALL skills")
         print(f"    s get modules/core.s @t # read TODOs from core module")
         print(f"    s set modules/core.s s.state stable")
         print(f"    s add modules/core.s @t.add 'TODO: thing' priority:high")

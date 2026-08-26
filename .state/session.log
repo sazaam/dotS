@@ -19,3 +19,13 @@
 2026-08-23T15:08:39.466015|add|skills/ffmpeg.s @gotchas agcFloor:recorders with AGC + room noise defeat fixed dB thresholds - verify against raw sources not trimmed output; trimmed files have <PAD seconds of silence left, detection window d must be smaller than that|@gotchas.None+=agcFloor:recorders with AGC + room noise defeat fixed dB thresholds - verify against raw sources not trimmed output; trimmed files have <PAD seconds of silence left, detection window d must be smaller than that
 2026-08-23T15:08:39.546706|set|skills/ffmpeg.s @meta lastUpdated 2026-08-23|@meta.None=lastUpdated 2026-08-23
 2026-08-24T11:58:23.183341|get|skills/audio-drama-pipeline.s @gotchas|
+2026-08-24T12:56:16.529400|get|index.s|
+2026-08-24T13:01:18.472688|get|index.s *|all:25
+2026-08-24T13:01:18.873729|get|index.s *|all:25
+2026-08-24T13:01:24.684659|get|index.s|
+2026-08-24T13:01:24.777324|get|index.s quickRef|
+2026-08-24T13:01:24.861602|get|skills/git.s undoing|
+2026-08-24T14:36:28.420658|get|skills/mise.s python|
+2026-08-24T14:36:28.636969|get|skills/mise.s @run.setup|
+2026-08-24T14:37:13.785141|get|skills/mise.s|
+2026-08-24T14:47:18.550223|get|skills/writing-skill.s @honesty|

@@ -146,7 +146,7 @@ To configure SSL in Nginx, you need to:
 | Markdown docs | 2,000-3,000 | 60-70%     | Medium  |
 | dotS          | 150-200     | **97-99%** | Instant |
 
-### Why 97-99%?
+### Why so high in this case?
 
 1. **No prose** — just key:value pairs
 2. **No explanations** — agent knows what `certPath` means
@@ -406,11 +406,11 @@ s learn nginx.s @ssl.hsts "new value"  # update from websearch
 - **Precise edits** — change one key, not entire files
 - **Portable** — works with any AI agent
 - **Versionable** — git-friendly format
-- **97% token savings** — your context window goes further
+- **Token savings** — typically 30-90%, best cases (single-block loads) reach ~97%
 
 ### For AI Agents
 
-- **Token efficient** — 97-99% less context used
+- **Token efficient** — usually far less context than prose docs
 - **Grepable** — find concepts in milliseconds
 - **Structured** — parseable blocks, not prose
 - **On-demand** — load only what's needed

@@ -65,6 +65,13 @@
   longLines:>200 chars per line wastes tokens
   lonePipe:putting | on its own inside block content breaks parsing
 |
+@honesty |
+  ranges:state savings as measured ranges (30-90%), never flat best-case numbers
+  bestCase:frame exceptional results explicitly ("best case", "single-block load")
+  context:pair big numbers with what produced them (task scope, block size)
+  noOverclaim:avoid absolute promises - docs that oversell lose trust
+  measured:prefer real measurements over theoretical maxima
+|
 @index |
   howTo:list each section and its blocks
   format:sectionName:@block1 @block2 @block3
@@ -72,6 +79,7 @@
   includeAll:every block should appear in exactly one section
   quickRef:s get skill.s @blockName - show how to load
   newBlocks:@dependencies @mega @mutations @pollination
+  honesty:@honesty - claims discipline for docs and savings numbers
 |
 @versioning |
   versionDetect:bpy.app.version returns (major, minor, patch)
