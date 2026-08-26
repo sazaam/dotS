@@ -140,6 +140,8 @@
   nodeTest:s run skills/node.s @run.testSuite
   nodeHealth:s run skills/node.s @run.productionCheck
   miseSetup:s run skills/mise.s @run.setup
+  wappCreate:s get skills/linux-wapp.s @commands
+  wappIsolation:s get skills/linux-wapp.s @isolation
 |
 
 @byTask |
@@ -221,6 +223,9 @@
   moduleSystem:strawnode.s @boot strawnode.s @modules
   execution:skills/git.s @run skills/nginx.s @run skills/docker.s @run skills/linux.s @run skills/ssh.s @run skills/node.s @run
   automation:skills/sh.s skills/docker.s
+  webapps:skills/linux-wapp.s
+  browserApps:skills/linux-wapp.s
+  isolation:skills/linux-wapp.s @isolation
   security:skills/nginx.s @ssl skills/nginx.s @security skills/ssh.s @security
   performance:skills/node.s @performance skills/nginx.s @cache
   logAnalysis:skills/linux.s @logAnalysis
@@ -250,5 +255,6 @@
   blender-python.s:blocks:17|topic:blender python API bpy 5.2+|keyBlocks:@core @modules @operators @bmesh @gpu @gotchas
   writing-skill.s:blocks:20|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @honesty @patterns @optimize @gotchas @dependencies @mega @mutations @pollination
   mise.s:blocks:14|topic:mise tool version manager env tasks|keyBlocks:@tools @config @python @node @env @tasks @gotchas @run
+  linux-wapp.s:blocks:6|topic:wapp isolated browser apps|keyBlocks:@commands @isolation @fileLayout @multiAccount @gotchas
   index.s:blocks:4|topic:dotS knowledge base index|keyBlocks:@index @byTask @quickRef @runQuickRef
 |
