@@ -27,24 +27,11 @@ dotS is a **Python script** that stores knowledge in `.s` files. Instead of verb
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/dots.git
-cd dots
 
-# Run the installer (auto-detects location, adds to PATH)
-./install-s.sh
-source ~/.zshrc  # or ~/.bashrc
-```
-
-### Manual Install
-
-```bash
-# Copy to any location
-cp -r dotS ~/.dotS
-
-# Add to PATH
-export PATH="$HOME/.dotS:$PATH"
-
-# Or use the installer
+# Use the installer (auto-detects location, adds to PATH)
 cd ~/.dotS && ./install-s.sh
+
+source ~/.zshrc  # or ~/.bashrc
 ```
 
 ### Verify
