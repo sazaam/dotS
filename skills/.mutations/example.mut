@@ -1,0 +1,5 @@
+# Example mutation: map a skill to a specific context
+# Format: first line = base skill, second line = context
+# Run: s mutate create <base_skill> <context> [name]
+blender-python.s
+game development

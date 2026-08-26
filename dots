@@ -1,0 +1,4 @@
+#!/bin/bash
+# dots - wrapper for dots.py (global)
+DOTS_DIR="$(cd "$(dirname "$0")" && pwd)"
+exec python3 "$DOTS_DIR/dots.py" "$@"

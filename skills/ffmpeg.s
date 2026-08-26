@@ -99,6 +99,6 @@
 @run trimAllWavs |
   1.cmd:mkdir -p trimmed && for f in *.wav; do ffmpeg -v error -y -i "$f" -af "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.25,areverse,silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.25,areverse" "trimmed/$f"; done
   1.onFail:lower threshold to -50dB if files come out empty (too quiet source)
-  2.cmd:for f in trimmed/*.wav; do ffprobe -v error -show_entries format=duration -of csv=p=0 "$f"; done
+  2.cmd:for f in trimmed *.wav; do ffprobe -v error -show_entries format=duration -of csv=p=0 "$f"; done
   2.note:review durations — zero/near-zero means threshold ate the take
 |

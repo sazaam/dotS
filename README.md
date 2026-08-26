@@ -50,7 +50,7 @@ cd ~/.dotS && ./install-s.sh
 ### Verify
 
 ```bash
-s help
+dots help
 # dotS v0.1.0
 ```
 
@@ -86,9 +86,9 @@ The installer auto-detects its location and configures PATH accordingly.
 ```bash
 # This does NOT happen automatically
 # You must request it:
-s find "nginx"           # smart lookup
+dots find "nginx"           # smart lookup
 # or
-s get skills/nginx.s     # direct load
+dots get skills/nginx.s     # direct load
 # or 
 "load nginx through dotS"             # natural language (agent reads file)
 ```
@@ -185,7 +185,7 @@ Every .s file has a `@meta` block:
 ### The Fallback Logic
 
 ```
-1. s find <topic>
+1. dots find <topic>
    │
    ├─ Found + confidence:high → use .s directly (300 tokens)
    │
@@ -202,9 +202,9 @@ Every .s file has a `@meta` block:
 ### Staleness Detection
 
 ```bash
-s freshness                # check all files
-s freshness nginx.s        # check one file
-s freshness --warn 180     # warn if older than 180 days
+dots freshness                # check all files
+dots freshness nginx.s        # check one file
+dots freshness --warn 180     # warn if older than 180 days
 ```
 
 Output:
@@ -233,7 +233,7 @@ Output:
                            ▼
 ┌─────────────────────────────────────────────────────────┐
 │                  SMART LOOKUP                           │
-│                   s find "ssl"                          │
+│                   dots find "ssl"                          │
 └─────────────────────────────────────────────────────────┘
                            │
                            ▼
@@ -259,7 +259,7 @@ Output:
               ▼            ▼            ▼
 ┌─────────────────────────────────────────────────────────┐
 │              LOAD CONTEXT (~300 tokens)                 │
-│         s get skills/nginx.s @ssl                       │
+│         dots get skills/nginx.s @ssl                       │
 └─────────────────────────────────────────────────────────┘
                            │
                            ▼
@@ -289,7 +289,7 @@ Use [ponytail](https://github.com/DietrichGebert/ponytail) for YAGNI enforcement
 
 ```bash
 # Load ponytail rules
-s get skills/ponytail.s @rules
+dots get skills/ponytail.s @rules
 ```
 
 **Benefits:**
@@ -300,17 +300,17 @@ s get skills/ponytail.s @rules
 #### dotS + Three.js
 
 ```bash
-s find "threejs"           # load Three.js reference
-s find "geometry"          # load geometry patterns
-s find "animation"         # load animation system
+dots find "threejs"           # load Three.js reference
+dots find "geometry"          # load geometry patterns
+dots find "animation"         # load animation system
 ```
 
 #### dotS + GLSL/ShaderToyLite
 
 ```bash
-s find "glsl"              # load GLSL fundamentals
-s find "shaderToy"         # load ShaderToyLite API
-s find "raymarching"       # load raymarching patterns
+dots find "glsl"              # load GLSL fundamentals
+dots find "shaderToy"         # load ShaderToyLite API
+dots find "raymarching"       # load raymarching patterns
 ```
 
 #### dotS + Obsidian
@@ -348,6 +348,7 @@ dotS/
 │   ├── threejs.s
 │   ├── glsl.s
 │   └── ...
+├── .mutations/       # skill variants for specific contexts
 ├── .snaps/           # snapshots for diff
 ├── .state/           # tracking
 └── .sessions/        # session logs
@@ -357,35 +358,84 @@ dotS/
 
 ```bash
 # Reading
-s get index.s              # read file
-s get skills/css.s @flexbox  # read specific block
-s list index.s             # list blocks
+dots get index.s              # read file
+dots get skills/css.s @flexbox  # read specific block
+dots list index.s             # list blocks
 
 # Writing
-s set skills/css.s state done  # set value
-s add skills/css.s @notes "did the thing"  # append to list
+dots set skills/css.s state done  # set value
+dots add skills/css.s @notes "did the thing"  # append to list
 s rm skills/css.s @notes  # remove key
 
 # Discovery
-s find "topic"             # smart lookup
-s blocks                   # list all blocks
-s search "todo"            # grep across all .s files
-s graph                    # show relationships
+dots find "topic"             # smart lookup
+dots blocks                   # list all blocks
+dots search "todo"            # grep across all .s files
+dots graph                    # show relationships
 
 # Analysis
-s tokens                   # count tokens
-s tokens nginx.s @ssl      # count tokens in block
-s stats                    # session usage stats
+dots tokens                   # count tokens
+dots tokens nginx.s @ssl      # count tokens in block
+dots stats                    # session usage stats
 
 # Maintenance
-s freshness                # check staleness
-s validate                 # check parse errors
-s snap                     # snapshot for diff
-s diff                     # show changes since snap
+dots freshness                # check staleness
+dots validate                 # check parse errors
+dots snap                     # snapshot for diff
+dots diff                     # show changes since snap
 
 # Learning
-s learn nginx.s @ssl.hsts "new value"  # update from websearch
+dots learn nginx.s @ssl.hsts "new value"  # update from websearch
 ```
+
+## Mutations
+
+Mutations create skill variants for specific contexts. A mutation maps a base skill to a context, so when you ask about that topic, the right skill is loaded.
+
+```bash
+# Create a mutation
+dots mutate create blender-python "game development"
+
+# List all mutations
+dots mutate list
+
+# Show mutation details
+dots mutate show blender-game
+```
+
+A mutation file (`.mutations/<name>.mut`) is two lines:
+```
+blender-python.s
+game development
+```
+
+This means: "when the user asks about game development, load `blender-python.s`."
+
+## Pollination
+
+Pollination compares skills to find shared patterns. It's read-only — no files are created.
+
+```bash
+# List all skills with their block names
+dots pollinate list
+
+# Compare two specific skills
+dots pollinate nginx docker
+
+# Show all cross-pollination opportunities across every skill pair
+dots pollinate --all
+```
+
+Example output of `dots pollinate nginx sh`:
+
+```
+  cross-pollination: nginx.s <-> sh.s
+    common blocks: security, logging, commonPatterns
+    only in nginx.s: ...
+    only in sh.s: ...
+```
+
+Boilerplate blocks (`@meta`, `@gotchas`, `@run`, `@basics`, etc.) are skipped — only semantically meaningful overlaps are shown.
 
 ## Key Principles
 
@@ -507,9 +557,9 @@ To set up SSL in Nginx, you'll need to:
 ### Updating Existing Skills
 
 ```bash
-s set skills/topic.s @meta lastUpdated 2026-08-18
-s set skills/topic.s @ssl hsts "max-age=63072000"
-s add skills/topic.s @gotchas "new gotcha discovered"
+dots set skills/topic.s @meta lastUpdated 2026-08-18
+dots set skills/topic.s @ssl hsts "max-age=63072000"
+dots add skills/topic.s @gotchas "new gotcha discovered"
 ```
 
 ### When to Update
@@ -532,5 +582,5 @@ Sazaam
 **Remember:** The best context is the one you don't have to load.
 
 ```bash
-s get index.s  # Start here
+dots get index.s  # Start here
 ```

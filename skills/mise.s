@@ -61,8 +61,8 @@
 |
 @env |
   literal:'[env]' KEY = "value"
-  dotenvFile:'[env]' '_.file = ".env.local"'
-  sourceScript:'[env]' '_.source = "./scripts/secrets.sh"'
+  dotenvFile:[env]' '_.file = ".env.local"
+  sourceScript:[env]' '_.source = "./scripts/secrets.sh"
   dirScoping:'[env]._.dev' applies only with MISE_ENV=dev
   view:mise env prints resolved exports
   direnvReplaces:this replaces direnv entirely

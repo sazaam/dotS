@@ -4,106 +4,106 @@
 |
 
 @quickRef |
-  ponytail:s get skills/ponytail.s @rules
-  ponytailReview:s get skills/ponytail.s @run.review
-  css:s get skills/css.s
-  html:s get skills/html.s
-  threejs:s get skills/threejs.s
-  glsl:s get skills/glsl.s
-  md:s get skills/md.s
-  jade:s get skills/jade.s
-  obsidian:s get skills/md.s @obsidian
-  shaderToy:s get skills/glsl.s @shadertoylite
-  htmlValidate:s get skills/html.s @run.validate
-  htmlLint:s get skills/html.s @run.lint
-  a11y:s get skills/html.s @run.accessibility
-  seoCheck:s get skills/html.s @run.seoCheck
-  cssLint:s get skills/css.s @run.lint
-  cssValidate:s get skills/css.s @run.validate
-  cssSpecificity:s get skills/css.s @run.specificity
-  cssAudit:s get skills/css.s @run.audit
-  docker:s get skills/docker.s
-  dockerCompose:s get skills/docker.s @compose
-  dockerMultiStage:s get skills/docker.s @multiStage
-  git:s get skills/git.s
-  gitUndo:s get skills/git.s @undoing
-  gitBranching:s get skills/git.s @branching
-  gitCommitting:s get skills/git.s @committing
-  gitMerging:s get skills/git.s @merging
-  javascript:s get skills/javascript.s
-  jsES6:s get skills/javascript.s @es6Features
-  jsAsync:s get skills/javascript.s @async
-  jsArrays:s get skills/javascript.s @arrays
-  jsGotchas:s get skills/javascript.s @gotchas
-  linux:s get skills/linux.s
-  linuxProcess:s get skills/linux.s @processes
-  linuxNetworking:s get skills/linux.s @networking
-  linuxSystemd:s get skills/linux.s @systemd
-  nginx:s get skills/nginx.s
-  nginxSSL:s get skills/nginx.s @ssl
-  nginxSecurity:s get skills/nginx.s @security
-  nginxReverseProxy:s get skills/nginx.s @reverseProxy
-  nginxGotchas:s get skills/nginx.s @gotchas
-  node:s get skills/node.s
-  nodeDebug:s get skills/node.s @debugging
-  nodePerformance:s get skills/node.s @performance
-  nodeGotchas:s get skills/node.s @gotchas
-  python:s get skills/python.s
-  pythonTypes:s get skills/python.s @types
-  pythonClasses:s get skills/python.s @classBasics
-  pythonGotchas:s get skills/python.s @gotchas
-  sh:s get skills/sh.s
-  shConditionals:s get skills/sh.s @conditionals
-  shPipes:s get skills/sh.s @pipesRedirection
-  shGotchas:s get skills/sh.s @gotchas
-  ssh:s get skills/ssh.s
-  sshConfig:s get skills/ssh.s @config
-  sshTunnel:s get skills/ssh.s @tunneling
-  sshSecurity:s get skills/ssh.s @security
-  strawexpress:s get skills/strawexpress.s
-  strawexpressRoutes:s get skills/strawexpress.s @express
-  strawexpressStep:s get skills/strawexpress.s @step
-  strawexpressFormulate:s get skills/strawexpress.s @formulate
-  strawexpressEvents:s get skills/strawexpress.s @events
-  strawexpressDOM:s get skills/strawexpress.s @domnode
-  strawexpressCommands:s get skills/strawexpress.s @commands
-  strawexpressBackground:s get skills/strawexpress.s @backgroundQueue
-  strawexpressCyclic:s get skills/strawexpress.s @cyclic
-  strawexpressAddress:s get skills/strawexpress.s @address
-  strawexpressMiddleware:s get skills/strawexpress.s @middleware
-  strawnode:s get skills/strawnode.s
-  strawnodeBoot:s get skills/strawnode.s @boot
-  strawnodeModules:s get skills/strawnode.s @modules
-  strawnodeSections:s get skills/strawnode.s @sectionSystem
-  strawnodeJade:s get skills/strawnode.s @jadeTemplates
-  betweenjs:s get skills/betweenjs.s
-  betweenjsCreate:s get skills/betweenjs.s @publicAPI
-  betweenjsEasing:s get skills/betweenjs.s @easing
-  betweenjsTween:s get skills/betweenjs.s @tweenHierarchy
-  betweenjsColor:s get skills/betweenjs.s @color
-  betweenjsModern:s get skills/betweenjs.s @modernEnhancements
-  betweenjsQuirks:s get skills/betweenjs.s @quirks
-  type:s get skills/type.s
-  typeDefine:s get skills/type.s @core
-  typePackages:s get skills/type.s @packages
-  typeSlots:s get skills/type.s @slots
-  typeUsage:s get skills/type.s @usage
-  typeQuirks:s get skills/type.s @quirks
-  mise:s get skills/mise.s
-  miseTools:s get skills/mise.s @tools
-  misePython:s get skills/mise.s @python
-  miseTasks:s get skills/mise.s @tasks
-  blenderDeps:s deps blender-python
+  ponytail:dots get skills/ponytail.s @rules
+  ponytailReview:dots get skills/ponytail.s @run.review
+  css:dots get skills/css.s
+  html:dots get skills/html.s
+  threejs:dots get skills/threejs.s
+  glsl:dots get skills/glsl.s
+  md:dots get skills/md.s
+  jade:dots get skills/jade.s
+  obsidian:dots get skills/md.s @obsidian
+  shaderToy:dots get skills/glsl.s @shadertoylite
+  htmlValidate:dots get skills/html.s @run.validate
+  htmlLint:dots get skills/html.s @run.lint
+  a11y:dots get skills/html.s @run.accessibility
+  seoCheck:dots get skills/html.s @run.seoCheck
+  cssLint:dots get skills/css.s @run.lint
+  cssValidate:dots get skills/css.s @run.validate
+  cssSpecificity:dots get skills/css.s @run.specificity
+  cssAudit:dots get skills/css.s @run.audit
+  docker:dots get skills/docker.s
+  dockerCompose:dots get skills/docker.s @compose
+  dockerMultiStage:dots get skills/docker.s @multiStage
+  git:dots get skills/git.s
+  gitUndo:dots get skills/git.s @undoing
+  gitBranching:dots get skills/git.s @branching
+  gitCommitting:dots get skills/git.s @committing
+  gitMerging:dots get skills/git.s @merging
+  javascript:dots get skills/javascript.s
+  jsES6:dots get skills/javascript.s @es6Features
+  jsAsync:dots get skills/javascript.s @async
+  jsArrays:dots get skills/javascript.s @arrays
+  jsGotchas:dots get skills/javascript.s @gotchas
+  linux:dots get skills/linux.s
+  linuxProcess:dots get skills/linux.s @processes
+  linuxNetworking:dots get skills/linux.s @networking
+  linuxSystemd:dots get skills/linux.s @systemd
+  nginx:dots get skills/nginx.s
+  nginxSSL:dots get skills/nginx.s @ssl
+  nginxSecurity:dots get skills/nginx.s @security
+  nginxReverseProxy:dots get skills/nginx.s @reverseProxy
+  nginxGotchas:dots get skills/nginx.s @gotchas
+  node:dots get skills/node.s
+  nodeDebug:dots get skills/node.s @debugging
+  nodePerformance:dots get skills/node.s @performance
+  nodeGotchas:dots get skills/node.s @gotchas
+  python:dots get skills/python.s
+  pythonTypes:dots get skills/python.s @types
+  pythonClasses:dots get skills/python.s @classBasics
+  pythonGotchas:dots get skills/python.s @gotchas
+  sh:dots get skills/sh.s
+  shConditionals:dots get skills/sh.s @conditionals
+  shPipes:dots get skills/sh.s @pipesRedirection
+  shGotchas:dots get skills/sh.s @gotchas
+  ssh:dots get skills/ssh.s
+  sshConfig:dots get skills/ssh.s @config
+  sshTunnel:dots get skills/ssh.s @tunneling
+  sshSecurity:dots get skills/ssh.s @security
+  strawexpress:dots get skills/strawexpress.s
+  strawexpressRoutes:dots get skills/strawexpress.s @express
+  strawexpressStep:dots get skills/strawexpress.s @step
+  strawexpressFormulate:dots get skills/strawexpress.s @formulate
+  strawexpressEvents:dots get skills/strawexpress.s @events
+  strawexpressDOM:dots get skills/strawexpress.s @domnode
+  strawexpressCommands:dots get skills/strawexpress.s @commands
+  strawexpressBackground:dots get skills/strawexpress.s @backgroundQueue
+  strawexpressCyclic:dots get skills/strawexpress.s @cyclic
+  strawexpressAddress:dots get skills/strawexpress.s @address
+  strawexpressMiddleware:dots get skills/strawexpress.s @middleware
+  strawnode:dots get skills/strawnode.s
+  strawnodeBoot:dots get skills/strawnode.s @boot
+  strawnodeModules:dots get skills/strawnode.s @modules
+  strawnodeSections:dots get skills/strawnode.s @sectionSystem
+  strawnodeJade:dots get skills/strawnode.s @jadeTemplates
+  betweenjs:dots get skills/betweenjs.s
+  betweenjsCreate:dots get skills/betweenjs.s @publicAPI
+  betweenjsEasing:dots get skills/betweenjs.s @easing
+  betweenjsTween:dots get skills/betweenjs.s @tweenHierarchy
+  betweenjsColor:dots get skills/betweenjs.s @color
+  betweenjsModern:dots get skills/betweenjs.s @modernEnhancements
+  betweenjsQuirks:dots get skills/betweenjs.s @quirks
+  type:dots get skills/type.s
+  typeDefine:dots get skills/type.s @core
+  typePackages:dots get skills/type.s @packages
+  typeSlots:dots get skills/type.s @slots
+  typeUsage:dots get skills/type.s @usage
+  typeQuirks:dots get skills/type.s @quirks
+  mise:dots get skills/mise.s
+  miseTools:dots get skills/mise.s @tools
+  misePython:dots get skills/mise.s @python
+  miseTasks:dots get skills/mise.s @tasks
+  blenderDeps:dots deps blender-python
   blenderLoad:s load blender-python
-  graphShow:s graph
-  graphDeps:s graph --deps
-  megaList:s mega list
-  megaCreate:s mega create web-stack node.s docker.s nginx.s
-  megaLoad:s mega load web-stack
-  mutateList:s mutate list
-  mutateCreate:s mutate create blender-python "game development"
-  pollinateList:s pollinate list
-  pollinateAll:s pollinate --all
+  graphShow:dots graph
+  graphDeps:dots graph --deps
+  megaList:dots mega list
+  megaCreate:dots mega create web-stack node.s docker.s nginx.s
+  megaLoad:dots mega load web-stack
+  mutateList:dots mutate list
+  mutateCreate:dots mutate create blender-python "game development"
+  pollinateList:dots pollinate list
+  pollinateAll:dots pollinate --all
 |
 
 @runQuickRef |
@@ -111,37 +111,37 @@
   htmlLint:npx stylelint **/*.css
   cssLint:npx stylelint **/*.css
   a11y:npx pa11y **/*.html
-  seoCheck:s get skills/html.s @run.seoCheck
-  gitCommit:s run skills/git.s @run.quickCommit
-  gitRelease:s run skills/git.s @run.releaseTag
-  gitSquash:s run skills/git.s @run.squashMerge
-  gitUndo:s run skills/git.s @run.undoLastCommit
-  gitClean:s run skills/git.s @run.cleanBranches
-  nginxSSL:s run skills/nginx.s @run.sslSetup
-  nginxRenew:s run skills/nginx.s @run.sslRenew
-  nginxTest:s run skills/nginx.s @run.configTest
-  nginxTrouble:s run skills/nginx.s @run.troubleshoot
-  nginxCache:s run skills/nginx.s @run.staticCacheSetup
-  dockerBuild:s run skills/docker.s @run.buildPush
-  dockerUp:s run skills/docker.s @run.composeUp
-  dockerRestart:s run skills/docker.s @run.composeRestart
-  dockerClean:s run skills/docker.s @run.cleanSlate
-  dockerHealth:s run skills/docker.s @run.healthCheck
-  linuxDisk:s run skills/linux.s @run.diskCleanup
-  linuxLogs:s run skills/linux.s @run.logRotate
-  linuxProcs:s run skills/linux.s @run.processAudit
-  linuxSecurity:s run skills/linux.s @run.securityCheck
-  linuxSetup:s run skills/linux.s @run.serverSetup
-  sshKey:s run skills/ssh.s @run.keySetup
-  sshTunnel:s run skills/ssh.s @run.tunnelLocal
-  sshDeployKey:s run skills/ssh.s @run.deployKey
-  nodeDeploy:s run skills/node.s @run.buildDeploy
-  nodeDev:s run skills/node.s @run.devSetup
-  nodeTest:s run skills/node.s @run.testSuite
-  nodeHealth:s run skills/node.s @run.productionCheck
-  miseSetup:s run skills/mise.s @run.setup
-  wappCreate:s get skills/linux-wapp.s @commands
-  wappIsolation:s get skills/linux-wapp.s @isolation
+  seoCheck:dots get skills/html.s @run.seoCheck
+  gitCommit:dots run skills/git.s @run.quickCommit
+  gitRelease:dots run skills/git.s @run.releaseTag
+  gitSquash:dots run skills/git.s @run.squashMerge
+  gitUndo:dots run skills/git.s @run.undoLastCommit
+  gitClean:dots run skills/git.s @run.cleanBranches
+  nginxSSL:dots run skills/nginx.s @run.sslSetup
+  nginxRenew:dots run skills/nginx.s @run.sslRenew
+  nginxTest:dots run skills/nginx.s @run.configTest
+  nginxTrouble:dots run skills/nginx.s @run.troubleshoot
+  nginxCache:dots run skills/nginx.s @run.staticCacheSetup
+  dockerBuild:dots run skills/docker.s @run.buildPush
+  dockerUp:dots run skills/docker.s @run.composeUp
+  dockerRestart:dots run skills/docker.s @run.composeRestart
+  dockerClean:dots run skills/docker.s @run.cleanSlate
+  dockerHealth:dots run skills/docker.s @run.healthCheck
+  linuxDisk:dots run skills/linux.s @run.diskCleanup
+  linuxLogs:dots run skills/linux.s @run.logRotate
+  linuxProcs:dots run skills/linux.s @run.processAudit
+  linuxSecurity:dots run skills/linux.s @run.securityCheck
+  linuxSetup:dots run skills/linux.s @run.serverSetup
+  sshKey:dots run skills/ssh.s @run.keySetup
+  sshTunnel:dots run skills/ssh.s @run.tunnelLocal
+  sshDeployKey:dots run skills/ssh.s @run.deployKey
+  nodeDeploy:dots run skills/node.s @run.buildDeploy
+  nodeDev:dots run skills/node.s @run.devSetup
+  nodeTest:dots run skills/node.s @run.testSuite
+  nodeHealth:dots run skills/node.s @run.productionCheck
+  miseSetup:dots run skills/mise.s @run.setup
+  wappCreate:dots get skills/linux-wapp.s @commands
+  wappIsolation:dots get skills/linux-wapp.s @isolation
 |
 
 @byTask |

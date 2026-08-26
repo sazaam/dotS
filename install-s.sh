@@ -9,8 +9,8 @@ DOTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 mkdir -p "$DOTS_DIR/skills"
 
 # Make executable
-chmod +x "$DOTS_DIR/s.py"
-chmod +x "$DOTS_DIR/s"
+chmod +x "$DOTS_DIR/dots.py"
+chmod +x "$DOTS_DIR/dots"
 
 # Add to PATH if not already there
 if ! grep -q "$DOTS_DIR" "$HOME/.zshrc" 2>/dev/null && \
@@ -24,9 +24,9 @@ if ! grep -q "$DOTS_DIR" "$HOME/.zshrc" 2>/dev/null && \
 fi
 
 # Test
-echo "Testing s tool..."
-"$DOTS_DIR/s" help > /dev/null 2>&1 && echo "OK: s tool works" || echo "FAIL: check s.py"
+echo "Testing dots tool..."
+"$DOTS_DIR/dots" help > /dev/null 2>&1 && echo "OK: dots tool works" || echo "FAIL: check dots.py"
 
 echo ""
 echo "Done. Run: source $SHELL_RC"
-echo "Then try: s list"
+echo "Then try: dots list"

@@ -5,7 +5,7 @@
   confidence:high
   lastUpdated:2026-08-22
   python:3.13
-  verified:"VSE audio strips, markers, headless -b -P on 4.5.12-lts"
+  verified:VSE audio strips, markers, headless -b -P on 4.5.12-lts
 |
 @dependencies |
   requires:python.s
@@ -313,9 +313,3 @@
   generatedFile:regeneration overwrites manual edits — keep tweaks in a Save As copy
   namingConvention:encode sort keys in strip names (chapter_line_role) for ordered iteration
 |
-@audioVST |
-  vstSupport:Blender has NO native VST/LADSPA plugin hosting — do not attempt bpy.audio.vst
-  builtIn:VSE audio effects limited to volume/pan animation on strips via keyframes
-  workflow:do DSP (formant shift, loudnorm) in ffmpeg BEFORE creating sound strips
-  audModule:bpy.data.aud.Sound for playback analysis only, not processing/export
-  external:pipe final mix through ffmpeg/DAW for real effects; Blender = timeline + preview

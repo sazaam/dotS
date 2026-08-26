@@ -1,13 +1,13 @@
 # Audio Drama Recording Pipeline Knowledge Base
 @meta |
   topic:audio-drama-pipeline
-  origin:"언니들 Sisters production, ~/sisters_audio"
+  origin:언니들 Sisters production, ~/sisters_audio
   confidence:high
   lastUpdated:2026-08-24
-  reusable:"template for future per-line theatrical recording projects"
+  reusable:template for future per-line theatrical recording projects
 |
 @concept |
-  unit:"one take per cue line; id = global sort key = filename anchor"
+  unit:one take per cue line; id = global sort key = filename anchor
   naming:C{ch:02d}_L{id:03d}_{role}.wav
   batchDrop:N-M.mp3 covers cues N..M in one organic performance
   batchRule:never split batches - internal timing is the actors' art
@@ -46,7 +46,7 @@
   verifyBuild:ffmpeg -filters | grep rubberband before relying on it
 |
 @gotchas |
-  staleCache:delete build_cache/*.wav after re-trim or normalize step or old audio leaks into new build
+  staleCache:delete build_cache *.wav after re-trim or normalize step or old audio leaks into new build
   ghostProbes:verify filenames exist before ffprobe loops - silent failures masquerade as 'hot noise floors'
   dupCopies:raw copies of batches reappear byte-identical - md5 compare before calling retake
   blendRegen:rebuild overwrites manual .blend edits - Save As for tweaks
@@ -57,7 +57,7 @@
 |
 @futureProject |
   copy:scripts + README.md skeleton, drop old recordings/processed/cache/show/backups
-  reparse:parse_script.py regenerates cues.csv from new source; pacing columns preserved across re-parses by design
+  reparse:parse_script.py regenerates cues.csv from new source, pacing columns preserved across re-parses by design
   annotate:read all cues once, assign tiers via rules + judgment overrides pattern (annotate_pacing.py)
   roles:expect role-specific passes (formant etc) decided with director mid-production
 |

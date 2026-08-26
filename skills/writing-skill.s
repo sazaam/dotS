@@ -13,9 +13,9 @@
   purpose:Reference for creating and optimizing .s skill files
   usage:load only when writing or optimizing skills, not for general queries
   location:/home/saz/.config/opencode/dotS/skills/
-  cli:s get <skill>.s @blockName
-  sFind:s find "topic" - searches across all skills
-  sOptimize:s optimize <skill> - removes waste
+  cli:dots get <skill>.s @blockName
+  sFind:dots find "topic" - searches across all skills
+  sOptimize:dots optimize <skill> - removes waste
 |
 @format |
   blockStart:@blockName followed by pipe on next line
@@ -52,7 +52,7 @@
   simpleSkill:@meta + @core + @blocks + @gotchas + @index
   referenceSkill:@meta + @core + multiple content blocks + @gotchas + @index
   indexBlock:sectionName:@block1 @block2 @block3
-  quickRefBlock:topic:s get skill.s @blockName
+  quickRefBlock:topic:dots get skill.s @blockName
   byTaskBlock:task:skill.s block1 block2
 |
 @antiPatterns |
@@ -77,7 +77,7 @@
   format:sectionName:@block1 @block2 @block3
   sections:group logically (core, data, runtime, gotchas)
   includeAll:every block should appear in exactly one section
-  quickRef:s get skill.s @blockName - show how to load
+  quickRef:dots get skill.s @blockName - show how to load
   newBlocks:@dependencies @mega @mutations @pollination
   honesty:@honesty - claims discipline for docs and savings numbers
 |
@@ -93,50 +93,50 @@
   missingEnd:block not found? ensure closing | is alone on line
   keyNoValue:key with no colon? syntax error
   brokenIndex:@index references wrong block name
-  sFindBlank:s find returns nothing? check block names match
-  sOptimizeDryRun:run s optimize --dry-run to preview changes
-  tokenCount:s optimize shows token count - track changes
+  sFindBlank:dots find returns nothing? check block names match
+  sOptimizeDryRun:run dots optimize --dry-run to preview changes
+  tokenCount:dots optimize shows token count - track changes
 |
 @optimize |
   whatItDoes:removes .why explanations, detects redundancy
-  runAfter:always run s optimize after editing a skill
+  runAfter:always run dots optimize after editing a skill
   redundancy:identical lines across blocks get flagged
   simplification:verbose values get shortened
   dryRun:use --dry-run to preview without modifying
   manualReview:optimization is suggestions - review before accepting
 |
 @locking |
-  beforeEdit:always run `s locked` before editing any .s file
+  beforeEdit:always run `dots locked` before editing any .s file
   refuseLocked:if target is locked, refuse and inform user
-  useOptimizer:always use `s optimize` for optimization, never manual edits
+  useOptimizer:always use `dots optimize` for optimization, never manual edits
   appendOnly:may append NEW content to locked files, but never modify existing
-  osProtect:s lock makes files read-only (chmod -w), unlock restores (chmod +w)
+  osProtect:dots lock makes files read-only (chmod -w), unlock restores (chmod +w)
 |
 @dependencies |
   requires:index.s
   addBlock:add @dependencies block with requires:key
-  resolve:s deps <skill> shows dependencies
-  loadAll:s load <skill> loads skill + all dependencies
-  graph:s graph shows all dependency relationships
+  resolve:dots deps <skill> shows dependencies
+  loadAll:dots load <skill> loads skill + all dependencies
+  graph:dots graph shows all dependency relationships
 |
 @mega |
   purpose:combine multiple skills into composite bundles
-  create:s mega create <name> <skill1> <skill2> ...
-  list:s mega list shows all mega-skills
-  load:s mega load <name> loads all skills in bundle
-  show:s mega show <name> shows bundle contents
+  create:dots mega create <name> <skill1> <skill2> ...
+  list:dots mega list shows all mega-skills
+  load:dots mega load <name> loads all skills in bundle
+  show:dots mega show <name> shows bundle contents
 |
 @mutations |
   purpose:create skill variants for specific contexts
-  create:s mutate create <base_skill> <context> [name]
-  list:s mutate list shows all mutations
-  show:s mutate show <name> shows mutation details
+  create:dots mutate create <base_skill> <context> [name]
+  list:dots mutate list shows all mutations
+  show:dots mutate show <name> shows mutation details
 |
 @pollination |
   purpose:cross-pollinate skills by sharing patterns
-  list:s pollinate list shows all skills with their blocks
-  compare:s pollinate <skill1> <skill2> shows common/different blocks
-  all:s pollinate --all shows all cross-pollination opportunities
+  list:dots pollinate list shows all skills with their blocks
+  compare:dots pollinate <skill1> <skill2> shows common/different blocks
+  all:dots pollinate --all shows all cross-pollination opportunities
 |
 @gotchas |
   pipeInValue:pipe inside a value is SAFE only if not alone on line
@@ -147,9 +147,9 @@
   versionField:always include version in @meta for cache invalidation
 |
 @run |
-  create:s get writing-skill.s @format
-  optimize:s optimize writing-skill
-  validate:s find "writing" - should find this skill
-  indexCheck:s get index.s - verify skill appears
-  tokens:s optimize shows token count
+  create:dots get writing-skill.s @format
+  optimize:dots optimize writing-skill
+  validate:dots find "writing" - should find this skill
+  indexCheck:dots get index.s - verify skill appears
+  tokens:dots optimize shows token count
 |

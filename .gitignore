@@ -1,2 +1,5 @@
 .sessions/
 .state/
+__pycache__/
+skills/.mutations/*
+!skills/.mutations/example.mut
