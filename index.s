@@ -76,6 +76,17 @@
   strawnodeModules:dots get skills/strawnode.s @modules
   strawnodeSections:dots get skills/strawnode.s @sectionSystem
   strawnodeJade:dots get skills/strawnode.s @jadeTemplates
+  strawnodePrototype:dots get skills/strawnode-prototype.s
+  strawnodeSession:dots get skills/strawnode-prototype.s @session
+  strawnodePhilosophy:dots get skills/strawnode-prototype.s @philosophy
+  strawnodeScaffold:dots get skills/strawnode-prototype.s @playbook
+  strawnodeSections:dots get skills/strawnode-prototype.s @sectionFactory
+  strawnodeToggle:dots get skills/strawnode-prototype.s @graphics
+  strawnodeJson:dots get skills/strawnode-prototype.s @jadeJson
+  strawnodeVerify:dots get skills/strawnode-prototype.s @verification
+  nexinebula:dots get skills/nexinebula.s
+  nexinebulaStructure:dots get skills/nexinebula.s @structure
+  nexinebulaRun:dots get skills/nexinebula.s @run
   betweenjs:dots get skills/betweenjs.s
   betweenjsCreate:dots get skills/betweenjs.s @publicAPI
   betweenjsEasing:dots get skills/betweenjs.s @easing
@@ -142,6 +153,16 @@
   miseSetup:dots run skills/mise.s @run.setup
   wappCreate:dots get skills/linux-wapp.s @commands
   wappIsolation:dots get skills/linux-wapp.s @isolation
+  comfyT2V:dots get skills/comfy-t2v-ltx-2.3.s @workflow
+  comfyT2VLaunch:dots get skills/comfy-t2v-ltx-2.3.s @launch
+  comfyT2VModels:dots get skills/comfy-t2v-ltx-2.3.s @models
+  comfyT2VVram:dots get skills/comfy-t2v-ltx-2.3.s @vramMap
+  comfyT2VGotchas:dots get skills/comfy-t2v-ltx-2.3.s @gotchas
+  comfyMusic:dots get skills/comfy-minimax-music3.s @workflow
+  comfyMusicModels:dots get skills/comfy-minimax-music3.s @models
+  comfyMusicLaunch:dots get skills/comfy-minimax-music3.s @launch
+  comfyMusicRun:dots get skills/comfy-minimax-music3.s @runCmd
+  comfyMusicGotchas:dots get skills/comfy-minimax-music3.s @gotchas
 |
 
 @byTask |
@@ -208,6 +229,10 @@
   tunneling:skills/ssh.s @tunneling
   keygen:skills/ssh.s @keygen
   spa:strawexpress.s strawnode.s
+  spaPrototype:skills/strawnode-prototype.s
+  prototype:skills/strawnode-prototype.s
+  scaffoldSpa:skills/strawnode-prototype.s skills/jade.s skills/css.s
+  strawnodeApp:skills/strawnode-prototype.s skills/nexinebula.s
   routing:strawexpress.s @express strawexpress.s @formulate
   animation:betweenjs.s
   tweening:betweenjs.s @publicAPI betweenjs.s @tweenHierarchy
@@ -226,6 +251,12 @@
   webapps:skills/linux-wapp.s
   browserApps:skills/linux-wapp.s
   isolation:skills/linux-wapp.s @isolation
+  videoGen:skills/comfy-t2v-ltx-2.3.s
+  ltxVideo:skills/comfy-t2v-ltx-2.3.s @workflow
+  comfyOOM:skills/comfy-t2v-ltx-2.3.s @vramMap skills/comfy-t2v-ltx-2.3.s @gotchas
+  musicGen:skills/comfy-minimax-music3.s
+  comfyMusic:skills/comfy-minimax-music3.s @workflow skills/comfy-minimax-music3.s @models
+  textToMusic:skills/comfy-minimax-music3.s @workflow
   security:skills/nginx.s @ssl skills/nginx.s @security skills/ssh.s @security
   performance:skills/node.s @performance skills/nginx.s @cache
   logAnalysis:skills/linux.s @logAnalysis
@@ -256,5 +287,7 @@
   writing-skill.s:blocks:20|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @honesty @patterns @optimize @gotchas @dependencies @mega @mutations @pollination
   mise.s:blocks:14|topic:mise tool version manager env tasks|keyBlocks:@tools @config @python @node @env @tasks @gotchas @run
   linux-wapp.s:blocks:6|topic:wapp isolated browser apps|keyBlocks:@commands @isolation @fileLayout @multiAccount @gotchas
+  comfy-t2v-ltx-2.3.s:blocks:8|topic:comfyui ltx-2.3 22b t2v on 16GB gpu|keyBlocks:@models @launch @workflow @vramMap @gotchas
+  comfy-minimax-music3.s:blocks:8|topic:comfyui minimax music 3 t2m on 16GB gpu|keyBlocks:@models @workflow @launch @runCmd @gotchas
   index.s:blocks:4|topic:dotS knowledge base index|keyBlocks:@index @byTask @quickRef @runQuickRef
 |

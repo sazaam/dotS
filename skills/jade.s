@@ -1,5 +1,5 @@
 # Jade/Pug Template Language Knowledge Base
-@meta |topic:jade pug template|versions:Jade 1.x-Pug 2.x|lastUpdated:2026-08-18|confidence:high|
+@meta |topic:jade pug template|versions:Jade 1.x-Pug 2.x|lastUpdated:2026-09-08|confidence:high|
 @syntax |
   tag:div or name (div is default)
   id:#myId
@@ -52,6 +52,29 @@
   restArgs:mixin mixinName(...args)
   variableArgs:+mixinName(arg1, arg2, rest...)
 |
+@strawLibrary |
+  pattern:ANY .jade can be a pure library - a file of mixin definitions (plus top-of-file helper vars) loaded via include, never rendered on its own
+  when:content-heavy by nature (svg sets, icon sets, shader globals, media blocks) or by user decision once a component is reused a few places
+  scope:one include at the TOP of a base pulls the whole library in; extended pages inherit that scope - do NOT include it again, do NOT fork a mixin out of the library into a template
+  families:shared prefix per family keeps +name() calls discoverable (e.g. svg_ static_ lr_ gen_); crawl twins carry the static_ prefix
+  helpers:top-of-file `- var helper = ...` defines render-time utilities its mixins depend on (e.g. safe-circular JSON for +log()) - forking a mixin silently loses them
+  ambient:with-scope render locals (lang response t) are free in ANY mixin - pass only the varying bits as args, do not redeclare the locals
+  reuse:before writing bare markup, check the library first for an existing +mixin; add new shared components to the library, never to one page's extends chain
+|
+@compose |
+  extends:page-scale skeleton + block override points - when the page inherits structure to fill
+  mixin:named reusable component with args - when the same markup recurs with varying bits (article, arrows, panes, svgs)
+  include:verbatim partial - only when neither args nor override points are needed; includes inside a library file bundle its dependencies
+  rule:extends = skeleton, +mixin = vocabulary, include = bundling - keep the three distinct, never flatten an inherited page to one block
+|
+@strawWorkflow |
+  purpose:how this stack actually composes jade - the stable concepts, not the instance's naming
+  multiLayer:pages are frequently built from several independently-rendered layers (shell/rail + content + chrome), each extending its own base, composed at open time - how you split the layers and what you call them is a per-project call
+  switchboard:the "one content template routes by section id via case" pattern grows a site without forking - a strong option, never a requirement
+  ambient:response lang t marked filename are in scope in ANY template - mixins only need the varying bits, do not redeclare the ambient locals
+  hooks:templates expose hooks; handlers/directives do the work - structure here, behavior elsewhere
+  naming:authors derive their own template/block/mixin/behavior names from what reads most clearly - the concepts are stable, the spelling is yours
+|
 @includes |
   include:include partial.jade
   includeFiltered:include:css style.css
@@ -65,9 +88,9 @@
 @filters |
   css:include:css file.css
   javascript:include:js script.js
-  markdown:include:markdown file.md
+  md:include:md file.md or an inline :md block - key 'md' is what strawjade.js registers (jade.filters.md -> marked.marked); 'markdown' is NOT registered here
   cdata:include:cdata file.cdata
-  custom:register with jade.filters.name = fn
+  custom:register with jade.filters.<name> = fn - do not re-register an existing key, reuse before inventing
 |
 @builtins |
   escape:jade.escape(str)

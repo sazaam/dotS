@@ -1,5 +1,5 @@
 # dotS Knowledge Base Index
-@meta |type:index|lastUpdated:2026-08-22|totalFiles:16|
+@meta |type:index|lastUpdated:2026-09-16|totalFiles:34|
 @constraints |
   pipe:"|" has three roles: block delimiter, metadata separator, value content
   pipeRule:block ends only when a line is JUST "|" — pipes inside key:value are safe
@@ -15,6 +15,7 @@
   docker.s:blocks:19|topic:docker containers|keyBlocks:@containers @compose @multiStage @gotchas @run
   javascript.s:blocks:16|topic:vanilla JS ES5-ES6+|keyBlocks:@es6Features @arrays @async @gotchas
   python.s:blocks:17|topic:python 3.12+|keyBlocks:@types @functions @classes @gotchas
+  rust.s:blocks:25|topic:rust ownership-safe systems|keyBlocks:@ownership @borrowing @errorHandling @gotchas
   sh.s:blocks:14|topic:shell scripting|keyBlocks:@conditionals @functions @pipesRedirection @gotchas
   type.s:blocks:8|topic:Type.js OOP class system|keyBlocks:@core @packages @slots @usage @quirks
   strawexpress.s:blocks:12|topic:strawexpress SPA router|keyBlocks:@architecture @step @express @response @formulate
@@ -24,6 +25,8 @@
   ffmpeg.s:blocks:13|topic:ffmpeg audio video processing|keyBlocks:@trimSilence @pitchFormant @loudness @concat @gotchas @run
   audio-drama-pipeline.s:blocks:9|topic:per-line theatrical audio drama recording pipeline|keyBlocks:@flow @trim @pacing @loudness @gotchas @futureProject
   writing-skill.s:blocks:17|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @patterns @optimize @gotchas @dependencies @mega @mutations @pollination
+  comfy-t2v-ltx-2.3.s:blocks:8|topic:comfyui ltx-2.3 22b t2v on 16GB gpu|keyBlocks:@models @launch @workflow @vramMap @gotchas
+  mml.s:blocks:20|topic:mml music macro language chiptune|keyBlocks:@basics @notes @lengths @loops @macros @dialects @gotchas
 |
 @byTask |
   webServer:nginx.s
@@ -31,6 +34,10 @@
   development:node.s git.s
   frontend:javascript.s
   backend:python.s node.s
+  rust:rust.s
+  rustBorrowing:rust.s@borrowing rust.s@fixingErrors
+  rustOwnership:rust.s@ownership rust.s@slices
+  rustErrors:rust.s@errorHandling rust.s@gotchas
   scripting:sh.s
   security:nginx.s@ssl nginx.s@security ssh.s@security
   debugging:node.s@debugging linux.s@logAnalysis
@@ -69,6 +76,16 @@
   blenderVSE:blender-python.s@vse
   writeSkill:writing-skill.s
   optimizeSkill:writing-skill.s@tokens writing-skill.s@optimize
+  videoGenVideo:comfy-t2v-ltx-2.3.s
+  ltxT2V:comfy-t2v-ltx-2.3.s@workflow
+  comfyOOM:comfy-t2v-ltx-2.3.s@vramMap comfy-t2v-ltx-2.3.s@gotchas
+  comfyLaunch:comfy-t2v-ltx-2.3.s@launch
+  chiptune:mml.s
+  mmlSequencing:mml.s@basics mml.s@notes mml.s@lengths
+  mmlTiming:mml.s@loops mml.s@quantize mml.s@tempo
+  mmlDrums:mml.s@macros mml.s@channels
+  mmlDialectWest:mml.s@dialects mml.s@tools
+  musicMacro:mml.s@macros
 |
 @quickRef |
   nginxSSL:s get nginx.s @ssl
@@ -99,6 +116,14 @@
   pythonTypes:s get python.s @types
   pythonClasses:s get python.s @classBasics
   pythonGotchas:s get python.s @gotchas
+  rustBasics:s get rust.s @basics
+  rustOwnership:s get rust.s @ownership
+  rustBorrowing:s get rust.s @borrowing
+  rustFixingErrors:s get rust.s @fixingErrors
+  rustErrors:s get rust.s @errorHandling
+  rustCollections:s get rust.s @collections
+  rustConcurrency:s get rust.s @concurrency
+  rustGotchas:s get rust.s @gotchas
   shConditionals:s get sh.s @conditionals
   shPipes:s get sh.s @pipesRedirection
   shGotchas:s get sh.s @gotchas
@@ -132,6 +157,21 @@
   writeSkillTokens:s get writing-skill.s @tokens
   writeSkillPatterns:s get writing-skill.s @patterns
   writeSkillOptimize:s get writing-skill.s @optimize
+  comfyT2V:s get comfy-t2v-ltx-2.3.s @workflow
+  comfyT2VLaunch:s get comfy-t2v-ltx-2.3.s @launch
+  comfyT2VModels:s get comfy-t2v-ltx-2.3.s @models
+  comfyT2VVram:s get comfy-t2v-ltx-2.3.s @vramMap
+  comfyT2VGotchas:s get comfy-t2v-ltx-2.3.s @gotchas
+  mmlBasics:s get mml.s @basics
+  mmlNotes:s get mml.s @notes
+  mmlLengths:s get mml.s @lengths
+  mmlLoops:s get mml.s @loops
+  mmlMacros:s get mml.s @macros
+  mmlChannels:s get mml.s @channels
+  mmlDialects:s get mml.s @dialects
+  mmlTools:s get mml.s @tools
+  mmlExamples:s get mml.s @examples
+  mmlGotchas:s get mml.s @gotchas
   blenderDeps:s deps blender-python
   blenderLoad:s load blender-python
   graphShow:s graph

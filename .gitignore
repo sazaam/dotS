@@ -3,3 +3,4 @@
 __pycache__/
 skills/.mutations/*
 !skills/.mutations/example.mut
+skills/nexinebula.s
