@@ -319,12 +319,105 @@ Store your .s files in Obsidian for visual browsing:
         └── ...
 ```
 
+## dotS + opencode: The Optimal Setup
+
+This is the reference configuration for running dotS as the context layer
+of [opencode](https://opencode.ai). It routes the *map* into the system
+prompt once and pulls skill *bodies* on demand — the fast path is cheap,
+and nothing heavy (50k tokens worth of skills) ever loads unless you ask.
+
+### Recommended layout
+
+```
+~/.config/opencode/
+├── opencode.json          # wires index.s into the system prompt
+├── dotS/                  # the dotS install (knowledge base)
+│   ├── dots               # CLI wrapper (~/.local/bin/dots)
+│   ├── dots.py
+│   ├── index.s            # routing map — the ONLY thing loaded at start
+│   └── skills/*.s         # knowledge bodies — loaded on demand
+└── instructions/          # rule .s files (core.s, security.s, ...)
+```
+
+### opencode.json
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "~/.config/opencode/instructions/INSTRUCTIONS.md",
+    "~/.config/opencode/dotS/index.s"
+  ]
+}
+```
+
+`instructions` injects the file contents into the model's system prompt on
+every start (TUI, `opencode run`, subagents). Loading `index.s` there means
+the routing map is always resident with no command, no latency, and none of
+the "did the agent remember to load it?" ambiguity.
+
+### Pointing `dots` at a sibling instructions dir
+
+If your rule files live *outside* the dotS install (e.g. under
+`~/.config/opencode/instructions/`), the CLI needs to know where:
+
+```bash
+# In the dots wrapper, or your shell rc:
+export S_INSTRUCTIONS_DIR="~/.config/opencode/instructions"
+```
+
+`dots.py` resolves every `<file>.s` against `S_DIR` (the install)
+and `S_INSTRUCTIONS_DIR`, so both `dots get core.s @always` (instructions) and
+`dots get skills/nginx.s @ssl` (knowledge base) work from any working
+directory. Without this, `dots get <instructions-file>.s` fails with
+"File not found".
+
+### At session start (and why)
+
+| Command | Tokens | Verdict |
+|---|---|---|
+| `dots get index.s "*"` | **~50,000** (loads every skill body) | Never do this |
+| `index.s` injected via `instructions` | ~2,400 always resident | **Recommended** |
+| `dots get core.s @always` | ~100, occasionally | Run when coding starts |
+
+The 50k "load-all" startup both defeats dotS's token advantage and burns
+context before a single task arrives. Injecting only `index.s` keeps the
+routing map (which skill covers what, how to fetch it) always available at
+~2,400 tokens, then lets the agent pull just the block it needs:
+
+```bash
+dots get skills/nginx.s @ssl          # 150 tokens, on demand
+dots find "ssl"                        # or route by topic
+dots run skills/git.s @run.quickCommit # run a playbook
+dots tokens                            # audit your own footprint
+```
+
+### The `.s` syntax inside the injected prompt is fine
+
+`index.s` is dense `key:value`/`|`-delimited DSL. Models read it as a routing
+table without a prologue — no need to render it to prose. If the injected
+file ever gets large, trim to the routing blocks only:
+
+```bash
+dots get index.s @index @byTask   # ~1,100 tokens: map without shortcut tables
+```
+
+### Anti-patterns
+
+- ❌ `dots get index.s "*"` in your shell profile / INSTRUCTIONS.md
+- ❌ Duplicating `@quickRef` contents into AGENTS.md or prose docs
+- ❌ Storing API keys in `index.s` or any `.s` file (commit to git is too easy)
+
+Caveat: legacy references in this README may still say `s` where the shipped
+CLI is `dots`. If your install predates the rename, `s` was simply renamed
+to `dots` — same behavior.
+
 ## File Structure
 
 ```
 dotS/
-├── s.py              # main CLI script
-├── s                 # bash wrapper
+├── dots.py           # main CLI script
+├── dots              # bash wrapper (installed to PATH)
 ├── install-dots.sh      # installer
 ├── index.s           # project index (read first, ~200 tokens)
 ├── relations.s       # dependency graph

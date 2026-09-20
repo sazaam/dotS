@@ -1002,26 +1002,39 @@ def cmd_find(args):
 
     # resolve and return blocks
     seen = set()
+
+    def _norm(fn: str) -> str:
+        """Strip a leading 'skills/' prefix from index references."""
+        fn = fn.strip()
+        return fn[len('skills/'):] if fn.startswith('skills/') else fn
+
     for source, key, val in matches:
         parts = val.split() if isinstance(val, str) else []
-        if len(parts) >= 3 and parts[0] == 'dots' and parts[1] in ('get', 'run'):
-            # parse "dots get file.s @block" or "dots run file.s @run.block"
-                fname = parts[2]
-                block_ref = parts[3] if len(parts) > 3 else None
-                file_key = f"{fname}:{block_ref}"
-                if file_key in seen:
-                    continue
-                seen.add(file_key)
-                filepath = CTX_DIR / "skills" / fname
-                if filepath.exists():
-                    sf = SFile(filepath)
-                    if block_ref:
-                        # handle "run.block" → tag is "run", subkey is "block"
-                        block_name = block_ref.lstrip('@')
-                        if '.' in block_name:
-                            tag, subkey = block_name.split('.', 1)
-                            block = sf.get_block(tag)
-                            if block:
+        if len(parts) >= 3 and parts[0] in ('dots', 's') and parts[1] in ('get', 'run'):
+            # parse "dots get skills/nginx.s @block" or "s run nginx.s @run.block"
+            fname = _norm(parts[2])
+            block_ref = parts[3] if len(parts) > 3 else None
+            file_key = f"{fname}:{block_ref}"
+            if file_key in seen:
+                continue
+            seen.add(file_key)
+            filepath = CTX_DIR / "skills" / fname
+            if filepath.exists():
+                sf = SFile(filepath)
+                if block_ref:
+                    # handle "run.block" → tag is "run", subkey is "block"
+                    block_name = block_ref.lstrip('@')
+                    if '.' in block_name:
+                        tag, subkey = block_name.split('.', 1)
+                        block = sf.get_block(tag)
+                        if block:
+                            # prefer the named sub-block (e.g. @run sslSetup)
+                            named = next((b for b in sf.blocks
+                                          if b.tag == tag and b.props.get('_name') == subkey), None)
+                            if named:
+                                print(f"\n  @{block_name} ({fname}):")
+                                print(named.render().rstrip())
+                            else:
                                 print(f"\n  @{block_name} ({fname}):")
                                 for k, v in block.props.items():
                                     if subkey in k:
@@ -1030,48 +1043,59 @@ def cmd_find(args):
                                                 print(f"    {ik}: {iv}")
                                         else:
                                             print(f"    {k}: {v}")
-                        else:
-                            block = sf.get_block(block_name)
-                            if block:
-                                print(f"\n  {fname}:@{block_name}:")
-                                print(block.render())
-                else:
-                    print(f"  file not found: {fname}", file=sys.stderr)
-        elif len(parts) >= 2 and parts[0] == 'dots' and parts[1] not in ('get', 'run'):
-            # command like "dots graph", "dots deps blender-python", etc.
+                    else:
+                        block = sf.get_block(block_name)
+                        if block:
+                            print(f"\n  {fname}:@{block_name}:")
+                            print(block.render())
+            else:
+                print(f"  file not found: {fname}", file=sys.stderr)
+        elif len(parts) >= 2 and parts[0] in ('dots', 's') and parts[1] not in ('get', 'run'):
+            # command like "dots graph", "s deps blender-python", etc.
             print(f"  {key}: {val}")
         elif isinstance(val, str):
-            # bare file reference like "docker.s linux.s ssh.s" or "strawexpress.s@express"
+            # bare references like "nginx.s @security" or "strawexpress.s@express"
+            pending_ref = None
             for token in val.split():
-                # strip @block suffix if present
-                fname = token.split('@')[0] if '@' in token else token
-                block_ref = token.split('@')[1] if '@' in token else None
-                if fname.endswith('.s') and fname not in seen:
-                    seen.add(fname)
-                    filepath = CTX_DIR / "skills" / fname
-                    if filepath.exists():
-                        sf = SFile(filepath)
-                        if block_ref:
-                            # resolve specific block
-                            block = sf.get_block(block_ref)
-                            if block:
-                                print(f"\n  {fname}:@{block_ref}:")
-                                print(block.render())
-                            else:
-                                print(f"  block @{block_ref} not found in {fname}", file=sys.stderr)
-                        else:
-                            # show all @run blocks if present, else first blocks
-                            run_blocks = [b for b in sf.blocks if b.tag == 'run']
-                            if run_blocks:
-                                print(f"\n  {fname} @run recipes:")
-                                for b in run_blocks:
-                                    first_key = next(iter(b.props), '') if b.props else ''
-                                    print(f"    dots find {first_key.split('.')[0]}  →  @{b.tag}")
-                            else:
-                                # show top blocks
-                                print(f"\n  {fname} blocks: {', '.join('@'+b.tag for b in sf.blocks[:5])}")
+                token = _norm(token)
+                if token.startswith('@'):
+                    # trailing @block applies to the previous file token
+                    pending_ref = token[1:]
+                    continue
+                fname = token
+                if not fname.endswith('.s'):
+                    continue
+                block_ref = pending_ref
+                pending_ref = None
+                file_key = f"{fname}:{block_ref}"
+                if file_key in seen:
+                    continue
+                seen.add(file_key)
+                filepath = CTX_DIR / "skills" / fname
+                if not filepath.exists():
+                    print(f"  file not found: {fname}", file=sys.stderr)
+                    continue
+                sf = SFile(filepath)
+                if block_ref:
+                    # resolve specific block
+                    block = sf.get_block(block_ref)
+                    if block:
+                        print(f"\n  {fname}:@{block_ref}:")
+                        print(block.render())
                     else:
-                        print(f"  file not found: {fname}", file=sys.stderr)
+                        print(f"  block @{block_ref} not found in {fname}", file=sys.stderr)
+                else:
+                    # show all @run recipes if present, else top blocks
+                    run_blocks = [b for b in sf.blocks if b.tag == 'run']
+                    if run_blocks:
+                        print(f"\n  {fname} @run recipes:")
+                        for b in run_blocks:
+                            recipe = b.props.get('_name')
+                            if not recipe:
+                                continue
+                            print(f"    dots run {fname} @run.{recipe}")
+                    else:
+                        print(f"\n  {fname} blocks: {', '.join('@'+b.tag for b in sf.blocks[:5])}")
 
 
 def cmd_freshness(args):
