@@ -341,23 +341,24 @@ Store your .s files in Obsidian for visual browsing:
 ## dotS + opencode: The Optimal Setup
 
 This is the reference configuration for running dotS as the context layer
-of [opencode](https://opencode.ai). It routes the *map* into the system
-prompt once and pulls skill *bodies* on demand — the fast path is cheap,
-and nothing heavy (50k tokens worth of skills) ever loads unless you ask.
+of [opencode](https://opencode.ai). A small `AGENTS.md` pointer — the V2
+instructions mechanism — routes every session to the dotS *map*, while skill
+*bodies* are pulled on demand: the fast path is cheap, and nothing heavy
+(50k tokens worth of skills) ever loads unless you ask.
 
 ### Recommended layout
 
 ```
 ~/.config/opencode/
-├── opencode.json          # wires index.s into the system prompt
-├── dotS/                  # the dotS install = the git repo (knowledge base)
+├── AGENTS.md             # global instructions — points every session at the dotS map
+├── dotS/                 # the dotS install = the git repo (knowledge base)
 │   ├── dots               # CLI wrapper — added to PATH by the installer
 │   ├── dots.py
-│   ├── index.s            # routing map — the ONLY thing loaded at start
+│   ├── index.s            # routing map — fetched via dots get, loaded on demand
 │   ├── commands/
 │   │   └── dots/*.md      # /dots/* slash-commands
 │   └── skills/*.s         # knowledge bodies — loaded on demand
-└── instructions/          # rule .s files (core.s, security.s, ...)
+└── instructions/          # optional: rule .s files (core.s, security.s, ...)
 ```
 
 `install-dots.sh` copies nothing: it adds the CLI to PATH and symlinks
@@ -366,22 +367,39 @@ the `/dots/*` commands (index, learn, skill-create, optimize, skills)
 while they live in the repo. Store, CLI, and commands update together with
 a single `git pull`.
 
-### opencode.json
+### AGENTS.md (OpenCode V2)
 
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "instructions": [
-    "~/.config/opencode/instructions/INSTRUCTIONS.md",
-    "~/.config/opencode/dotS/index.s"
-  ]
-}
+OpenCode **V2 no longer resolves the `instructions` array** in
+`opencode.json`/`cli.json` — the schema accepts it, but no file is loaded.
+The supported always-resident mechanism is `AGENTS.md` (V2 docs:
+<https://opencode.ai/v2/docs/instructions/>). The global file,
+`~/.config/opencode/AGENTS.md`, loads in every session (TUI, `opencode run`,
+subagents); the workspace then stacks any project `AGENTS.md` upward toward
+`$HOME` (discovery stops at the project root outside `$HOME`).
+
+Keep the global file a *pointer*, not a dump — the routing map stays in the
+repo and is read on demand:
+
+```md title="~/.config/opencode/AGENTS.md"
+# dotS knowledge layer
+
+This machine runs dotS as its knowledge base (install dir: ~/.config/opencode/dotS).
+dotS is ON-DEMAND — never load skills eagerly. Route knowledge questions:
+
+- dots find <topic>                     # locate skill + block
+- dots get skills/<skill>.s @block      # pull just the block you need
+- dots run skills/<skill>.s @run.x      # execute a playbook
+- dots tokens                           # audit dotS footprint
+
+The routing map lives in index.s (@quickRef shortcuts, @byTask task→skill,
+@index summaries). Read index.s first when routing a request.
+Never echo secrets (sudo passwords, key passphrases) into conversations or files.
 ```
 
-`instructions` injects the file contents into the model's system prompt on
-every start (TUI, `opencode run`, subagents). Loading `index.s` there means
-the routing map is always resident with no command, no latency, and none of
-the "did the agent remember to load it?" ambiguity.
+The pointer keeps the map's location always known for ~100 tokens; the map
+itself (~2,400 tokens) is fetched only when a request needs routing.
+Duplicating the map into `AGENTS.md` is an anti-pattern (see below) — it would
+drift from the repo on every `git pull`.
 
 ### Pointing `dots` at a sibling instructions dir
 
@@ -404,13 +422,14 @@ directory. Without this, `dots get <instructions-file>.s` fails with
 | Command | Tokens | Verdict |
 |---|---|---|
 | `dots get index.s "*"` | **~50,000** (loads every skill body) | Never do this |
-| `index.s` injected via `instructions` | ~2,400 always resident | **Recommended** |
+| `AGENTS.md` pointer + `index.s` on demand | ~100 resident, ~2,400 when routed | **Recommended** |
 | `dots get core.s @always` | ~100, occasionally | Run when coding starts |
 
 The 50k "load-all" startup both defeats dotS's token advantage and burns
-context before a single task arrives. Injecting only `index.s` keeps the
-routing map (which skill covers what, how to fetch it) always available at
-~2,400 tokens, then lets the agent pull just the block it needs:
+context before a single task arrives. `AGENTS.md` keeps the pointer resident
+for ~100 tokens; the routing map (which skill covers what, how to fetch it)
+is fetched with `dots get index.s @index @byTask` on demand (~1,100 tokens),
+then the agent pulls just the block it needs:
 
 ```bash
 dots get skills/nginx.s @ssl          # 150 tokens, on demand
@@ -419,11 +438,11 @@ dots run skills/git.s @run.quickCommit # run a playbook
 dots tokens                            # audit your own footprint
 ```
 
-### The `.s` syntax inside the injected prompt is fine
+### The `.s` syntax reads fine in context
 
 `index.s` is dense `key:value`/`|`-delimited DSL. Models read it as a routing
-table without a prologue — no need to render it to prose. If the injected
-file ever gets large, trim to the routing blocks only:
+table without a prologue — no need to render it to prose. If the map ever
+gets large, trim to the routing blocks only:
 
 ```bash
 dots get index.s @index @byTask   # ~1,100 tokens: map without shortcut tables
@@ -433,6 +452,7 @@ dots get index.s @index @byTask   # ~1,100 tokens: map without shortcut tables
 
 - ❌ `dots get index.s "*"` in your shell profile / INSTRUCTIONS.md
 - ❌ Duplicating `@quickRef` contents into AGENTS.md or prose docs
+- ❌ `"instructions": [...]` in `opencode.json`/`cli.json` — accepted by the V2 schema but **never loaded**; use `AGENTS.md`
 - ❌ Storing API keys in `index.s` or any `.s` file (commit to git is too easy)
 
 Caveat: legacy references in this README may still say `s` where the shipped
