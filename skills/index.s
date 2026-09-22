@@ -1,5 +1,5 @@
 # dotS Knowledge Base Index
-@meta |type:index|lastUpdated:2026-09-22|totalFiles:35|
+@meta |type:index|lastUpdated:2026-09-22|totalFiles:37|
 @constraints |
   pipe:"|" has three roles: block delimiter, metadata separator, value content
   pipeRule:block ends only when a line is JUST "|" — pipes inside key:value are safe
@@ -28,6 +28,8 @@
   writing-skill.s:blocks:17|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @patterns @optimize @gotchas @dependencies @mega @mutations @pollination
   comfy-t2v-ltx-2.3.s:blocks:8|topic:comfyui ltx-2.3 22b t2v on 16GB gpu|keyBlocks:@models @launch @workflow @vramMap @gotchas
   mml.s:blocks:20|topic:mml music macro language chiptune|keyBlocks:@basics @notes @lengths @loops @macros @dialects @gotchas
+  server-setup.s:blocks:10|topic:vps server hardening fail2ban firewall deploy keys|keyBlocks:@sshHarden @firewall @fail2ban @gitKeys @verify @run
+  terminal-tui.s:blocks:6|topic:terminal tui workflow herdr sessions|keyBlocks:@herdr @sessions @workflow @gotchas
 |
 @byTask |
   webServer:nginx.s
@@ -89,6 +91,10 @@
   mmlDrums:mml.s@macros mml.s@channels
   mmlDialectWest:mml.s@dialects mml.s@tools
   musicMacro:mml.s@macros
+  serverSetup:server-setup.s
+  hardening:server-setup.s@sshHarden server-setup.s@fail2ban
+  terminal:terminal-tui.s
+  herdr:terminal-tui.s@herdr
 |
 @quickRef |
   nginxSSL:s get nginx.s @ssl

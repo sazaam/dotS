@@ -59,6 +59,12 @@
   sshConfig:dots get skills/ssh.s @config
   sshTunnel:dots get skills/ssh.s @tunneling
   sshSecurity:dots get skills/ssh.s @security
+  serverSetup:dots get skills/server-setup.s
+  serverHarden:dots get skills/server-setup.s @sshHarden @fail2ban
+  fail2ban:dots get skills/server-setup.s @fail2ban
+  gitDeployKey:dots get skills/server-setup.s @gitKeys
+  terminalTui:dots get skills/terminal-tui.s
+  herdr:dots get skills/terminal-tui.s @herdr
   strawexpress:dots get skills/strawexpress.s
   strawexpressRoutes:dots get skills/strawexpress.s @express
   strawexpressStep:dots get skills/strawexpress.s @step
@@ -147,6 +153,7 @@
   sshKey:dots run skills/ssh.s @run.keySetup
   sshTunnel:dots run skills/ssh.s @run.tunnelLocal
   sshDeployKey:dots run skills/ssh.s @run.deployKey
+  serverHarden:dots run skills/server-setup.s @run.harden
   nodeDeploy:dots run skills/node.s @run.buildDeploy
   nodeDev:dots run skills/node.s @run.devSetup
   nodeTest:dots run skills/node.s @run.testSuite
@@ -192,7 +199,7 @@
   pug:skills/jade.s @vsPug
   containers:skills/docker.s
   compose:skills/docker.s @compose
-  deployment:skills/docker.s skills/linux.s skills/ssh.s
+  deployment:skills/docker.s skills/linux.s skills/ssh.s skills/server-setup.s
   versionControl:skills/git.s
   branching:skills/git.s @branching
   committing:skills/git.s @committing
@@ -257,7 +264,14 @@
   musicGen:skills/comfy-minimax-music3.s
   comfyMusic:skills/comfy-minimax-music3.s @workflow skills/comfy-minimax-music3.s @models
   textToMusic:skills/comfy-minimax-music3.s @workflow
-  security:skills/nginx.s @ssl skills/nginx.s @security skills/ssh.s @security
+  security:skills/nginx.s @ssl skills/nginx.s @security skills/ssh.s @security skills/server-setup.s @fail2ban
+  serverSetup:skills/server-setup.s
+  vps:skills/server-setup.s skills/ssh.s
+  hardening:skills/server-setup.s @sshHarden @fail2ban @firewall
+  deployKey:skills/server-setup.s @gitKeys
+  terminal:skills/terminal-tui.s
+  tui:skills/terminal-tui.s @herdr @sessions
+  herdr:skills/terminal-tui.s @herdr
   performance:skills/node.s @performance skills/nginx.s @cache
   blenderAddon:skills/blender-addon.s @manifest @gotchas
   addonKeymaps:skills/blender-addon.s @keymaps
@@ -292,5 +306,7 @@
   linux-wapp.s:blocks:6|topic:wapp isolated browser apps|keyBlocks:@commands @isolation @fileLayout @multiAccount @gotchas
   comfy-t2v-ltx-2.3.s:blocks:8|topic:comfyui ltx-2.3 22b t2v on 16GB gpu|keyBlocks:@models @launch @workflow @vramMap @gotchas
   comfy-minimax-music3.s:blocks:8|topic:comfyui minimax music 3 t2m on 16GB gpu|keyBlocks:@models @workflow @launch @runCmd @gotchas
+  server-setup.s:blocks:10|topic:vps server hardening fail2ban firewall deploy keys|keyBlocks:@sshHarden @firewall @fail2ban @gitKeys @verify @run
+  terminal-tui.s:blocks:6|topic:terminal tui workflow herdr sessions|keyBlocks:@herdr @sessions @workflow @gotchas
   index.s:blocks:4|topic:dotS knowledge base index|keyBlocks:@index @byTask @quickRef @runQuickRef
 |
