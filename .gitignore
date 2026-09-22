@@ -1,6 +1,9 @@
 .sessions/
 .state/
+.snaps/
 __pycache__/
+skills/.deps/*
+skills/.mega/*
 skills/.mutations/*
 !skills/.mutations/example.mut
 skills/nexinebula.s

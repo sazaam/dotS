@@ -2,7 +2,6 @@
   name:dotS
   ver:0.1.0
 |
-
 @quickRef |
   ponytail:dots get skills/ponytail.s @rules
   ponytailReview:dots get skills/ponytail.s @run.review
@@ -74,13 +73,12 @@
   strawnode:dots get skills/strawnode.s
   strawnodeBoot:dots get skills/strawnode.s @boot
   strawnodeModules:dots get skills/strawnode.s @modules
-  strawnodeSections:dots get skills/strawnode.s @sectionSystem
+  strawnodeSections:dots get skills/strawnode-prototype.s @sectionFactory
   strawnodeJade:dots get skills/strawnode.s @jadeTemplates
   strawnodePrototype:dots get skills/strawnode-prototype.s
   strawnodeSession:dots get skills/strawnode-prototype.s @session
   strawnodePhilosophy:dots get skills/strawnode-prototype.s @philosophy
   strawnodeScaffold:dots get skills/strawnode-prototype.s @playbook
-  strawnodeSections:dots get skills/strawnode-prototype.s @sectionFactory
   strawnodeToggle:dots get skills/strawnode-prototype.s @graphics
   strawnodeJson:dots get skills/strawnode-prototype.s @jadeJson
   strawnodeVerify:dots get skills/strawnode-prototype.s @verification
@@ -105,7 +103,11 @@
   misePython:dots get skills/mise.s @python
   miseTasks:dots get skills/mise.s @tasks
   blenderDeps:dots deps blender-python
-  blenderLoad:s load blender-python
+  blenderLoad:dots load blender-python
+  blenderAddon:dots get skills/blender-addon.s
+  blenderAddonKeymaps:dots get skills/blender-addon.s @keymaps
+  blenderOverlay:dots get skills/blender-addon.s @overlayDraw
+  blenderAddonScaffold:dots get skills/blender-addon.s @run
   graphShow:dots graph
   graphDeps:dots graph --deps
   megaList:dots mega list
@@ -116,7 +118,6 @@
   pollinateList:dots pollinate list
   pollinateAll:dots pollinate --all
 |
-
 @runQuickRef |
   htmlValidate:npx htmlhint **/*.html
   htmlLint:npx stylelint **/*.css
@@ -164,7 +165,6 @@
   comfyMusicRun:dots get skills/comfy-minimax-music3.s @runCmd
   comfyMusicGotchas:dots get skills/comfy-minimax-music3.s @gotchas
 |
-
 @byTask |
   minimalCode:skills/ponytail.s
   codeReview:skills/ponytail.s
@@ -259,9 +259,11 @@
   textToMusic:skills/comfy-minimax-music3.s @workflow
   security:skills/nginx.s @ssl skills/nginx.s @security skills/ssh.s @security
   performance:skills/node.s @performance skills/nginx.s @cache
+  blenderAddon:skills/blender-addon.s @manifest @gotchas
+  addonKeymaps:skills/blender-addon.s @keymaps
+  overlayDrawing:skills/blender-addon.s @overlayDraw @modalPattern
   logAnalysis:skills/linux.s @logAnalysis
 |
-
 @index |
   ponytail.s:blocks:8|topic:yagni minimal code|keyBlocks:@rules @commands
   css.s:blocks:13|topic:css styling layout verification|keyBlocks:@flexbox @grid @gotchas @modern @run
@@ -284,6 +286,7 @@
   betweenjs.s:blocks:11|topic:BetweenJS animation engine|keyBlocks:@tweenHierarchy @easing @publicAPI @color @modernEnhancements
   type.s:blocks:8|topic:Type.js OOP class system|keyBlocks:@core @packages @slots @usage @quirks
   blender-python.s:blocks:17|topic:blender python API bpy 5.2+|keyBlocks:@core @modules @operators @bmesh @gpu @gotchas
+  blender-addon.s:blocks:16|topic:blender addon authoring extensions keymaps overlay drawing|keyBlocks:@manifest @keymaps @overlayDraw @layouts @versionGotchas @run
   writing-skill.s:blocks:20|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @honesty @patterns @optimize @gotchas @dependencies @mega @mutations @pollination
   mise.s:blocks:14|topic:mise tool version manager env tasks|keyBlocks:@tools @config @python @node @env @tasks @gotchas @run
   linux-wapp.s:blocks:6|topic:wapp isolated browser apps|keyBlocks:@commands @isolation @fileLayout @multiAccount @gotchas

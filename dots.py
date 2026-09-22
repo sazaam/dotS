@@ -314,6 +314,7 @@ class Block:
         self.tag = tag
         self.raw = raw
         self.props: dict = {}
+        self._items: list = []  # Bare entries appended without a key
         self.inline = False  # Track if block uses inline format
         self._parse(raw)
 
@@ -337,34 +338,46 @@ class Block:
                 self.props.setdefault('_targets', []).append({'_rel': sym, '_to': target})
 
     def _parse_val(self, val: str):
-        if val.startswith('[') and val.endswith(']'):
-            inner = val[1:-1]
-            result = []
-            for v in self._split_list(inner):
-                v = v.strip()
-                # Only strip outer quotes, not quotes within the value
-                if (v.startswith('"') and v.endswith('"')) or (v.startswith("'") and v.endswith("'")):
-                    v = v[1:-1].strip()
-                result.append(v)
-            return result
-        if val.startswith('{') and val.endswith('}'):
-            inner = val[1:-1]
-            return self._parse_inline_map(inner)
-        # Only strip outer quotes, not quotes within the value
-        if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
-            return val[1:-1].strip()
-        return val.strip()
+        v = val.strip()
+        # Values are only interpreted as lists/maps when re-rendering can
+        # reproduce the exact original text. Free-text and code snippets
+        # (css selectors, JS spread syntax, python comprehensions, ...) are
+        # kept as plain strings so any dots save round-trips losslessly.
+        if v.startswith('[') and v.endswith(']'):
+            inner = v[1:-1]
+            # Round-trip safe list: no nesting, pipes, assignments or spaces.
+            if ('[' not in inner and ']' not in inner and '|' not in inner
+                    and '=' not in inner and ' ' not in inner):
+                # Keep item text verbatim (no quote stripping) so rendering
+                # returns the exact original value.
+                return [item.strip() for item in self._split_list(inner)]
+            return v
+        if v.startswith('{') and v.endswith('}'):
+            inner = v[1:-1]
+            # A map needs key:value/comma structure AND no pipes:
+            # {'A'} | {'B'} is a pipe-separated value, not a map literal.
+            if '|' not in inner and re.search(r'[:,]', inner):
+                return self._parse_inline_map(inner)
+            return v
+        # Strip quotes only when the whole value is a single cleanly-quoted
+        # token (no quote char inside). Mixed text like `"add-on" or "theme"`
+        # therefore stays untouched and round-trips unchanged.
+        if ((v.startswith('"') and v.endswith('"') and v.count('"') == 2)
+                or (v.startswith("'") and v.endswith("'") and v.count("'") == 2)):
+            return v[1:-1].strip()
+        return v
 
     def _split_list(self, s: str) -> list:
         result = []
         depth = 0
         current = ''
+        closers = {']', ')', '}'}
         for ch in s:
-            if ch == '[':
+            if ch in '[({':
                 depth += 1
                 current += ch
-            elif ch == ']':
-                depth -= 1
+            elif ch in closers:
+                depth = max(0, depth - 1)
                 current += ch
             elif ch == ',' and depth == 0:
                 result.append(current.strip())
@@ -398,6 +411,19 @@ class Block:
         current.append(value)
         self.props[key] = current
 
+    def append(self, value: str):
+        """Append a bare entry to the block (no key given).
+
+        If the value is a `key:value` line whose key is not already present it
+        becomes a regular property line; otherwise it is kept verbatim as an
+        item line so nothing is lost.
+        """
+        m = re.match(r'^(\S+?)(?:\s*[=:]\s*|\s+)(.+)$', value)
+        if m and m.group(1) not in self.props:
+            self.props[m.group(1)] = self._parse_val(m.group(2).strip())
+        else:
+            self._items.append(value)
+
     def to_dict(self) -> dict:
         return {self.tag: self.props}
 
@@ -406,7 +432,7 @@ class Block:
         block_name = self.props.get('_name')
         
         # Check if we can render inline (all props are simple strings, no _name)
-        can_inline = (self.inline and 
+        can_inline = (self.inline and not self._items and
                       '_name' not in self.props and
                       all(isinstance(v, str) for v in self.props.values()))
         
@@ -424,6 +450,8 @@ class Block:
             if k == '_name':
                 continue  # Already included in tag line
             lines.append(self._render_kv(k, v))
+        for item in self._items:
+            lines.append(f'  {item}')
         lines.append('|')
         return '\n'.join(lines)
 
@@ -498,6 +526,14 @@ class SFile:
                 header_lines.append(line)
             elif stripped:
                 header_lines.append(line)
+
+        # Finalize a trailing block that was never closed by a '|' line.
+        # Without this, saving a file that ends inside a block would silently
+        # drop the last (partial) block.
+        if current_tag is not None:
+            block = Block(current_tag, '\n'.join(current_lines))
+            block.inline = current_inline
+            self.blocks.append(block)
 
         self.header = '\n'.join(header_lines)
 
@@ -717,13 +753,17 @@ def cmd_add(args):
     value = ' '.join(args[2:])
     if key:
         block.add(key, value)
+    else:
+        # No key: append a bare entry line (key:value lines become props).
+        block.append(value)
     sf.set_block(block)
     sf.save()
     
     # Log session
-    _log_session('add', args, f"@{block_tag}.{key}+={value}")
+    target = f"@{block_tag}.{key}" if key else f"@{block_tag}"
+    _log_session('add', args, f"{target}+={value}")
     
-    print(f"  ✓ added to @{block_tag}.{key}")
+    print(f"  ✓ added to {target}")
 
 
 def cmd_list(args):
@@ -1551,6 +1591,11 @@ def _is_obvious_why(key: str, why_value: str, parent_value: str) -> bool:
 
 def _simplify_value(key: str, value: str) -> str:
     """Simplify a value string without sacrificing clarity."""
+    # Never touch values with quotes, braces, brackets or pipes anywhere -
+    # they carry structured/code content the phrase rules could corrupt.
+    if any(ch in value for ch in '"{[|]}'):
+        return value
+
     if not value or value.startswith(('git ', 'npx ', 'certbot ', 'nginx ', 'systemctl ',
                                       'curl ', 'echo ', 'cat ', 'tail ', 'netstat ',
                                       'ps ', 'ss ', 'grep ', 'find ', '#', 'http',

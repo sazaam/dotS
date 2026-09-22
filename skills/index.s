@@ -1,5 +1,5 @@
 # dotS Knowledge Base Index
-@meta |type:index|lastUpdated:2026-09-16|totalFiles:34|
+@meta |type:index|lastUpdated:2026-09-22|totalFiles:35|
 @constraints |
   pipe:"|" has three roles: block delimiter, metadata separator, value content
   pipeRule:block ends only when a line is JUST "|" — pipes inside key:value are safe
@@ -22,6 +22,7 @@
   strawnode.s:blocks:7|topic:strawnode boot framework|keyBlocks:@boot @modules @sectionSystem @jadeTemplates
   betweenjs.s:blocks:11|topic:BetweenJS animation engine|keyBlocks:@tweenHierarchy @easing @publicAPI @color @modernEnhancements
   blender-python.s:blocks:19|topic:blender python API bpy 5.2+|keyBlocks:@core @modules @operators @bmesh @gpu @vse @gotchas
+  blender-addon.s:blocks:16|topic:blender addon authoring extensions keymaps overlay drawing|keyBlocks:@manifest @keymaps @overlayDraw @layouts @versionGotchas @run
   ffmpeg.s:blocks:13|topic:ffmpeg audio video processing|keyBlocks:@trimSilence @pitchFormant @loudness @concat @gotchas @run
   audio-drama-pipeline.s:blocks:9|topic:per-line theatrical audio drama recording pipeline|keyBlocks:@flow @trim @pacing @loudness @gotchas @futureProject
   writing-skill.s:blocks:17|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @patterns @optimize @gotchas @dependencies @mega @mutations @pollination
@@ -60,7 +61,9 @@
   i18n:strawnode.s@modules
   reactive:strawexpress.s@domnode
   blender:blender-python.s
-  blenderAddon:blender-python.s@extensions blender-python.s@operators
+  blenderAddon:blender-addon.s @manifest @gotchas
+  addonKeymaps:blender-addon.s@keymaps
+  overlayDrawing:blender-addon.s@overlayDraw blender-addon.s@modalPattern
   blenderMesh:blender-python.s@bmesh
   blenderGPU:blender-python.s@gpu
   blenderNodes:blender-python.s@geometryNodes blender-python.s@materialNodes
@@ -100,7 +103,10 @@
   blenderAPI:s get blender-python.s @modules
   blenderBMesh:s get blender-python.s @bmesh
   blenderGPU:s get blender-python.s @gpu
-  blenderAddon:s get blender-python.s @extensions
+  blenderAddon:s get blender-addon.s
+  blenderAddonKeymaps:s get blender-addon.s @keymaps
+  blenderOverlay:s get blender-addon.s @overlayDraw
+  blenderAddonScaffold:s get blender-addon.s @run
   blenderVSE:s get blender-python.s @vse
   ffmpegTrim:s get ffmpeg.s @trimSilence
   ffmpegPitch:s get ffmpeg.s @pitchFormant

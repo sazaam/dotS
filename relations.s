@@ -8,3 +8,4 @@ $rust ~ $python            # same conceptual spacing (collections, strings)
 $rust ~ $node              # systems adjacent to JS runtimes
 $rust ~ $javascript        # languages, syntax differ
 $rust ~ $ponytail          # YAGNI discipline applies to Rust design
+$blender-addon ~ $blender-python  # addon authoring leans on bpy API knowledge

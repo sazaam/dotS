@@ -24,14 +24,25 @@ dotS is a **Python script** that stores knowledge in `.s` files. Instead of verb
 
 ### Quick Install
 
-```bash
-# Clone the repository
-git clone https://github.com/sazaam/dots.git
+dotS is a git repo designed to run **in place** — clone it straight to its
+canonical home and let the installer wire it into opencode:
 
-# Use the installer (auto-detects location, adds to PATH)
-cd ~/.dotS && ./install-dots.sh
+```bash
+# Clone directly where it lives (the opencode config tree)
+git clone git@github.com:sazaam/dotS.git ~/.config/opencode/dotS
+
+# Installer: adds the CLI to PATH and links the /dots/* commands
+cd ~/.config/opencode/dotS && ./install-dots.sh
 
 source ~/.zshrc  # or ~/.bashrc
+```
+
+No copying, no moving folders. The installer symlinks the `/dots/*`
+slash-commands into `~/.config/opencode/commands/`, so they ship in the
+same repo as the skills they manipulate and update together:
+
+```bash
+git -C ~/.config/opencode/dotS pull
 ```
 
 ### Verify
@@ -43,13 +54,21 @@ dots help
 
 ### Portable
 
-dotS is **location-agnostic**. Place it anywhere:
-- `~/.config/opencode/dotS/` (opencode)
+dotS is **location-agnostic** — `dots.py` resolves its store from the
+`S_DIR` env var or, by default, the directory it lives in. Place it
+anywhere:
+- `~/.config/opencode/dotS/` (opencode — recommended, zero symlinks)
 - `~/.local/share/dotS/` (generic)
 - `/opt/dotS/` (system-wide)
 - `~/projects/dotS/` (development)
 
 The installer auto-detects its location and configures PATH accordingly.
+For opencode, either clone to `~/.config/opencode/dotS/` directly, or clone
+elsewhere and pin the config tree to the repo with one symlink:
+
+```bash
+ln -s ~/projects/dotS ~/.config/opencode/dotS
+```
 
 ## How It Works
 
@@ -331,13 +350,21 @@ and nothing heavy (50k tokens worth of skills) ever loads unless you ask.
 ```
 ~/.config/opencode/
 ├── opencode.json          # wires index.s into the system prompt
-├── dotS/                  # the dotS install (knowledge base)
-│   ├── dots               # CLI wrapper (~/.local/bin/dots)
+├── dotS/                  # the dotS install = the git repo (knowledge base)
+│   ├── dots               # CLI wrapper — added to PATH by the installer
 │   ├── dots.py
 │   ├── index.s            # routing map — the ONLY thing loaded at start
+│   ├── commands/
+│   │   └── dots/*.md      # /dots/* slash-commands
 │   └── skills/*.s         # knowledge bodies — loaded on demand
 └── instructions/          # rule .s files (core.s, security.s, ...)
 ```
+
+`install-dots.sh` copies nothing: it adds the CLI to PATH and symlinks
+`commands/dots` into `~/.config/opencode/commands/`, so opencode discovers
+the `/dots/*` commands (index, learn, skill-create, optimize, skills)
+while they live in the repo. Store, CLI, and commands update together with
+a single `git pull`.
 
 ### opencode.json
 
