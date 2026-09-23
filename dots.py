@@ -664,8 +664,7 @@ def cmd_get(args):
         print(f"File not found: {filepath}", file=sys.stderr)
         sys.exit(1)
 
-    # Track as loaded
-    _track_loaded(args[0])
+    # Track as invoked (session audit)
     _log_session('get', args)
 
     sf = SFile(filepath)
@@ -691,6 +690,9 @@ def cmd_get(args):
             print(block.render())
     else:
         print(sf.render(), end='')
+
+    # Only record as loaded once the fetch actually succeeded
+    _track_loaded(args[0])
 
     # Auto-load all skills when loading index.s
     if args[0] == 'index.s':
@@ -786,41 +788,6 @@ def cmd_list(args):
     for b in sf.blocks:
         keys = ', '.join(b.props.keys()) if b.props else '(empty)'
         print(f"    @{b.tag:20s} {keys}")
-
-
-def cmd_graph(args):
-    """Show relationship graph."""
-    relations_file = CTX_DIR / "relations.s"
-    if not relations_file.exists():
-        print("  No relations.s found. Run 's init' first.", file=sys.stderr)
-        sys.exit(1)
-
-    content = relations_file.read_text()
-    lines = []
-    for line in content.splitlines():
-        line = line.strip()
-        if not line or line.startswith('#'):
-            continue
-        lines.append(line)
-
-    if not lines:
-        print("  (empty graph)")
-        return
-
-    # build adjacency list
-    nodes = {}
-    for line in lines:
-        m = re.match(r'^(\S+)\s*([>!<~^])\s*(\S+)(?:\s*.*)?$', line)
-        if m:
-            src, rel, dst = m.group(1), m.group(2), m.group(3)
-            nodes.setdefault(src, []).append((rel, dst))
-
-    # render
-    print("  relationships:")
-    for src, targets in nodes.items():
-        for rel, dst in targets:
-            sym = {'>': '→', '<': '←', '!': '✗', '~': '~', '^': '^'}.get(rel, rel)
-            print(f"    {src} {sym} {dst}")
 
 
 def cmd_validate(args):
@@ -938,7 +905,7 @@ def cmd_search(args):
 def cmd_cat(args):
     """Raw output of a file (no parsing)."""
     if not args:
-        print("Usage: s cat <file>", file=sys.stderr)
+        print("Usage: dots cat <file>", file=sys.stderr)
         sys.exit(1)
 
     filepath = resolve_file(args[0])
@@ -951,13 +918,13 @@ def cmd_cat(args):
 
 def cmd_where(args):
     """Show the context directory path."""
-    print(f"  {CTX_DIR}")
+    print(CTX_DIR)
 
 
 def cmd_rm(args):
     """Remove a key from a block."""
     if len(args) < 2:
-        print("Usage: s rm <file> <block.key>", file=sys.stderr)
+        print("Usage: dots rm <file> <block.key>", file=sys.stderr)
         sys.exit(1)
 
     filepath = resolve_file(args[0])
@@ -1049,9 +1016,13 @@ def cmd_find(args):
         return fn[len('skills/'):] if fn.startswith('skills/') else fn
 
     for source, key, val in matches:
+        if source == 'index':
+            # summary line (e.g. "skills/nginx.s: blocks:21|topic:...") - render as-is
+            print(f"\n  {key}: {val}")
+            continue
         parts = val.split() if isinstance(val, str) else []
         if len(parts) >= 3 and parts[0] in ('dots', 's') and parts[1] in ('get', 'run'):
-            # parse "dots get skills/nginx.s @block" or "s run nginx.s @run.block"
+            # parse "dots get skills/nginx.s @block" or "dots run nginx.s @run.block"
             fname = _norm(parts[2])
             block_ref = parts[3] if len(parts) > 3 else None
             file_key = f"{fname}:{block_ref}"
@@ -1091,51 +1062,63 @@ def cmd_find(args):
             else:
                 print(f"  file not found: {fname}", file=sys.stderr)
         elif len(parts) >= 2 and parts[0] in ('dots', 's') and parts[1] not in ('get', 'run'):
-            # command like "dots graph", "s deps blender-python", etc.
+            # command like "dots graph", "dots deps blender-python", etc.
             print(f"  {key}: {val}")
         elif isinstance(val, str):
-            # bare references like "nginx.s @security" or "strawexpress.s@express"
+            # bare references: "nginx.s @security", "strawexpress.s@express",
+            # "file.s @one @two", or a leading "@manifest file.s" form.
+            files = []   # list of [fname, [block_refs...]]
             pending_ref = None
             for token in val.split():
                 token = _norm(token)
+                m = re.match(r'^(skills/)?([\w.\-]+\.s)(?:@(\w+))?$', token)
+                if m:
+                    fname = m.group(2)
+                    refs = [m.group(3)] if m.group(3) else []
+                    if pending_ref:
+                        refs.insert(0, pending_ref)
+                        pending_ref = None
+                    files.append([fname, refs])
+                    continue
                 if token.startswith('@'):
-                    # trailing @block applies to the previous file token
-                    pending_ref = token[1:]
-                    continue
-                fname = token
-                if not fname.endswith('.s'):
-                    continue
-                block_ref = pending_ref
-                pending_ref = None
-                file_key = f"{fname}:{block_ref}"
-                if file_key in seen:
-                    continue
-                seen.add(file_key)
-                filepath = CTX_DIR / "skills" / fname
-                if not filepath.exists():
-                    print(f"  file not found: {fname}", file=sys.stderr)
-                    continue
-                sf = SFile(filepath)
-                if block_ref:
-                    # resolve specific block
-                    block = sf.get_block(block_ref)
-                    if block:
-                        print(f"\n  {fname}:@{block_ref}:")
-                        print(block.render())
+                    ref = token[1:]
+                    if files:
+                        # trailing @block applies to the previous file token
+                        files[-1][1].append(ref)
                     else:
-                        print(f"  block @{block_ref} not found in {fname}", file=sys.stderr)
-                else:
-                    # show all @run recipes if present, else top blocks
-                    run_blocks = [b for b in sf.blocks if b.tag == 'run']
-                    if run_blocks:
-                        print(f"\n  {fname} @run recipes:")
-                        for b in run_blocks:
-                            recipe = b.props.get('_name')
-                            if not recipe:
-                                continue
-                            print(f"    dots run {fname} @run.{recipe}")
+                        # leading @block applies to the next file token
+                        pending_ref = ref
+            for fname, refs in files:
+                for block_ref in (refs or [None]):
+                    file_key = f"{fname}:{block_ref}"
+                    if file_key in seen:
+                        continue
+                    seen.add(file_key)
+                    filepath = CTX_DIR / "skills" / fname
+                    if not filepath.exists():
+                        print(f"  file not found: {fname}", file=sys.stderr)
+                        continue
+                    sf = SFile(filepath)
+                    if block_ref:
+                        # resolve specific block
+                        block = sf.get_block(block_ref)
+                        if block:
+                            print(f"\n  {fname}:@{block_ref}:")
+                            print(block.render())
+                        else:
+                            print(f"  block @{block_ref} not found in {fname}", file=sys.stderr)
                     else:
-                        print(f"\n  {fname} blocks: {', '.join('@'+b.tag for b in sf.blocks[:5])}")
+                        # show all @run recipes if present, else top blocks
+                        run_blocks = [b for b in sf.blocks if b.tag == 'run']
+                        if run_blocks:
+                            print(f"\n  {fname} @run recipes:")
+                            for b in run_blocks:
+                                recipe = b.props.get('_name')
+                                if not recipe:
+                                    continue
+                                print(f"    dots run {fname} @run.{recipe}")
+                        else:
+                            print(f"\n  {fname} blocks: {', '.join('@'+b.tag for b in sf.blocks[:5])}")
 
 
 def cmd_freshness(args):
@@ -1421,19 +1404,19 @@ def cmd_stats(args):
         print(f"    (indicates .s knowledge was insufficient)")
     print(f"")
     print(f"  tips:")
-    print(f"    s stats --all       # show all sessions")
-    print(f"    s tokens            # count tokens in all .s files")
+    print(f"    dots stats --all       # show all sessions")
+    print(f"    dots tokens            # count tokens in all .s files")
 
 
 def cmd_learn(args):
     """Learn from websearch output and update .s files.
 
-    Usage: s learn <file.s> <block.key> <value>
-           s learn <file.s> <block.key> --from-websearch 'websearch output'
+    Usage: dots learn <file.s> <block.key> <value>
+           dots learn <file.s> <block.key> --from-websearch 'websearch output'
     """
     if len(args) < 3:
-        print("Usage: s learn <file.s> <block.key> <value>", file=sys.stderr)
-        print("       s learn <file.s> <block.key> --from-websearch 'output'", file=sys.stderr)
+        print("Usage: dots learn <file.s> <block.key> <value>", file=sys.stderr)
+        print("       dots learn <file.s> <block.key> --from-websearch 'output'", file=sys.stderr)
         sys.exit(1)
 
     filepath = CTX_DIR / "skills" / args[0]
@@ -1480,7 +1463,7 @@ def cmd_learn(args):
         block.set(key, value)
     else:
         # no key, treat as block content update
-        print(f"  specify key: s learn {args[0]} {block_tag}.<key> <value>", file=sys.stderr)
+        print(f"  specify key: dots learn {args[0]} {block_tag}.<key> <value>", file=sys.stderr)
         sys.exit(1)
 
     # update lastUpdated in @meta
@@ -1875,9 +1858,9 @@ def cmd_help(args):
 def cmd_refresh(args):
     """Refresh .s files based on freshness/confidence.
     
-    Usage: s refresh <file.s>           # refresh specific file
-           s refresh --all              # refresh all stale files
-           s refresh --confidence low   # refresh only low-confidence files
+    Usage: dots refresh <file.s>           # refresh specific file
+           dots refresh --all              # refresh all stale files
+           dots refresh --confidence low   # refresh only low-confidence files
     """
     from datetime import datetime, timedelta
     
@@ -1902,7 +1885,7 @@ def cmd_refresh(args):
             target_file = arg
     
     if not target_file and not refresh_all and not confidence_filter:
-        print("Usage: s refresh <file.s> | --all | --confidence <level>", file=sys.stderr)
+        print("Usage: dots refresh <file.s> | --all | --confidence <level>", file=sys.stderr)
         sys.exit(1)
     
     today = datetime.now()
@@ -1986,14 +1969,14 @@ def cmd_refresh(args):
 def cmd_unload(args):
     """Unload .s files from context.
     
-    Usage: s unload skills/nginx.s      # unload specific file
-           s unload skills/*             # unload all skills
-           s unload index                # unload index.s
-           s unload --list               # show loaded files
+    Usage: dots unload skills/nginx.s      # unload specific file
+           dots unload skills/*             # unload all skills
+           dots unload index                # unload index.s
+           dots unload --list               # show loaded files
     """
     if not args:
-        print("Usage: s unload <file.s> | skills/* | index | --list", file=sys.stderr)
-        print("  bare 's unload' is not allowed - specify what to unload", file=sys.stderr)
+        print("Usage: dots unload <file.s> | skills/* | index | --list", file=sys.stderr)
+        print("  bare 'dots unload' is not allowed - specify what to unload", file=sys.stderr)
         sys.exit(1)
     
     if args[0] == '--list':
@@ -2047,16 +2030,16 @@ def cmd_unload(args):
             print(f"  {target} was not loaded")
     
     else:
-        print("Usage: s unload <file.s> | skills/* | index | --list", file=sys.stderr)
+        print("Usage: dots unload <file.s> | skills/* | index | --list", file=sys.stderr)
         sys.exit(1)
 
 
 def cmd_compact(args):
     """Compact session learnings into .s files.
     
-    Usage: s compact                  # apply pending changes
-           s compact --dry-run        # preview changes
-           s compact --force          # overwrite existing values
+    Usage: dots compact                  # apply pending changes
+           dots compact --dry-run        # preview changes
+           dots compact --force          # overwrite existing values
     """
     dry_run = '--dry-run' in args
     force = '--force' in args
@@ -2169,7 +2152,7 @@ def cmd_compact(args):
         _clear_session_log()
         print(f"\n  ✓ compacted {files_updated} file(s), session log cleared")
     elif dry_run:
-        print(f"\n  dry-run complete. Use 's compact' to apply.")
+        print(f"\n  dry-run complete. Use 'dots compact' to apply.")
     else:
         print("  no changes to apply")
 
@@ -2183,17 +2166,17 @@ def cmd_loaded(args):
         print(f"  loaded files ({len(loaded)}):")
         for f in loaded:
             print(f"    {f}")
-        print(f"\n  use 's unload <file>' to unload")
+        print(f"\n  use 'dots unload <file>' to unload")
 
 
 def cmd_lock(args):
     """Lock skills to prevent optimization.
     
-    Usage: s lock <skill> [skill2] ...
-           s lock writing-skill blender-python
+    Usage: dots lock <skill> [skill2] ...
+           dots lock writing-skill blender-python
     """
     if not args:
-        print("Usage: s lock <skill> [skill2] ...", file=sys.stderr)
+        print("Usage: dots lock <skill> [skill2] ...", file=sys.stderr)
         sys.exit(1)
     
     locked = _get_locked()
@@ -2229,12 +2212,12 @@ def cmd_lock(args):
 def cmd_unlock(args):
     """Unlock skills to allow optimization.
     
-    Usage: s unlock <skill> [skill2] ...
-           s unlock writing-skill blender-python
-           s unlock --all
+    Usage: dots unlock <skill> [skill2] ...
+           dots unlock writing-skill blender-python
+           dots unlock --all
     """
     if not args:
-        print("Usage: s unlock <skill> [skill2] ... | --all", file=sys.stderr)
+        print("Usage: dots unlock <skill> [skill2] ... | --all", file=sys.stderr)
         sys.exit(1)
     
     locked = _get_locked()
@@ -2291,7 +2274,7 @@ def cmd_locked(args):
         print(f"  locked skills ({len(locked)}):")
         for f in locked:
             print(f"    {f}")
-        print(f"\n  use 's unlock <skill>' to unlock")
+        print(f"\n  use 'dots unlock <skill>' to unlock")
 
 
 def cmd_deps(args):
@@ -2333,11 +2316,11 @@ def cmd_deps(args):
 def cmd_load(args):
     """Load a skill and all its dependencies.
     
-    Usage: s load <skill>
-           s load blender-python
+    Usage: dots load <skill>
+           dots load blender-python
     """
     if not args:
-        print("Usage: s load <skill>", file=sys.stderr)
+        print("Usage: dots load <skill>", file=sys.stderr)
         sys.exit(1)
     
     skill_name = args[0]
@@ -2406,13 +2389,13 @@ def cmd_graph(args):
 def cmd_mega(args):
     """Manage mega-skills (skill bundles).
     
-    Usage: s mega list
-           s mega create <name> <skill1> <skill2> ...
-           s mega load <name>
-           s mega show <name>
+    Usage: dots mega list
+           dots mega create <name> <skill1> <skill2> ...
+           dots mega load <name>
+           dots mega show <name>
     """
     if not args:
-        print("Usage: s mega <list|create|load|show>", file=sys.stderr)
+        print("Usage: dots mega <list|create|load|show>", file=sys.stderr)
         sys.exit(1)
     
     action = args[0]
@@ -2428,7 +2411,7 @@ def cmd_mega(args):
     
     elif action == 'create':
         if len(args) < 3:
-            print("Usage: s mega create <name> <skill1> <skill2> ...", file=sys.stderr)
+            print("Usage: dots mega create <name> <skill1> <skill2> ...", file=sys.stderr)
             sys.exit(1)
         
         name = args[1]
@@ -2438,7 +2421,7 @@ def cmd_mega(args):
     
     elif action == 'load':
         if len(args) < 2:
-            print("Usage: s mega load <name>", file=sys.stderr)
+            print("Usage: dots mega load <name>", file=sys.stderr)
             sys.exit(1)
         
         name = args[1]
@@ -2450,7 +2433,7 @@ def cmd_mega(args):
     
     elif action == 'show':
         if len(args) < 2:
-            print("Usage: s mega show <name>", file=sys.stderr)
+            print("Usage: dots mega show <name>", file=sys.stderr)
             sys.exit(1)
         
         name = args[1]
@@ -2471,12 +2454,12 @@ def cmd_mega(args):
 def cmd_mutate(args):
     """Create or list skill mutations.
     
-    Usage: s mutate list
-           s mutate create <base_skill> <context> [name]
-           s mutate show <name>
+    Usage: dots mutate list
+           dots mutate create <base_skill> <context> [name]
+           dots mutate show <name>
     """
     if not args:
-        print("Usage: s mutate <list|create|show>", file=sys.stderr)
+        print("Usage: dots mutate <list|create|show>", file=sys.stderr)
         sys.exit(1)
     
     action = args[0]
@@ -2492,7 +2475,7 @@ def cmd_mutate(args):
     
     elif action == 'create':
         if len(args) < 3:
-            print("Usage: s mutate create <base_skill> <context> [name]", file=sys.stderr)
+            print("Usage: dots mutate create <base_skill> <context> [name]", file=sys.stderr)
             sys.exit(1)
         
         base_skill = args[1]
@@ -2504,7 +2487,7 @@ def cmd_mutate(args):
     
     elif action == 'show':
         if len(args) < 2:
-            print("Usage: s mutate show <name>", file=sys.stderr)
+            print("Usage: dots mutate show <name>", file=sys.stderr)
             sys.exit(1)
         
         name = args[1]
@@ -2526,15 +2509,15 @@ def cmd_mutate(args):
 def cmd_pollinate(args):
     """Cross-pollinate skills (share patterns).
     
-    Usage: s pollinate list
-           s pollinate <skill1> <skill2>
-           s pollinate --all
+    Usage: dots pollinate list
+           dots pollinate <skill1> <skill2>
+           dots pollinate --all
     """
     # Blocks present in every skill — name-matching produces false positives
     SKIP = {'meta', 'gotchas', 'debugging', 'basics', 'run', 'core', 'config', 'index'}
     
     if not args:
-        print("Usage: s pollinate <skill1> <skill2> | --all", file=sys.stderr)
+        print("Usage: dots pollinate <skill1> <skill2> | --all", file=sys.stderr)
         sys.exit(1)
     
     if args[0] == 'list':
@@ -2568,7 +2551,7 @@ def cmd_pollinate(args):
         return
     
     if len(args) < 2:
-        print("Usage: s pollinate <skill1> <skill2>", file=sys.stderr)
+        print("Usage: dots pollinate <skill1> <skill2>", file=sys.stderr)
         sys.exit(1)
     
     skill1, skill2 = args[0], args[1]

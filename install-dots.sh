@@ -1,7 +1,9 @@
 #!/bin/sh
-# dotS installer - run on the other machine after cloning the repo.
-# Clones straight into ~/.config/opencode/dotS (the repo's canonical home),
-# so this script only: adds the CLI to PATH and links OpenCode's commands.
+# dotS installer - run after cloning the repo. Default home:
+# $XDG_CONFIG_HOME/opencode/dotS (dotS as an opencode config sub-system),
+# though the repo is location-agnostic and clones anywhere. This script
+# only adds the CLI to PATH and links OpenCode's commands (tree discovered
+# via $XDG_CONFIG_HOME).
 set -e
 
 # Detect where this script is located (the dotS directory)

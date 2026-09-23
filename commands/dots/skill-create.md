@@ -22,7 +22,7 @@ inside the dotS store. This is the dotS-native twin of `/skill-create`.
    (its create playbook, `@run.create`, shows the canonical create → optimize → validate loop).
 2. Check for an existing skill: `dots find $1` and `dots search $1`.
 3. Identify the repeated pattern in $ARGUMENTS and abstract it to the general case.
-4. Create `skills/<name>.s` in `~/.config/opencode/dotS/` (or update the existing file)
+4. Create `skills/<name>.s` in the dotS store — `$(dots where)` — (or update the existing file)
    following `writing-skill.s`:
    - Base structure (`@patterns.simpleSkill`): `@meta` + `@core` + `@blocks` + `@gotchas` + `@index`
    - Rich content (`@patterns.referenceSkill`): `@meta` + `@core` + multiple content blocks + `@gotchas` + `@index`

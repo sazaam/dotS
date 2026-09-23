@@ -9,7 +9,7 @@ This is the dotS-native twin of the `/skills` skill picker.
 
 Available dotS skills:
 
-!`ls ~/.config/opencode/dotS/skills/ | grep -v '^index\.s$'`
+!`ls "$(dots where)"/skills/ | grep -v '^index\.s$'`
 
 Recommended bundles (mega-skills):
 
@@ -18,7 +18,7 @@ Recommended bundles (mega-skills):
 ## Hard Boundary (never violated)
 
 - NEVER read, create, or modify any `.md` file — including `.opencode/skills/*` and `SKILL.md`.
-- Only load skills from the dotS store (`~/.config/opencode/dotS/skills/`) via `dots load`.
+- Only load skills from the dotS store (`$(dots where)/skills/`) via `dots load`.
 - Do NOT use OpenCode's built-in skill loader — that is the md system. dotS loading is `dots load` only.
 - If the user names something that is not a dotS skill, report it as unavailable — do not fall back to `.opencode/skills`.
 

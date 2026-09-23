@@ -24,11 +24,13 @@ dotS is a **Python script** that stores knowledge in `.s` files. Instead of verb
 
 ### Quick Install
 
-dotS is a git repo designed to run **in place** — clone it straight to its
-canonical home and let the installer wire it into opencode:
+dotS is designed to run **in place** as a sub-system of opencode's config
+tree. The default home is `~/.config/opencode/dotS`; the repo is
+location-agnostic and clones anywhere, but keeping it inside the config
+tree means no extra folder shows up in your home directory:
 
 ```bash
-# Clone directly where it lives (the opencode config tree)
+# Default home — dotS as a sub-system of the opencode config tree
 git clone git@github.com:sazaam/dotS.git ~/.config/opencode/dotS
 
 # Installer: adds the CLI to PATH and links the /dots/* commands
@@ -38,8 +40,9 @@ source ~/.zshrc  # or ~/.bashrc
 ```
 
 No copying, no moving folders. The installer symlinks the `/dots/*`
-slash-commands into `~/.config/opencode/commands/`, so they ship in the
-same repo as the skills they manipulate and update together:
+slash-commands into `$XDG_CONFIG_HOME/opencode/commands/` (default
+`~/.config/opencode/commands/`), so they ship in the same repo as the
+skills they manipulate and update together:
 
 ```bash
 git -C ~/.config/opencode/dotS pull
@@ -55,20 +58,17 @@ dots help
 ### Portable
 
 dotS is **location-agnostic** — `dots.py` resolves its store from the
-`S_DIR` env var or, by default, the directory it lives in. Place it
-anywhere:
-- `~/.config/opencode/dotS/` (opencode — recommended, zero symlinks)
-- `~/.local/share/dotS/` (generic)
-- `/opt/dotS/` (system-wide)
-- `~/projects/dotS/` (development)
+`S_DIR` env var or, by default, the directory it lives in, so the repo
+never hard-codes where it sits. The one home dotS ships with is
+`~/.config/opencode/dotS`: dotS runs as an opencode sub-system and no
+extra folder is created in your home directory.
 
-The installer auto-detects its location and configures PATH accordingly.
-For opencode, either clone to `~/.config/opencode/dotS/` directly, or clone
-elsewhere and pin the config tree to the repo with one symlink:
-
-```bash
-ln -s ~/projects/dotS ~/.config/opencode/dotS
-```
+The installer auto-detects the repo and handles the only two things
+opencode needs from it: the CLI on PATH, and one symlink — `commands/dots`
+inside `$XDG_CONFIG_HOME/opencode/commands/` (default
+`~/.config/opencode/commands/`) pointing at `<repo>/commands/dots`. That
+symlink is the whole integration; nothing else about the setup depends on
+where the repo lives.
 
 ## How It Works
 
@@ -329,7 +329,7 @@ Store your .s files in Obsidian for visual browsing:
 ├── Projects/
 │   └── dotS/
 │       └── README.md      # This file
-└── .config/opencode/dotS/
+└── dotS/                        # your dotS clone (location-agnostic)
     ├── index.s
     └── skills/
         ├── css.s
@@ -349,23 +349,26 @@ instructions mechanism — routes every session to the dotS *map*, while skill
 ### Recommended layout
 
 ```
-~/.config/opencode/
-├── AGENTS.md             # global instructions — points every session at the dotS map
-├── dotS/                 # the dotS install = the git repo (knowledge base)
-│   ├── dots               # CLI wrapper — added to PATH by the installer
+~/.config/opencode/   # opencode config tree — $XDG_CONFIG_HOME/opencode
+├── AGENTS.md         # global instructions — points every session at the dotS map
+├── dotS/             # dotS = the git repo, as a sub-system of the config tree
+│   ├── dots          # CLI wrapper — added to PATH by the installer
 │   ├── dots.py
-│   ├── index.s            # routing map — fetched via dots get, loaded on demand
+│   ├── index.s       # routing map — fetched via dots get, loaded on demand
 │   ├── commands/
-│   │   └── dots/*.md      # /dots/* slash-commands
-│   └── skills/*.s         # knowledge bodies — loaded on demand
-└── instructions/          # optional: rule .s files (core.s, security.s, ...)
+│   │   └── dots/*.md # /dots/* slash-commands
+│   └── skills/*.s    # knowledge bodies — loaded on demand
+└── commands/
+    └── dots -> ../dotS/commands/dots   # /dots/* slash-commands (symlink)
 ```
 
 `install-dots.sh` copies nothing: it adds the CLI to PATH and symlinks
-`commands/dots` into `~/.config/opencode/commands/`, so opencode discovers
-the `/dots/*` commands (index, learn, skill-create, optimize, skills)
-while they live in the repo. Store, CLI, and commands update together with
-a single `git pull`.
+`commands/dots` into `$XDG_CONFIG_HOME/opencode/commands/` (default
+`~/.config/opencode/commands/`), so opencode discovers the `/dots/*`
+commands (index, learn, skill-create, optimize, skills) while they live in
+the repo. Because the config-tree path is standard XDG, this works the same
+on every machine (Arch, Ubuntu, …) no matter where you cloned dotS.
+Store, CLI, and commands update together with a single `git pull`.
 
 ### AGENTS.md (OpenCode V2)
 
@@ -383,7 +386,7 @@ repo and is read on demand:
 ```md title="~/.config/opencode/AGENTS.md"
 # dotS knowledge layer
 
-This machine runs dotS as its knowledge base (install dir: ~/.config/opencode/dotS).
+This machine runs dotS as its knowledge base (install dir: ~/.config/opencode/dotS — adjust to your clone's home; `dots where` prints it).
 dotS is ON-DEMAND — never load skills eagerly. Route knowledge questions:
 
 - dots find <topic>                     # locate skill + block
@@ -455,10 +458,6 @@ dots get index.s @index @byTask   # ~1,100 tokens: map without shortcut tables
 - ❌ `"instructions": [...]` in `opencode.json`/`cli.json` — accepted by the V2 schema but **never loaded**; use `AGENTS.md`
 - ❌ Storing API keys in `index.s` or any `.s` file (commit to git is too easy)
 
-Caveat: legacy references in this README may still say `s` where the shipped
-CLI is `dots`. If your install predates the rename, `s` was simply renamed
-to `dots` — same behavior.
-
 ## File Structure
 
 ```
@@ -492,7 +491,7 @@ dots list index.s             # list blocks
 # Writing
 dots set skills/css.s state done  # set value
 dots add skills/css.s @notes "did the thing"  # append to list
-s rm skills/css.s @notes  # remove key
+dots rm skills/css.s @notes  # remove key
 
 # Discovery
 dots find "topic"             # smart lookup

@@ -12,7 +12,7 @@ dotS knowledge base as `.s` files. This is the dotS-native twin of `/learn`.
 - NEVER read, create, or modify any `.md` file — including `AGENTS.md`, `INSTRUCTIONS.md`,
   `.opencode/skills/*`, `.opencode/commands/*`, and `SKILL.md`.
 - Operate exclusively through the `dots` CLI on `.s` files inside the dotS store
-  (`~/.config/opencode/dotS/`).
+  (`$(dots where)`).
 - If the user explicitly requests file-based output, stop and confirm — do not switch formats.
 
 ## Task
@@ -25,7 +25,7 @@ dotS knowledge base as `.s` files. This is the dotS-native twin of `/learn`.
    - **Preferences**: user style/coding conventions observed
    - **Tool Usage**: effective command/library combinations
    - **Architecture**: structural decisions and rationale
-4. Store each surgically in the dotS store (`~/.config/opencode/dotS/`):
+4. Store each surgically in the dotS store (`$(dots where)`):
    - Skills/topics → `dots set skills/<name>.s <block.key> <value>` or `dots add skills/<name>.s <block> "<text>"`
    - New skill file? → register it: `dots add index.s @index skills/<name>.s` and add a `@byTask` trigger entry
 5. Update freshness metadata: `dots set <file> @meta lastUpdated <YYYY-MM-DD>` and bump `confidence` as appropriate.

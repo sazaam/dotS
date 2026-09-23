@@ -4,7 +4,7 @@
 |
 @quickRef |
   ponytail:dots get skills/ponytail.s @rules
-  ponytailReview:dots get skills/ponytail.s @run.review
+  ponytailReview:dots run skills/ponytail.s @run.review
   css:dots get skills/css.s
   html:dots get skills/html.s
   threejs:dots get skills/threejs.s
@@ -13,14 +13,14 @@
   jade:dots get skills/jade.s
   obsidian:dots get skills/md.s @obsidian
   shaderToy:dots get skills/glsl.s @shadertoylite
-  htmlValidate:dots get skills/html.s @run.validate
-  htmlLint:dots get skills/html.s @run.lint
-  a11y:dots get skills/html.s @run.accessibility
-  seoCheck:dots get skills/html.s @run.seoCheck
-  cssLint:dots get skills/css.s @run.lint
-  cssValidate:dots get skills/css.s @run.validate
-  cssSpecificity:dots get skills/css.s @run.specificity
-  cssAudit:dots get skills/css.s @run.audit
+  htmlValidate:dots run skills/html.s @run.validate
+  htmlLint:dots run skills/html.s @run.lint
+  a11y:dots run skills/html.s @run.accessibility
+  seoCheck:dots run skills/html.s @run.seoCheck
+  cssLint:dots run skills/css.s @run.lint
+  cssValidate:dots run skills/css.s @run.validate
+  cssSpecificity:dots run skills/css.s @run.specificity
+  cssAudit:dots run skills/css.s @run.audit
   docker:dots get skills/docker.s
   dockerCompose:dots get skills/docker.s @compose
   dockerMultiStage:dots get skills/docker.s @multiStage
@@ -88,9 +88,6 @@
   strawnodeToggle:dots get skills/strawnode-prototype.s @graphics
   strawnodeJson:dots get skills/strawnode-prototype.s @jadeJson
   strawnodeVerify:dots get skills/strawnode-prototype.s @verification
-  nexinebula:dots get skills/nexinebula.s
-  nexinebulaStructure:dots get skills/nexinebula.s @structure
-  nexinebulaRun:dots get skills/nexinebula.s @run
   betweenjs:dots get skills/betweenjs.s
   betweenjsCreate:dots get skills/betweenjs.s @publicAPI
   betweenjsEasing:dots get skills/betweenjs.s @easing
@@ -103,7 +100,7 @@
   typePackages:dots get skills/type.s @packages
   typeSlots:dots get skills/type.s @slots
   typeUsage:dots get skills/type.s @usage
-  typeQuirks:dots get skills/type.s @quirks
+  typeQuirks:dots get skills/type.s @usage
   mise:dots get skills/mise.s
   miseTools:dots get skills/mise.s @tools
   misePython:dots get skills/mise.s @python
@@ -129,7 +126,7 @@
   htmlLint:npx stylelint **/*.css
   cssLint:npx stylelint **/*.css
   a11y:npx pa11y **/*.html
-  seoCheck:dots get skills/html.s @run.seoCheck
+  seoCheck:dots run skills/html.s @run.seoCheck
   gitCommit:dots run skills/git.s @run.quickCommit
   gitRelease:dots run skills/git.s @run.releaseTag
   gitSquash:dots run skills/git.s @run.squashMerge
@@ -191,9 +188,9 @@
   raymarching:skills/glsl.s @raymarching
   sdf:skills/glsl.s @sdf
   markdown:skills/md.s
-  obsidian:skills/md.s @obsidian @obsidianPlugins @obsidianBestPractices
+  obsidian:skills/md.s @obsidianPlugins @obsidianBestPractices
   vault:skills/md.s @obsidian
-  notes:skills/md.s @obsidian @obsidianDataview
+  notes:skills/md.s @obsidianDataview
   templates:skills/jade.s
   jade:skills/jade.s
   pug:skills/jade.s @vsPug
@@ -239,7 +236,7 @@
   spaPrototype:skills/strawnode-prototype.s
   prototype:skills/strawnode-prototype.s
   scaffoldSpa:skills/strawnode-prototype.s skills/jade.s skills/css.s
-  strawnodeApp:skills/strawnode-prototype.s skills/nexinebula.s
+  strawnodeApp:skills/strawnode-prototype.s
   routing:strawexpress.s @express strawexpress.s @formulate
   animation:betweenjs.s
   tweening:betweenjs.s @publicAPI betweenjs.s @tweenHierarchy
@@ -279,34 +276,40 @@
   logAnalysis:skills/linux.s @logAnalysis
 |
 @index |
-  ponytail.s:blocks:8|topic:yagni minimal code|keyBlocks:@rules @commands
-  css.s:blocks:13|topic:css styling layout verification|keyBlocks:@flexbox @grid @gotchas @modern @run
-  html.s:blocks:18|topic:html markup accessibility seo verification|keyBlocks:@semantic @forms @accessibility @seo @structuredData @run
-  threejs.s:blocks:18|topic:threejs 3d webgl rendering|keyBlocks:@core @geometry @material @mesh @animation @controls @loader @postprocessing @gotchas
-  glsl.s:blocks:16|topic:glsl shader shadertoylite|keyBlocks:@shadertoylite @stlAPI @stlUniforms @sdf @raymarching @noise
-  md.s:blocks:14|topic:markdown obsidian|keyBlocks:@obsidian @obsidianCallouts @obsidianDataview @obsidianPlugins @obsidianBestPractices
-  jade.s:blocks:15|topic:jade pug template|keyBlocks:@syntax @browserLib @browserAPI @vsPug @asyncLibDetails
-  docker.s:blocks:19|topic:docker containers compose|keyBlocks:@containers @compose @multiStage @gotchas @run
-  git.s:blocks:24|topic:git version control|keyBlocks:@branching @committing @merging @undoing @run
-  javascript.s:blocks:16|topic:vanilla JS ES5-ES6+|keyBlocks:@es6Features @arrays @async @gotchas
-  linux.s:blocks:22|topic:linux admin|keyBlocks:@processes @networking @systemd @gotchas @run
+  ponytail.s:blocks:7|topic:yagni minimal code|keyBlocks:@rules @commands
+  css.s:blocks:15|topic:css styling layout verification|keyBlocks:@flexbox @grid @gotchas @modern @run
+  html.s:blocks:20|topic:html markup accessibility seo verification|keyBlocks:@semantic @forms @accessibility @seo @structuredData @run
+  threejs.s:blocks:22|topic:threejs 3d webgl rendering|keyBlocks:@core @geometry @material @mesh @animation @controls @loader @postprocessing @gotchas
+  glsl.s:blocks:21|topic:glsl shader shadertoylite|keyBlocks:@shadertoylite @stlAPI @stlUniforms @sdf @raymarching @noise
+  md.s:blocks:15|topic:markdown obsidian|keyBlocks:@obsidianCallouts @obsidianDataview @obsidianPlugins @obsidianBestPractices
+  jade.s:blocks:20|topic:jade pug template|keyBlocks:@syntax @browserLib @browserAPI @vsPug @asyncLibDetails
+  docker.s:blocks:18|topic:docker containers compose|keyBlocks:@containers @compose @multiStage @gotchas @run
+  git.s:blocks:23|topic:git version control|keyBlocks:@branching @committing @merging @undoing @run
+  javascript.s:blocks:20|topic:vanilla JS ES5-ES6+|keyBlocks:@es6Features @arrays @async @gotchas
+  linux.s:blocks:21|topic:linux admin|keyBlocks:@processes @networking @systemd @gotchas @run
   nginx.s:blocks:21|topic:nginx web server|keyBlocks:@ssl @security @reverseProxy @gotchas @run
-  node.s:blocks:20|topic:node.js runtime|keyBlocks:@debugging @performance @errors @gotchas @run
-  python.s:blocks:17|topic:python 3.12+|keyBlocks:@types @functions @classBasics @gotchas
-  sh.s:blocks:14|topic:shell scripting|keyBlocks:@conditionals @functions @pipesRedirection @gotchas
-  ssh.s:blocks:16|topic:ssh connections|keyBlocks:@config @keygen @tunneling @security @run
-  strawexpress.s:blocks:12|topic:strawexpress SPA router|keyBlocks:@architecture @step @express @response @formulate
-  strawnode.s:blocks:7|topic:strawnode boot framework|keyBlocks:@boot @modules @sectionSystem @jadeTemplates
-  betweenjs.s:blocks:11|topic:BetweenJS animation engine|keyBlocks:@tweenHierarchy @easing @publicAPI @color @modernEnhancements
-  type.s:blocks:8|topic:Type.js OOP class system|keyBlocks:@core @packages @slots @usage @quirks
-  blender-python.s:blocks:17|topic:blender python API bpy 5.2+|keyBlocks:@core @modules @operators @bmesh @gpu @gotchas
+  node.s:blocks:21|topic:node.js runtime|keyBlocks:@debugging @performance @errors @gotchas @run
+  python.s:blocks:24|topic:python 3.12+|keyBlocks:@types @functions @classBasics @gotchas
+  sh.s:blocks:20|topic:shell scripting|keyBlocks:@conditionals @functions @pipesRedirection @gotchas
+  ssh.s:blocks:17|topic:ssh connections|keyBlocks:@config @keygen @tunneling @security @run
+  strawexpress.s:blocks:18|topic:strawexpress SPA router|keyBlocks:@architecture @step @express @response @formulate
+  strawnode.s:blocks:13|topic:strawnode boot framework|keyBlocks:@boot @modules @sectionSystem @jadeTemplates
+  betweenjs.s:blocks:14|topic:BetweenJS animation engine|keyBlocks:@tweenHierarchy @easing @publicAPI @color @modernEnhancements
+  type.s:blocks:7|topic:Type.js OOP class system|keyBlocks:@core @packages @slots @lookup @utils @usage
+  blender-python.s:blocks:33|topic:blender python API bpy 5.2+|keyBlocks:@core @modules @operators @bmesh @gpu @gotchas
   blender-addon.s:blocks:16|topic:blender addon authoring extensions keymaps overlay drawing|keyBlocks:@manifest @keymaps @overlayDraw @layouts @versionGotchas @run
   writing-skill.s:blocks:20|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @honesty @patterns @optimize @gotchas @dependencies @mega @mutations @pollination
   mise.s:blocks:14|topic:mise tool version manager env tasks|keyBlocks:@tools @config @python @node @env @tasks @gotchas @run
-  linux-wapp.s:blocks:6|topic:wapp isolated browser apps|keyBlocks:@commands @isolation @fileLayout @multiAccount @gotchas
-  comfy-t2v-ltx-2.3.s:blocks:8|topic:comfyui ltx-2.3 22b t2v on 16GB gpu|keyBlocks:@models @launch @workflow @vramMap @gotchas
-  comfy-minimax-music3.s:blocks:8|topic:comfyui minimax music 3 t2m on 16GB gpu|keyBlocks:@models @workflow @launch @runCmd @gotchas
-  server-setup.s:blocks:10|topic:vps server hardening fail2ban firewall deploy keys|keyBlocks:@sshHarden @firewall @fail2ban @gitKeys @verify @run
-  terminal-tui.s:blocks:6|topic:terminal tui workflow herdr sessions|keyBlocks:@herdr @sessions @workflow @gotchas
-  index.s:blocks:4|topic:dotS knowledge base index|keyBlocks:@index @byTask @quickRef @runQuickRef
+  linux-wapp.s:blocks:8|topic:wapp isolated browser apps|keyBlocks:@commands @isolation @fileLayout @multiAccount @gotchas
+  comfy-t2v-ltx-2.3.s:blocks:9|topic:comfyui ltx-2.3 22b t2v on 16GB gpu|keyBlocks:@models @launch @workflow @vramMap @gotchas
+  comfy-minimax-music3.s:blocks:9|topic:comfyui minimax music 3 t2m on 16GB gpu|keyBlocks:@models @workflow @launch @runCmd @gotchas
+  server-setup.s:blocks:12|topic:vps server hardening fail2ban firewall deploy keys|keyBlocks:@sshHarden @firewall @fail2ban @gitKeys @verify @run
+  terminal-tui.s:blocks:8|topic:terminal tui workflow herdr sessions|keyBlocks:@herdr @sessions @workflow @gotchas
+  index.s:blocks:6|topic:dotS knowledge base index|keyBlocks:@index @byTask @quickRef @runQuickRef
+  audio-drama-pipeline.s:blocks:9|topic:per-line theatrical audio drama recording pipeline|keyBlocks:@concept @flow @trim @pacing @loudness @dsp @gotchas @futureProject
+  ffmpeg.s:blocks:13|topic:ffmpeg audio video processing|keyBlocks:@basics @probe @normalize @trimSilence @silenceDetect @pitchFormant @loudness @concat @sources @gotchas @run
+  mml.s:blocks:20|topic:mml music macro language chiptune|keyBlocks:@dependencies @core @basics @notes @lengths @tempo @volume @transpose @detune @quantize @loops @macros @structure @channels @dialects @tools @examples @gotchas @index
+  rust.s:blocks:25|topic:rust ownership-safe systems|keyBlocks:@basics @types @strings @ownership @borrowing @fixingErrors @slices @structs @enums @match @collections @errorHandling @generics @traits @lifetimes @closures @iterators @concurrency @moduleSystem @tooling @testing @gotchas @index @dependencies
+  strawnode-docs.s:blocks:8|topic:strawnode-docs|keyBlocks:@boot @modules @sectionSystem @serverSide @dependencyGraph @keyPatterns @quirks
+  strawnode-prototype.s:blocks:17|topic:strawnode-prototype|keyBlocks:@dependencies @core @session @philosophy @layout @playbook @sectionFactory @graphics @readability @jadeJson @i18n @addressing @behaviorLinking @verification @gotchas @index
 |

@@ -12,7 +12,7 @@
 @core |
   purpose:Reference for creating and optimizing .s skill files
   usage:load only when writing or optimizing skills, not for general queries
-  location:/home/saz/.config/opencode/dotS/skills/
+  location:dotS store - 'dots where'
   cli:dots get <skill>.s @blockName
   sFind:dots find "topic" - searches across all skills
   sOptimize:dots optimize <skill> - removes waste
