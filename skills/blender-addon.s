@@ -112,7 +112,7 @@
   main:def modal(self, context, event): match event.type/value/direction
   move:MOUSEMOVE updates stored state and tag_redraw
   confirm:LMB or ENTER -> {'FINISHED'} | cancel:ESC or RMB -> {'CANCELLED'}
-  header:context.area.header_text_set(...) | cursor:context.area.cursor_set(...)
+  header:context.area.header_text_set(...) | cursor:context.window.cursor_modal_set(...) restore with cursor_modal_restore() - area.cursor_set REMOVED in 4.5, API lives on Window
   absorb:handle the events you own, pass others through deliberately
   liveProp:WHEELUPMOUSE / WHEELDOWNMOUSE tweak props mid-modal
   poll:modal ops still need poll() (e.g. active object)

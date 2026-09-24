@@ -23,6 +23,8 @@
   betweenjs.s:blocks:14|topic:BetweenJS animation engine|keyBlocks:@tweenHierarchy @easing @publicAPI @color @modernEnhancements
   blender-python.s:blocks:33|topic:blender python API bpy 5.2+|keyBlocks:@core @modules @operators @bmesh @gpu @vse @gotchas
   blender-addon.s:blocks:16|topic:blender addon authoring extensions keymaps overlay drawing|keyBlocks:@manifest @keymaps @overlayDraw @layouts @versionGotchas @run
+  blender-gp.s:blocks:12|topic:blender grease pencil GPv3 data model strokes brushes placement materials|keyBlocks:@object @layers @strokes @points @placement @brushes @materials @gotchas
+  gpu-draw.s:blocks:5|topic:blender gpu dotted line overlay preview draw handler|keyBlocks:@meta @facts @gotchas @verification
   ffmpeg.s:blocks:13|topic:ffmpeg audio video processing|keyBlocks:@trimSilence @pitchFormant @loudness @concat @gotchas @run
   audio-drama-pipeline.s:blocks:9|topic:per-line theatrical audio drama recording pipeline|keyBlocks:@flow @trim @pacing @loudness @gotchas @futureProject
   writing-skill.s:blocks:20|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @patterns @optimize @gotchas @dependencies @mega @mutations @pollination
@@ -80,6 +82,10 @@
   addonKeymaps:blender-addon.s@keymaps
   overlayDrawing:blender-addon.s@overlayDraw blender-addon.s@modalPattern
   blenderMesh:blender-python.s@bmesh
+  blenderGPToolkit:blender-addon.s@manifest blender-addon.s@keymaps blender-addon.s@overlayDraw blender-python.s@gpu blender-gp.s
+  blenderGPStrokes:blender-gp.s@strokes blender-gp.s@points
+  blenderGPPlacement:blender-gp.s@placement blender-gp.s@brushes
+  blenderGpuDraw:gpu-draw.s
   blenderGPU:blender-python.s@gpu
   blenderNodes:blender-python.s@geometryNodes blender-python.s@materialNodes
   blenderAnim:blender-python.s@animation
