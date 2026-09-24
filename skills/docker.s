@@ -1,5 +1,5 @@
 # Docker Knowledge Base
-@meta |topic:docker|lastUpdated:2026-08-17|confidence:high|
+@meta |topic:docker|lastUpdated:2026-09-23|confidence:high|
 @basics |
   daemon:dockerd
   cli:docker
@@ -185,4 +185,62 @@
   2.note:recent activity across all services
   3.cmd:docker stats --no-stream
   3.note:resource usage snapshot
+|
+@swarm |
+  1.cmd:docker swarm init
+  1.note:first manager node — prints join token
+  2.cmd:docker swarm init --advertise-addr 203.0.113.5
+  2.note:pin the IP Swarm advertises to workers
+  3.cmd:docker swarm join --token SWMTKN-1-xxxx 203.0.113.5:2377
+  3.note:run on each worker, paste token from init
+  4.cmd:docker node ls
+  4.note:managers show Leader, workers show Ready
+  5.cmd:docker node update --availability drain node2
+  5.note:stop scheduling to a node without removing it
+  6.cmd:docker swarm join-token manager
+  6.note:get token to add another manager (HA)
+  7.cmd:docker swarm leave --force
+  7.note:remove this node from the cluster (on worker)
+  8.cmd:docker node demote node2
+  8.note:demote a manager to worker (must have 3+ managers)
+|
+@stack |
+  1.cmd:docker stack deploy -c docker-stack.yml mystack
+  1.note:deploy compose as swarm services
+  2.cmd:docker stack ls
+  2.note:all stacks + deployed services
+  3.cmd:docker stack services mystack
+  3.note:service→replica→node placement
+  4.cmd:docker stack ps mystack
+  4.note:task-level: which node, health, image
+  5.cmd:docker service ls
+  5.note:swarm-wide services (including stacks)
+  6.cmd:docker service update --image app:2.0 mystack_app
+  6.note:rolling update — fan out with health gating
+  7.cmd:docker stack rm mystack
+  7.note:remove stack (services + network, NOT volumes)
+  8.cmd:docker service scale mystack_app=5
+  8.note:scale replicas across the cluster
+  9.cmd:docker service logs -f mystack_app
+  9.note:logs across all replicas
+|
+@secrets |
+  1.cmd:docker secret create db_password ./password.txt
+  1.note:store encrypted in Swarm Raft store
+  2.cmd:docker secret ls
+  2.note:list secrets
+  3.cmd:docker secret inspect db_password
+  3.note:metadata (NOT the value)
+  4.cmd:docker config create nginx_conf ./nginx.conf
+  4.note:configs = non-secret files, mounted read-only
+  5.cmd:docker config ls
+  5.note:list configs
+|
+@configInSwarm |
+  1.cmd:docker config create app_env env.yml
+  1.note:non-sensitive config as swarm config
+  2.cmd:docker config inspect --pretty app_env
+  2.note:view config contents
+  3.cmd:docker config rm app_env
+  3.note:remove config (must be detached from services)
 |

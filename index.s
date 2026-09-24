@@ -24,6 +24,10 @@
   docker:dots get skills/docker.s
   dockerCompose:dots get skills/docker.s @compose
   dockerMultiStage:dots get skills/docker.s @multiStage
+  podman:dots get skills/podman.s
+  podmanCompose:dots get skills/podman.s @compose
+  podmanQuadlet:dots get skills/podman.s @quadlet
+  podmanRootless:dots get skills/podman.s @rootless
   git:dots get skills/git.s
   gitUndo:dots get skills/git.s @undoing
   gitBranching:dots get skills/git.s @branching
@@ -196,6 +200,10 @@
   pug:skills/jade.s @vsPug
   containers:skills/docker.s
   compose:skills/docker.s @compose
+  podman:skills/podman.s
+  podmanRootless:skills/podman.s @rootless
+  podmanCompose:skills/podman.s @compose
+  podmanQuadlet:skills/podman.s @quadlet
   deployment:skills/docker.s skills/linux.s skills/ssh.s skills/server-setup.s
   versionControl:skills/git.s
   branching:skills/git.s @branching
@@ -283,7 +291,8 @@
   glsl.s:blocks:21|topic:glsl shader shadertoylite|keyBlocks:@shadertoylite @stlAPI @stlUniforms @sdf @raymarching @noise
   md.s:blocks:15|topic:markdown obsidian|keyBlocks:@obsidianCallouts @obsidianDataview @obsidianPlugins @obsidianBestPractices
   jade.s:blocks:20|topic:jade pug template|keyBlocks:@syntax @browserLib @browserAPI @vsPug @asyncLibDetails
-  docker.s:blocks:18|topic:docker containers compose|keyBlocks:@containers @compose @multiStage @gotchas @run
+  docker.s:blocks:20|topic:docker containers compose swarm stack|keyBlocks:@containers @compose @multiStage @swarm @stack @gotchas @run
+  podman.s:blocks:15|topic:podman daemonless rootless quadlet pods compose|keyBlocks:@basics @vsDocker @rootless @images @run @pods @compose @quadlet @systemd @gotchas @run
   git.s:blocks:23|topic:git version control|keyBlocks:@branching @committing @merging @undoing @run
   javascript.s:blocks:20|topic:vanilla JS ES5-ES6+|keyBlocks:@es6Features @arrays @async @gotchas
   linux.s:blocks:21|topic:linux admin|keyBlocks:@processes @networking @systemd @gotchas @run
