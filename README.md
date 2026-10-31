@@ -24,28 +24,45 @@ dotS is a **Python script** that stores knowledge in `.s` files. Instead of verb
 
 ### Quick Install
 
-dotS is designed to run **in place** as a sub-system of opencode's config
-tree. The default home is `~/.config/opencode/dotS`; the repo is
-location-agnostic and clones anywhere, but keeping it inside the config
-tree means no extra folder shows up in your home directory:
+dotS is **location-agnostic** and self-contained. The recommended home is `~/.config/dots` (standard XDG config directory, leaving `$HOME` completely clean):
 
 ```bash
-# Default home — dotS as a sub-system of the opencode config tree
-git clone git@github.com:sazaam/dotS.git ~/.config/opencode/dotS
+# Recommended: clone into ~/.config/dots
+git clone git@github.com:sazaam/dotS.git ~/.config/dots
 
-# Installer: adds the CLI to PATH and links the /dots/* commands
-cd ~/.config/opencode/dotS && ./install-dots.sh
+# Run the multi-AI installer
+cd ~/.config/dots && ./install-dots.sh
 
 source ~/.zshrc  # or ~/.bashrc
 ```
 
-No copying, no moving folders. The installer symlinks the `/dots/*`
-slash-commands into `$XDG_CONFIG_HOME/opencode/commands/` (default
-`~/.config/opencode/commands/`), so they ship in the same repo as the
-skills they manipulate and update together:
+#### What the installer does
+
+`./install-dots.sh` automatically detects which AI assistants and developer tools are present on your machine and establishes live symlinks. It copies nothing:
+
+- **Google Antigravity / Gemini Code Assist** (`~/.gemini/config/`): Links native progressive disclosure skills (`skills/dots/SKILL.md`) and behavioral priority rules (`rules/dots.md`, `GEMINI.md`).
+- **OpenCode** (`~/.config/opencode/`): Links slash-commands (`commands/dots/`) to `$XDG_CONFIG_HOME/opencode/commands/dots`.
+- **Claude Code** (`~/.claude/`): Links global instructions (`CLAUDE.md`).
+- **Cursor** (`~/.cursor/`): Links hard-gate rule (`rules/dots.mdc`).
+
+Because all integrations are live symlinks to the repo, **a single `git pull` updates your knowledge store and all AI adapters simultaneously**:
 
 ```bash
-git -C ~/.config/opencode/dotS pull
+git -C ~/.config/dots pull
+```
+
+#### Installer Flags
+
+You can let `./install-dots.sh` auto-detect your tools, or target specific environments:
+
+```bash
+./install-dots.sh               # Auto-detect present tools and configure
+./install-dots.sh --all         # Force-link integrations for all supported AI tools
+./install-dots.sh --antigravity # Configure Antigravity / Gemini Code Assist
+./install-dots.sh --opencode    # Configure OpenCode (/dots/* commands)
+./install-dots.sh --claude      # Configure Claude Code global instructions
+./install-dots.sh --cursor      # Configure Cursor rules
+./install-dots.sh --force       # Backup existing conflicting files and link
 ```
 
 ### Verify
@@ -55,20 +72,9 @@ dots help
 # dots.py - compact state DSL for AI-assisted projects
 ```
 
-### Portable
+### Portable & Zero-Bloat
 
-dotS is **location-agnostic** — `dots.py` resolves its store from the
-`S_DIR` env var or, by default, the directory it lives in, so the repo
-never hard-codes where it sits. The one home dotS ships with is
-`~/.config/opencode/dotS`: dotS runs as an opencode sub-system and no
-extra folder is created in your home directory.
-
-The installer auto-detects the repo and handles the only two things
-opencode needs from it: the CLI on PATH, and one symlink — `commands/dots`
-inside `$XDG_CONFIG_HOME/opencode/commands/` (default
-`~/.config/opencode/commands/`) pointing at `<repo>/commands/dots`. That
-symlink is the whole integration; nothing else about the setup depends on
-where the repo lives.
+dotS is fully self-contained — `dots.py` resolves its store from the `S_DIR` env var or the directory it lives in. The installer creates zero duplicate copies; symlinks allow each AI tool's discovery mechanism to read directly from the repository.
 
 ## How It Works
 
@@ -338,6 +344,31 @@ Store your .s files in Obsidian for visual browsing:
         └── ...
 ```
 
+## Multi-AI Platform Integrations
+
+dotS is designed to provide token-efficient context across modern AI coding assistants. Rather than duplicating knowledge into disparate prompts or copying markdown files, the repository ships native adapters under `integrations/`:
+
+### 1. Google Antigravity & Gemini Code Assist
+Antigravity uses native progressive disclosure and directory rules:
+- **Skill (`skills/dots/SKILL.md`)**: Injected into the agent's capability registry. When you ask about DevOps, server setups, or supported frameworks, Antigravity loads the skill on demand.
+- **Rules (`rules/dots.md` & `GEMINI.md`)**: Enforces a strict "dotS knowledge first" workflow—requiring `dots find <topic>` and `dots get <skill.s> [@block]` before general web searches or speculative answers.
+
+### 2. OpenCode (V2)
+Reference configuration for running dotS as the context layer of [opencode](https://opencode.ai):
+- **Slash Commands (`commands/dots/`)**: Native `/dots/*` commands (`index`, `learn`, `optimize`, `skills`, `skill-create`) symlinked to `$XDG_CONFIG_HOME/opencode/commands/dots`.
+- **`AGENTS.md` pointer**: Routes sessions to the routing map on demand.
+
+### 3. Claude Code
+- **Global Instructions (`~/.claude/CLAUDE.md`)**: Instructs Claude Code to query dotS before generating infrastructure configurations or running web searches.
+
+### 4. Cursor IDE
+- **Hard Gate Rule (`~/.cursor/rules/dots.mdc`)**: Enforces `dots find <topic>` as the first tool call before answering stack, how-to, or configuration questions.
+
+### 5. Universal Agents (Aider, Windsurf, etc.)
+- A portable rule pointer is provided in `integrations/generic/AGENTS.md` for any workspace or tool that supports markdown agent instructions.
+
+---
+
 ## dotS + opencode: The Optimal Setup
 
 This is the reference configuration for running dotS as the context layer
@@ -386,7 +417,7 @@ repo and is read on demand:
 ```md title="~/.config/opencode/AGENTS.md"
 # dotS knowledge layer
 
-This machine runs dotS as its knowledge base (install dir: ~/.config/opencode/dotS — adjust to your clone's home; `dots where` prints it).
+This machine runs dotS as its knowledge base (install dir: ~/.config/dots — adjust to your clone's home; `dots where` prints it).
 dotS is ON-DEMAND — never load skills eagerly. Route knowledge questions:
 
 - dots find <topic>                     # locate skill + block
@@ -462,13 +493,24 @@ dots get index.s @index @byTask   # ~1,100 tokens: map without shortcut tables
 
 ```
 dotS/
-├── dots.py           # main CLI script
-├── dots              # bash wrapper (installed to PATH)
-├── install-dots.sh      # installer
-├── index.s           # project index (read first, ~200 tokens)
-├── relations.s       # dependency graph
-├── changelog.s       # change history
-├── skills/           # knowledge base .s files
+├── dots.py              # main CLI script
+├── dots                 # bash wrapper (installed to PATH)
+├── install-dots.sh      # multi-AI installer
+├── index.s              # project index (read first, ~200 tokens)
+├── relations.s          # dependency graph
+├── changelog.s          # change history
+├── commands -> integrations/opencode/commands  # legacy root symlink
+├── integrations/        # Multi-AI integration adapters
+│   ├── opencode/        # OpenCode commands (/dots/*) & AGENTS.md
+│   │   ├── commands/dots/
+│   │   └── AGENTS.md
+│   ├── antigravity/     # Antigravity / Gemini skills & rules
+│   │   ├── skills/dots/
+│   │   └── rules/
+│   ├── claude-code/     # Claude Code global instructions
+│   ├── cursor/          # Cursor IDE rules (.mdc)
+│   └── generic/         # Universal AGENTS.md rules
+├── skills/              # knowledge base .s files
 │   ├── css.s
 │   ├── html.s
 │   ├── threejs.s

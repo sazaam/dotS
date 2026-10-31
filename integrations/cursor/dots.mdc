@@ -1,0 +1,35 @@
+---
+description: dotS knowledge layer — HARD GATE: dots find before any topic/how-to/stack answer
+alwaysApply: true
+---
+
+# dotS knowledge layer
+
+This machine runs dotS at `~/.config/opencode/dotS` (`dots where` prints it).
+
+dotS is ON-DEMAND — never load skills eagerly. Never `dots get index.s "*"`. Never duplicate the routing map into rules or chat.
+
+## Hard gate (non-negotiable)
+
+Before answering any **topic / how-to / stack / “what do you know about X”** question, your **first tool call** MUST be:
+
+```bash
+dots find <topic>
+```
+
+Do **not** answer from model recall until that returns (hit or miss). Then `dots get` / `dots run` / `dots search` as needed.
+
+These all trigger the gate — including when the user says “already know,” “from training,” “quick overview,” or “general knowledge”:
+
+- “What do you know about nginx?”
+- “How do I set up X?”
+- “Explain our stack / tooling / config”
+- Any ops, server, desktop, or how-to question this machine may have skills for
+
+**Skip excuses that are invalid:** “general knowledge,” “I already know this,” “quick chat answer,” “user asked what I know,” “not a coding task.”
+
+If `dots find` misses (or content is stale per `@meta` / `dots freshness`): say one line `dotS: miss — answering from recall` (or websearch), then proceed.
+
+Read `index.s` (`@byTask` / `@quickRef`) only when routing.
+
+Never echo secrets (sudo passwords, key passphrases, API keys) into conversations or files.
