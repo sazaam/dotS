@@ -51,6 +51,13 @@
   nodeDebug:dots get skills/node.s @debugging
   nodePerformance:dots get skills/node.s @performance
   nodeGotchas:dots get skills/node.s @gotchas
+  pm2:dots get skills/pm2.s
+  pm2Commands:dots get skills/pm2.s @commands
+  pm2Ecosystem:dots get skills/pm2.s @ecosystem
+  pm2Cluster:dots get skills/pm2.s @cluster
+  pm2Logs:dots get skills/pm2.s @logs
+  pm2Docker:dots get skills/pm2.s @docker
+  pm2Gotchas:dots get skills/pm2.s @gotchas
   python:dots get skills/python.s
   pythonTypes:dots get skills/python.s @types
   pythonClasses:dots get skills/python.s @classBasics
@@ -124,6 +131,12 @@
   mutateCreate:dots mutate create blender-python "game development"
   pollinateList:dots pollinate list
   pollinateAll:dots pollinate --all
+  webhooks:dots get skills/webhooks.s
+  webhookSecurity:dots get skills/webhooks.s @security
+  webhookVerify:dots get skills/webhooks.s @verifyPattern
+  webhookIdempotency:dots get skills/webhooks.s @idempotency
+  webhookRetries:dots get skills/webhooks.s @retries
+  webhookTesting:dots get skills/webhooks.s @testing
 |
 @runQuickRef |
   htmlValidate:npx htmlhint **/*.html
@@ -159,6 +172,9 @@
   nodeDev:dots run skills/node.s @run.devSetup
   nodeTest:dots run skills/node.s @run.testSuite
   nodeHealth:dots run skills/node.s @run.productionCheck
+  pm2Setup:dots run skills/pm2.s @run.setup
+  pm2Reload:dots run skills/pm2.s @run.zeroDowntime
+  pm2Trouble:dots run skills/pm2.s @run.troubleshoot
   miseSetup:dots run skills/mise.s @run.setup
   wappCreate:dots get skills/linux-wapp.s @commands
   wappIsolation:dots get skills/linux-wapp.s @isolation
@@ -172,6 +188,10 @@
   comfyMusicLaunch:dots get skills/comfy-minimax-music3.s @launch
   comfyMusicRun:dots get skills/comfy-minimax-music3.s @runCmd
   comfyMusicGotchas:dots get skills/comfy-minimax-music3.s @gotchas
+  webhookReceive:dots run skills/webhooks.s @run.receiveEndpoint
+  webhookVerifySig:dots run skills/webhooks.s @run.verifySignature
+  webhookProducer:dots run skills/webhooks.s @run.producerSetup
+  webhookTest:dots run skills/webhooks.s @run.testWebhook
 |
 @byTask |
   minimalCode:skills/ponytail.s
@@ -226,6 +246,9 @@
   backend:skills/python.s skills/node.s
   node:skills/node.s
   nodejs:skills/node.s
+  pm2:skills/pm2.s
+  processManager:skills/pm2.s
+  zeroDowntime:skills/pm2.s @cluster
   debugging:skills/node.s @debugging
   python:skills/python.s
   python3:skills/python.s
@@ -282,6 +305,12 @@
   addonKeymaps:skills/blender-addon.s @keymaps
   overlayDrawing:skills/blender-addon.s @overlayDraw @modalPattern
   logAnalysis:skills/linux.s @logAnalysis
+  webhooks:skills/webhooks.s
+  webhookSecurity:skills/webhooks.s @security @verifyPattern
+  webhookReceiving:skills/webhooks.s @receiving
+  webhookRetries:skills/webhooks.s @retries
+  webhookIdempotency:skills/webhooks.s @idempotency
+  webhookTesting:skills/webhooks.s @testing
 |
 @index |
   ponytail.s:blocks:7|topic:yagni minimal code|keyBlocks:@rules @commands
@@ -298,6 +327,7 @@
   linux.s:blocks:21|topic:linux admin|keyBlocks:@processes @networking @systemd @gotchas @run
   nginx.s:blocks:21|topic:nginx web server|keyBlocks:@ssl @security @reverseProxy @gotchas @run
   node.s:blocks:21|topic:node.js runtime|keyBlocks:@debugging @performance @errors @gotchas @run
+  pm2.s:blocks:18|topic:pm2 process manager node.js cluster reload logs deploy|keyBlocks:@commands @ecosystem @cluster @logs @gotchas @run
   python.s:blocks:24|topic:python 3.12+|keyBlocks:@types @functions @classBasics @gotchas
   sh.s:blocks:20|topic:shell scripting|keyBlocks:@conditionals @functions @pipesRedirection @gotchas
   ssh.s:blocks:17|topic:ssh connections|keyBlocks:@config @keygen @tunneling @security @run
@@ -321,4 +351,5 @@
   rust.s:blocks:25|topic:rust ownership-safe systems|keyBlocks:@basics @types @strings @ownership @borrowing @fixingErrors @slices @structs @enums @match @collections @errorHandling @generics @traits @lifetimes @closures @iterators @concurrency @moduleSystem @tooling @testing @gotchas @index @dependencies
   strawnode-docs.s:blocks:8|topic:strawnode-docs|keyBlocks:@boot @modules @sectionSystem @serverSide @dependencyGraph @keyPatterns @quirks
   strawnode-prototype.s:blocks:17|topic:strawnode-prototype|keyBlocks:@dependencies @core @session @philosophy @layout @playbook @sectionFactory @graphics @readability @jadeJson @i18n @addressing @behaviorLinking @verification @gotchas @index
+  webhooks.s:blocks:18|topic:webhooks http callbacks event delivery signing hmac retries idempotency|keyBlocks:@core @security @verifyPattern @receiving @idempotency @retries @testing @gotchas @run
 |

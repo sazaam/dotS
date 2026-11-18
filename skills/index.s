@@ -1,5 +1,5 @@
 # dotS Knowledge Base Index
-@meta |type:index|lastUpdated:2026-09-23|totalFiles:36|
+@meta |type:index|lastUpdated:2026-11-13|totalFiles:42|
 @constraints |
   pipe:"|" has three roles: block delimiter, metadata separator, value content
   pipeRule:block ends only when a line is JUST "|" — pipes inside key:value are safe
@@ -10,6 +10,7 @@
   nginx.s:blocks:21|topic:nginx web server|keyBlocks:@ssl @security @reverseProxy @gotchas @run
   git.s:blocks:23|topic:git version control|keyBlocks:@branching @committing @merging @undoing @run
   node.s:blocks:21|topic:node.js runtime|keyBlocks:@debugging @performance @errors @gotchas @run
+  pm2.s:blocks:18|topic:pm2 process manager node.js cluster reload logs deploy|keyBlocks:@commands @ecosystem @cluster @logs @gotchas @run
   ssh.s:blocks:17|topic:ssh connections|keyBlocks:@config @keygen @tunneling @security @run
   linux.s:blocks:21|topic:linux admin|keyBlocks:@processes @networking @systemd @gotchas @run
   docker.s:blocks:18|topic:docker containers|keyBlocks:@containers @compose @multiStage @gotchas @run
@@ -45,11 +46,15 @@
   strawnode-docs.s:blocks:8|topic:strawnode-docs|keyBlocks:@boot @modules @sectionSystem @serverSide @dependencyGraph @keyPatterns @quirks
   strawnode-prototype.s:blocks:17|topic:strawnode-prototype|keyBlocks:@dependencies @core @session @philosophy @layout @playbook @sectionFactory @graphics @readability @jadeJson @i18n @addressing @behaviorLinking @verification @gotchas @index
   threejs.s:blocks:22|topic:threejs 3d webgl|keyBlocks:@core @scene @renderer @geometry @material @physical @texture @light @mesh @group @animation @controls @loader @raycasting @postprocessing @InstancedMesh @performance @webgpu @gotchas @math @examples
+  webhooks.s:blocks:18|topic:webhooks http callbacks event delivery signing hmac retries idempotency|keyBlocks:@core @security @verifyPattern @receiving @idempotency @retries @testing @gotchas @run
 |
 @byTask |
   webServer:nginx.s
   deployment:docker.s linux.s ssh.s
   development:node.s git.s
+  processManager:pm2.s
+  pm2:pm2.s@commands pm2.s@ecosystem
+  zeroDowntime:pm2.s@cluster pm2.s@run
   frontend:javascript.s
   backend:python.s node.s
   rust:rust.s
@@ -114,6 +119,12 @@
   hardening:server-setup.s@sshHarden server-setup.s@fail2ban
   terminal:terminal-tui.s
   herdr:terminal-tui.s@herdr
+  webhooks:webhooks.s
+  webhookSecurity:webhooks.s@security webhooks.s@verifyPattern
+  webhookReceiving:webhooks.s@receiving
+  webhookRetries:webhooks.s@retries
+  webhookIdempotency:webhooks.s@idempotency
+  webhookTesting:webhooks.s@testing
 |
 @quickRef |
   nginxSSL:dots get skills/nginx.s @ssl
@@ -121,6 +132,13 @@
   gitUndo:dots get skills/git.s @undoing
   gitBranching:dots get skills/git.s @branching
   nodeDebug:dots get skills/node.s @debugging
+  pm2:dots get skills/pm2.s
+  pm2Commands:dots get skills/pm2.s @commands
+  pm2Ecosystem:dots get skills/pm2.s @ecosystem
+  pm2Cluster:dots get skills/pm2.s @cluster
+  pm2Logs:dots get skills/pm2.s @logs
+  pm2Docker:dots get skills/pm2.s @docker
+  pm2Gotchas:dots get skills/pm2.s @gotchas
   sshTunnel:dots get skills/ssh.s @tunneling
   dockerCompose:dots get skills/docker.s @compose
   linuxProcess:dots get skills/linux.s @processes
@@ -214,6 +232,12 @@
   mutateCreate:dots mutate create blender-python "game development"
   pollinateList:dots pollinate list
   pollinateAll:dots pollinate --all
+  webhooks:dots get skills/webhooks.s
+  webhookSecurity:dots get skills/webhooks.s @security
+  webhookVerify:dots get skills/webhooks.s @verifyPattern
+  webhookIdempotency:dots get skills/webhooks.s @idempotency
+  webhookRetries:dots get skills/webhooks.s @retries
+  webhookTesting:dots get skills/webhooks.s @testing
 |
 @runQuickRef |
   gitCommit:dots run skills/git.s @run.quickCommit
@@ -243,6 +267,13 @@
   nodeDev:dots run skills/node.s @run.devSetup
   nodeTest:dots run skills/node.s @run.testSuite
   nodeHealth:dots run skills/node.s @run.productionCheck
+  pm2Setup:dots run skills/pm2.s @run.setup
+  pm2Reload:dots run skills/pm2.s @run.zeroDowntime
+  pm2Trouble:dots run skills/pm2.s @run.troubleshoot
   ffmpegNormalize:dots run skills/ffmpeg.s @run.normalizeDir
   ffmpegTrimDir:dots run skills/ffmpeg.s @run.trimAllWavs
+  webhookReceive:dots run skills/webhooks.s @run.receiveEndpoint
+  webhookVerifySig:dots run skills/webhooks.s @run.verifySignature
+  webhookProducer:dots run skills/webhooks.s @run.producerSetup
+  webhookTest:dots run skills/webhooks.s @run.testWebhook
 |

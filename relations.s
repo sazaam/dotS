@@ -14,3 +14,6 @@ $server-setup ~ $linux            # same box, admin ground truth
 $server-setup ~ $nginx            # deploy pipelines share the security posture
 $terminal-tui ~ $sh               # shell/tty discipline underpins TUI work
 $terminal-tui ~ $server-setup     # terminal-first admins operate hardened boxes
+$webhooks ~ $node                 # receivers commonly run on Node/Express
+$webhooks ~ $server-setup         # public HTTPS endpoints, hardening, secret handling
+$webhooks ~ $nginx                # TLS termination and routing for webhook endpoints

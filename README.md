@@ -380,26 +380,28 @@ instructions mechanism — routes every session to the dotS *map*, while skill
 ### Recommended layout
 
 ```
-~/.config/opencode/   # opencode config tree — $XDG_CONFIG_HOME/opencode
-├── AGENTS.md         # global instructions — points every session at the dotS map
-├── dotS/             # dotS = the git repo, as a sub-system of the config tree
-│   ├── dots          # CLI wrapper — added to PATH by the installer
+~/.config/
+├── dots/                 # dotS = the git repo, agent-agnostic XDG home
+│   ├── dots              # CLI wrapper — added to PATH by the installer
 │   ├── dots.py
-│   ├── index.s       # routing map — fetched via dots get, loaded on demand
+│   ├── index.s           # routing map — fetched via dots get, loaded on demand
 │   ├── commands/
-│   │   └── dots/*.md # /dots/* slash-commands
-│   └── skills/*.s    # knowledge bodies — loaded on demand
-└── commands/
-    └── dots -> ../dotS/commands/dots   # /dots/* slash-commands (symlink)
+│   │   └── dots/*.md     # /dots/* slash-commands
+│   └── skills/*.s        # knowledge bodies — loaded on demand
+└── opencode/             # opencode config tree
+    ├── AGENTS.md         # global instructions — points every session at the dotS map
+    └── commands/
+        └── dots -> ../../dots/commands/dots   # /dots/* slash-commands (symlink)
 ```
 
 `install-dots.sh` copies nothing: it adds the CLI to PATH and symlinks
 `commands/dots` into `$XDG_CONFIG_HOME/opencode/commands/` (default
 `~/.config/opencode/commands/`), so opencode discovers the `/dots/*`
 commands (index, learn, skill-create, optimize, skills) while they live in
-the repo. Because the config-tree path is standard XDG, this works the same
-on every machine (Arch, Ubuntu, …) no matter where you cloned dotS.
-Store, CLI, and commands update together with a single `git pull`.
+the repo. The store stays at the agent-agnostic XDG path `~/.config/dots`
+and each AI tool links to it, so this works the same on every machine
+(Arch, Ubuntu, …) no matter where you cloned dotS. Store, CLI, and commands
+update together with a single `git pull`.
 
 ### AGENTS.md (OpenCode V2)
 
@@ -578,6 +580,28 @@ game development
 ```
 
 This means: "when the user asks about game development, load `blender-python.s`."
+
+## Machine-Local Skills
+
+Private or machine-specific knowledge stays out of the repo via `.local.s` files (already covered by `.gitignore`):
+
+```
+skills/index.local.s         # local routing overlay
+skills/my-private.local.s    # local skill body
+```
+
+`dots find` reads `skills/index.local.s` first, then `skills/index.s`, merging `@quickRef`, `@byTask`, `@index` and `@runQuickRef`. Local keys win on collisions, so a shared routing entry can be redirected or shadowed without editing the canonical index. The skill body uses the normal `.s` format (`@meta`, `@core`, `@gotchas`, `@index`).
+
+```bash
+@byTask |
+  myPrivateThing:skills/my-private.local.s @core
+|
+@index |
+  my-private.local.s:blocks:3|topic:my private thing|keyBlocks:@core
+|
+```
+
+Copy the `.local.s` files to any machine that needs them. `dots get index.s` still shows only the shared map; `dots find` is the unified router. Never store secrets in `.s` files.
 
 ## Pollination
 

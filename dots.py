@@ -972,34 +972,34 @@ def cmd_find(args):
 
     query = ' '.join(args).lower()
     index_path = CTX_DIR / "skills" / "index.s"
-    if not index_path.exists():
+    local_path = CTX_DIR / "skills" / "index.local.s"
+    if not index_path.exists() and not local_path.exists():
         print(f"  index.s not found at {index_path}", file=sys.stderr)
         sys.exit(1)
 
-    index_sf = SFile(index_path)
     matches = []
+    seen_keys = set()
 
-    # 1. check @quickRef for exact shortcut match
-    for blk_name in ("quickRef", "runQuickRef"):
-        qr_block = index_sf.get_block(blk_name)
-        if qr_block:
-            for key, val in qr_block.props.items():
-                if query in key.lower():
-                    matches.append(("quickRef", key, val))
+    def _collect(index_sf: SFile, block_name: str, match_value: bool = False):
+        block = index_sf.get_block(block_name)
+        if not block:
+            return
+        for key, val in block.props.items():
+            haystack = val if match_value else key
+            if not isinstance(haystack, str) or query not in haystack.lower():
+                continue
+            if (block_name, key) in seen_keys:
+                continue
+            seen_keys.add((block_name, key))
+            matches.append((block_name, key, val))
 
-    # 2. check @byTask for task match
-    bt_block = index_sf.get_block("byTask")
-    if bt_block:
-        for key, val in bt_block.props.items():
-            if query in key.lower():
-                matches.append(("byTask", key, val))
-
-    # 3. check @index for topic match
-    idx_block = index_sf.get_block("index")
-    if idx_block:
-        for key, val in idx_block.props.items():
-            if isinstance(val, str) and query in val.lower():
-                matches.append(("index", key, val))
+    for index_file in (local_path, index_path):
+        if not index_file.exists():
+            continue
+        index_sf = SFile(index_file)
+        for name in ("quickRef", "runQuickRef", "byTask"):
+            _collect(index_sf, name)
+        _collect(index_sf, "index", match_value=True)
 
     if not matches:
         # fallback: search all .s files

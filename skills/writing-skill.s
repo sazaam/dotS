@@ -1,10 +1,9 @@
 # How to Write .s Skill Files - Meta Reference
-
 @meta |
   topic:writing-skill
-  versions:1.0
+  versions:1.1
   confidence:high
-  lastUpdated:2026-08-21
+  lastUpdated:2026-11-18
 |
 @dependencies |
   requires:index.s
@@ -13,7 +12,7 @@
   purpose:Reference for creating and optimizing .s skill files
   usage:load only when writing or optimizing skills, not for general queries
   location:dotS store - 'dots where'
-  cli:dots get <skill>.s @blockName
+  cli:dots get skills/<skill>.s @blockName
   sFind:dots find "topic" - searches across all skills
   sOptimize:dots optimize <skill> - removes waste
 |
@@ -52,8 +51,9 @@
   simpleSkill:@meta + @core + @blocks + @gotchas + @index
   referenceSkill:@meta + @core + multiple content blocks + @gotchas + @index
   indexBlock:sectionName:@block1 @block2 @block3
-  quickRefBlock:topic:dots get skill.s @blockName
+  quickRefBlock:topic:dots get skills/skill.s @blockName
   byTaskBlock:task:skill.s block1 block2
+  localOverlay:skills/index.local.s reads before skills/index.s; local keys win; gitignore skills/*.local.s
 |
 @antiPatterns |
   verboseValue:this function creates a new mesh object by calling" -> just "create new mesh
@@ -77,7 +77,7 @@
   format:sectionName:@block1 @block2 @block3
   sections:group logically (core, data, runtime, gotchas)
   includeAll:every block should appear in exactly one section
-  quickRef:dots get skill.s @blockName - show how to load
+  quickRef:dots get skills/skill.s @blockName - show how to load
   newBlocks:@dependencies @mega @mutations @pollination
   honesty:@honesty - claims discipline for docs and savings numbers
 |
@@ -147,9 +147,9 @@
   versionField:always include version in @meta for cache invalidation
 |
 @run |
-  create:dots get writing-skill.s @format
+  create:dots get skills/writing-skill.s @format
   optimize:dots optimize writing-skill
-  validate:dots find "writing" - should find this skill
+  validate:dots find "writeSkill" - should find this skill
   indexCheck:dots get index.s - verify skill appears
   tokens:dots optimize shows token count
 |

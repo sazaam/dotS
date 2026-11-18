@@ -5,7 +5,7 @@ alwaysApply: true
 
 # dotS knowledge layer
 
-This machine runs dotS at `~/.config/opencode/dotS` (`dots where` prints it).
+This machine runs dotS at `~/.config/dots` (`dots where` prints it).
 
 dotS is ON-DEMAND — never load skills eagerly. Never `dots get index.s "*"`. Never duplicate the routing map into rules or chat.
 

@@ -6,7 +6,7 @@ description: >-
 
 # dotS Knowledge & State System
 
-dotS stores dense, token-efficient knowledge in `.s` format (`key:value` pairs in blocks) inside `~/.config/opencode/dotS`.
+dotS stores dense, token-efficient knowledge in `.s` format (`key:value` pairs in blocks) inside `~/.config/dots`.
 
 ## When to Use
 

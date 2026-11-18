@@ -75,7 +75,7 @@ chmod +x "$DOTS_DIR/dots.py" "$DOTS_DIR/dots"
 # Add to PATH if not already there
 SHELL_RC="$HOME/.zshrc"
 [ ! -f "$SHELL_RC" ] && SHELL_RC="$HOME/.bashrc"
-if ! grep -q "$DOTS_DIR" "$SHELL_RC" 2>/dev/null; then
+if ! grep -qF "$DOTS_DIR" "$SHELL_RC" 2>/dev/null && ! grep -qF "\$HOME/${DOTS_DIR#$HOME/}" "$SHELL_RC" 2>/dev/null; then
   echo "" >> "$SHELL_RC"
   echo "# dotS tool" >> "$SHELL_RC"
   echo "export PATH=\"$DOTS_DIR:\$PATH\"" >> "$SHELL_RC"
