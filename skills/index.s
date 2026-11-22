@@ -1,5 +1,5 @@
 # dotS Knowledge Base Index
-@meta |type:index|lastUpdated:2026-11-13|totalFiles:42|
+@meta |type:index|lastUpdated:2026-11-22|totalFiles:43|
 @constraints |
   pipe:"|" has three roles: block delimiter, metadata separator, value content
   pipeRule:block ends only when a line is JUST "|" — pipes inside key:value are safe
@@ -46,7 +46,8 @@
   strawnode-docs.s:blocks:8|topic:strawnode-docs|keyBlocks:@boot @modules @sectionSystem @serverSide @dependencyGraph @keyPatterns @quirks
   strawnode-prototype.s:blocks:17|topic:strawnode-prototype|keyBlocks:@dependencies @core @session @philosophy @layout @playbook @sectionFactory @graphics @readability @jadeJson @i18n @addressing @behaviorLinking @verification @gotchas @index
   threejs.s:blocks:22|topic:threejs 3d webgl|keyBlocks:@core @scene @renderer @geometry @material @physical @texture @light @mesh @group @animation @controls @loader @raycasting @postprocessing @InstancedMesh @performance @webgpu @gotchas @math @examples
-  webhooks.s:blocks:18|topic:webhooks http callbacks event delivery signing hmac retries idempotency|keyBlocks:@core @security @verifyPattern @receiving @idempotency @retries @testing @gotchas @run
+   webhooks.s:blocks:18|topic:webhooks http callbacks event delivery signing hmac retries idempotency|keyBlocks:@core @security @verifyPattern @receiving @idempotency @retries @testing @gotchas @run
+   dusky.s:blocks:16|topic:dusky arch linux hyprland orchestrator matugen btrfs|keyBlocks:@core @layout @orchestrator @profiles @markers @theming @drives @services @station @keybinds @updates @gotchas @run
 |
 @byTask |
   webServer:nginx.s
@@ -124,7 +125,13 @@
   webhookReceiving:webhooks.s@receiving
   webhookRetries:webhooks.s@retries
   webhookIdempotency:webhooks.s@idempotency
-  webhookTesting:webhooks.s@testing
+   webhookTesting:webhooks.s@testing
+   dusky:dusky.s
+   archSetup:dusky.s@orchestrator dusky.s@profiles dusky.s@markers
+   hyprlandRicing:dusky.s@theming dusky.s@keybinds
+   btrfsSetup:dusky.s@drives
+   duskyServices:dusky.s@services dusky.s@station
+   duskyUpdates:dusky.s@updates
 |
 @quickRef |
   nginxSSL:dots get skills/nginx.s @ssl
@@ -237,7 +244,14 @@
   webhookVerify:dots get skills/webhooks.s @verifyPattern
   webhookIdempotency:dots get skills/webhooks.s @idempotency
   webhookRetries:dots get skills/webhooks.s @retries
-  webhookTesting:dots get skills/webhooks.s @testing
+   webhookTesting:dots get skills/webhooks.s @testing
+   dusky:dots get skills/dusky.s
+   duskyLayout:dots get skills/dusky.s @layout
+   duskyOrchestrator:dots get skills/dusky.s @orchestrator @profiles
+   duskyMarkers:dots get skills/dusky.s @markers
+   duskyTheme:dots get skills/dusky.s @theming @keybinds
+   duskyDrives:dots get skills/dusky.s @drives
+   duskyGotchas:dots get skills/dusky.s @gotchas
 |
 @runQuickRef |
   gitCommit:dots run skills/git.s @run.quickCommit
@@ -275,5 +289,8 @@
   webhookReceive:dots run skills/webhooks.s @run.receiveEndpoint
   webhookVerifySig:dots run skills/webhooks.s @run.verifySignature
   webhookProducer:dots run skills/webhooks.s @run.producerSetup
-  webhookTest:dots run skills/webhooks.s @run.testWebhook
+   webhookTest:dots run skills/webhooks.s @run.testWebhook
+   duskyDoctor:dots run skills/dusky.s @run.doctor
+   duskyInspect:dots run skills/dusky.s @run.inspect
+   duskyRerun:dots run skills/dusky.s @run.rerun
 |

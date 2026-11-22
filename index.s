@@ -41,8 +41,12 @@
   linux:dots get skills/linux.s
   linuxProcess:dots get skills/linux.s @processes
   linuxNetworking:dots get skills/linux.s @networking
-  linuxSystemd:dots get skills/linux.s @systemd
-  nginx:dots get skills/nginx.s
+   linuxSystemd:dots get skills/linux.s @systemd
+   dusky:dots get skills/dusky.s
+   duskyLayout:dots get skills/dusky.s @layout
+   duskyOrchestrator:dots get skills/dusky.s @orchestrator @profiles
+   duskyGotchas:dots get skills/dusky.s @gotchas
+   nginx:dots get skills/nginx.s
   nginxSSL:dots get skills/nginx.s @ssl
   nginxSecurity:dots get skills/nginx.s @security
   nginxReverseProxy:dots get skills/nginx.s @reverseProxy
@@ -191,7 +195,10 @@
   webhookReceive:dots run skills/webhooks.s @run.receiveEndpoint
   webhookVerifySig:dots run skills/webhooks.s @run.verifySignature
   webhookProducer:dots run skills/webhooks.s @run.producerSetup
-  webhookTest:dots run skills/webhooks.s @run.testWebhook
+   webhookTest:dots run skills/webhooks.s @run.testWebhook
+   duskyDoctor:dots run skills/dusky.s @run.doctor
+   duskyInspect:dots run skills/dusky.s @run.inspect
+   duskyRerun:dots run skills/dusky.s @run.rerun
 |
 @byTask |
   minimalCode:skills/ponytail.s
@@ -296,8 +303,12 @@
   serverSetup:skills/server-setup.s
   vps:skills/server-setup.s skills/ssh.s
   hardening:skills/server-setup.s @sshHarden @fail2ban @firewall
-  deployKey:skills/server-setup.s @gitKeys
-  terminal:skills/terminal-tui.s
+   deployKey:skills/server-setup.s @gitKeys
+   dusky:skills/dusky.s
+   archSetup:skills/dusky.s @orchestrator @profiles @markers
+   hyprlandRicing:skills/dusky.s @theming @keybinds
+   btrfsSetup:skills/dusky.s @drives
+   terminal:skills/terminal-tui.s
   tui:skills/terminal-tui.s @herdr @sessions
   herdr:skills/terminal-tui.s @herdr
   performance:skills/node.s @performance skills/nginx.s @cache
@@ -351,5 +362,6 @@
   rust.s:blocks:25|topic:rust ownership-safe systems|keyBlocks:@basics @types @strings @ownership @borrowing @fixingErrors @slices @structs @enums @match @collections @errorHandling @generics @traits @lifetimes @closures @iterators @concurrency @moduleSystem @tooling @testing @gotchas @index @dependencies
   strawnode-docs.s:blocks:8|topic:strawnode-docs|keyBlocks:@boot @modules @sectionSystem @serverSide @dependencyGraph @keyPatterns @quirks
   strawnode-prototype.s:blocks:17|topic:strawnode-prototype|keyBlocks:@dependencies @core @session @philosophy @layout @playbook @sectionFactory @graphics @readability @jadeJson @i18n @addressing @behaviorLinking @verification @gotchas @index
-  webhooks.s:blocks:18|topic:webhooks http callbacks event delivery signing hmac retries idempotency|keyBlocks:@core @security @verifyPattern @receiving @idempotency @retries @testing @gotchas @run
+   webhooks.s:blocks:18|topic:webhooks http callbacks event delivery signing hmac retries idempotency|keyBlocks:@core @security @verifyPattern @receiving @idempotency @retries @testing @gotchas @run
+   dusky.s:blocks:16|topic:dusky arch linux hyprland orchestrator matugen btrfs|keyBlocks:@core @layout @orchestrator @profiles @markers @theming @drives @services @station @keybinds @updates @gotchas @run
 |

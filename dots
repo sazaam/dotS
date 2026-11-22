@@ -1,6 +1,7 @@
 #!/bin/bash
 # dots - wrapper for dots.py (global)
-DOTS_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_PATH="$(readlink -f "$0")"
+DOTS_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 # Instructions may live alongside the dotS install (e.g. ~/.config/opencode/instructions)
 if [ -z "$S_INSTRUCTIONS_DIR" ] && [ -d "$DOTS_DIR/../instructions" ]; then
   export S_INSTRUCTIONS_DIR="$(cd "$DOTS_DIR/../instructions" && pwd)"
