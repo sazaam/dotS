@@ -558,12 +558,18 @@ dots stats                    # session usage stats
 # Maintenance
 dots freshness                # check staleness
 dots validate                 # check parse errors
+dots validate <draft.s>       # strict structural gate for a new draft
 dots snap                     # snapshot for diff
 dots diff                     # show changes since snap
 
 # Learning
 dots learn nginx.s @ssl.hsts "new value"  # update from websearch
 ```
+
+`dots validate <draft.s>` is the authoring gate: it checks one physical `key:value` per line,
+block termination, canonical `@meta` keys, named playbooks and `@index` references before a
+draft is delivered. It is strict for drafts; legacy store files are not retroactively checked.
+See `dots get skills/writing-skill.s @proofGate` for the full four-check workflow.
 
 ## Mutations
 

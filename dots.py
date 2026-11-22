@@ -9,7 +9,7 @@ Usage:
     dots add <file> <path> <value>  Append to a list
     dots list <file>           List all blocks in a file
     dots graph                 Show relationship graph
-    dots validate              Validate all .s files
+    dots validate [file.s]     Validate store, or structurally check one draft
     dots snap                  Snapshot current state
     dots diff                  Show changes since last snapshot
     dots search <query>        Search across all .s files
@@ -802,8 +802,100 @@ def cmd_list(args):
         print(f"    @{b.tag:20s} {keys}")
 
 
+def _validate_file_structural(path: Path) -> list[str]:
+    """Return structural authoring errors for a single .s file."""
+    try:
+        content = path.read_text()
+    except Exception as e:
+        return [f"cannot read file: {e}"]
+    try:
+        sf = SFile(path)
+    except Exception as e:
+        return [f"parse error: {e}"]
+
+    errors = []
+    open_tag = None
+    open_line = 0
+    for lineno, raw in enumerate(content.splitlines(), 1):
+        stripped = raw.strip()
+        m = re.match(r'^@(\S+)(?:\s+\w+)?\s*\|', stripped)
+        if m:
+            if open_tag:
+                errors.append(f"line {open_line}: unterminated @{open_tag} (next block at line {lineno})")
+            if stripped.count('|') >= 2:
+                open_tag = None
+            else:
+                open_tag = m.group(1)
+                open_line = lineno
+            continue
+        if stripped == '|':
+            if not open_tag:
+                errors.append(f"line {lineno}: stray | with no open block")
+            open_tag = None
+            continue
+        if not open_tag or not stripped or stripped.startswith('#'):
+            continue
+        if not re.match(r'^\s+[\w.\-]+:', raw):
+            errors.append(f"line {lineno}: not a key:value line: {stripped[:48]}")
+
+    if open_tag:
+        errors.append(f"line {open_line}: unterminated @{open_tag} at EOF")
+
+    meta = sf.get_block('meta')
+    if not meta:
+        errors.append("missing @meta block")
+    else:
+        for key in ('topic', 'versions', 'confidence', 'lastUpdated'):
+            if key not in meta.props:
+                errors.append(f"@meta missing required key: {key}")
+        if 'version' in meta.props:
+            errors.append("@meta uses 'version'; canonical key is 'versions'")
+
+    runs = [b for b in sf.blocks if b.tag == 'run']
+    if len(runs) > 1 and any('_name' not in b.props for b in runs):
+        errors.append("multiple @run blocks with an unnamed boilerplate @run; keep only named playbooks")
+
+    idx = sf.get_block('index')
+    if idx:
+        tags = {b.tag for b in sf.blocks}
+        named = {f"{b.tag}.{b.props['_name']}" for b in sf.blocks if b.props.get('_name')}
+        for key, val in idx.props.items():
+            if key in ('sections', 'quickRef', 'playbook', 'howTo', 'format'):
+                continue
+            for tok in re.findall(r'@[\w.\-]+', str(val)):
+                ref = tok[1:]
+                if ref not in tags and ref not in named:
+                    errors.append(f"@index.{key}: unknown block {tok}")
+
+    return errors
+
+
 def cmd_validate(args):
-    """Validate all .s files."""
+    """Validate all .s files, or structurally check an explicit draft path."""
+    if args:
+        total = 0
+        for arg in args:
+            path = Path(arg)
+            if not path.is_file():
+                path = resolve_file(arg)
+            if not path.is_file() and not arg.endswith('.s'):
+                path = CTX_DIR / 'skills' / f'{arg}.s'
+            if not path.is_file():
+                print(f"File not found: {arg}", file=sys.stderr)
+                sys.exit(1)
+            errs = _validate_file_structural(path)
+            if errs:
+                print(f"  ✗ {path}")
+                for err in errs:
+                    print(f"      {err}")
+                total += len(errs)
+            else:
+                print(f"  ✓ {path} (structural checks passed)")
+        if total:
+            print(f"\n  {total} structural error(s) found")
+            sys.exit(1)
+        return
+
     errors = 0
     for sf_path in sorted(CTX_DIR.rglob("*.s")):
         rel = sf_path.relative_to(CTX_DIR)

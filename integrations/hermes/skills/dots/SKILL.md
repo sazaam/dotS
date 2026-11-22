@@ -25,12 +25,15 @@ Store: `~/.config/dots`. CLI: `dots` (fallback: `~/.config/dots/dots`).
 - `dots run skills/<skill>.s @run.<playbook> [--dry-run]` — run a verified playbook
 - `dots set <file.s> <block.key> <value>` — set a value
 - `dots add <file.s> @block <item> [key:value ...]` — append to a block
-- `dots validate` / `dots where` — check store integrity / install location
+- `dots validate [file.s]` — check store integrity, or structurally check one draft
+- `dots where` — show install location
 
 ## Rules
 
 - On-demand only: run `find` first; never dump `index.s` or all skills into context.
 - Do not duplicate the routing map into instructions or chat.
-- Before authoring `.s` files, load the spec: `dots get skills/writing-skill.s @format @blocks @gotchas @index`.
+- Before authoring `.s` files, load the spec: `dots get skills/writing-skill.s @format @blocks @proofGate @gotchas @index`.
+- Never present a `.s` draft before `dots validate <draft>` passes and `dots optimize --dry-run <draft>` shows zero actions.
+- Domain skills must not copy guide blocks (`@versioning`, `@locking`, `@debugging`, bare `@run`); use named playbooks only.
 
 See `references/hermes-enablement.md` for verification, dry-run authoring and PATH notes.

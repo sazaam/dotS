@@ -1,9 +1,9 @@
 # How to Write .s Skill Files - Meta Reference
 @meta |
   topic:writing-skill
-  versions:1.1
+  versions:1.2
   confidence:high
-  lastUpdated:2026-11-18
+  lastUpdated:2026-11-22
 |
 @dependencies |
   requires:index.s
@@ -15,6 +15,7 @@
   cli:dots get skills/<skill>.s @blockName
   sFind:dots find "topic" - searches across all skills
   sOptimize:dots optimize <skill> - removes waste
+  sValidate:dots validate <draft.s> - strict structural check before delivery
 |
 @format |
   blockStart:@blockName followed by pipe on next line
@@ -26,6 +27,10 @@
   noPipeAlone:never put | alone inside a block content - it will close the block
   shellPipe:cmd:cat file | grep pattern is safe - pipe is inside value
   whitespace:keys and values are trimmed of leading/trailing spaces
+  oneLinePerKey:each key:value must be on its own physical line
+  continuationBad:indented text after a key line parses as a bogus key - rewrite as key:value
+  wrongExample:purpose:long text then next line indented continuation -> bogus key 'continuation'
+  rightExample:purpose:short complete value; split extra facts into their own keys
 |
 @blocks |
   naming:camelCase for keys (firstWord, not first_word)
@@ -36,6 +41,10 @@
   gotchasBlock:always include @gotchas for pitfalls
   metaBlock:always include @meta with topic, versions, confidence, lastUpdated
   coreBlock:include @core with purpose and usage instructions
+  antiTemplate:never copy authoring-guide blocks (@versioning @locking @debugging or bare @run) into domain skills
+  domainOnly:every block must teach the skill topic - delete guide residue
+  honestyOnly:include @honesty only when the skill makes measured claims
+  dependenciesBlock:use @dependencies requires:key instead of custom deps keys in @meta
 |
 @tokens |
   mergeLine:foo:bar:baz:qux on one line = 1 line not 4
@@ -75,10 +84,11 @@
 @index |
   howTo:list each section and its blocks
   format:sectionName:@block1 @block2 @block3
-  sections:group logically (core, data, runtime, gotchas)
+  sections:group logically (core, data, runtime, proof, gotchas)
   includeAll:every block should appear in exactly one section
   quickRef:dots get skills/skill.s @blockName - show how to load
   newBlocks:@dependencies @mega @mutations @pollination
+  proof:@proofGate - mandatory verification before delivering a draft
   honesty:@honesty - claims discipline for docs and savings numbers
 |
 @versioning |
@@ -96,6 +106,7 @@
   sFindBlank:dots find returns nothing? check block names match
   sOptimizeDryRun:run dots optimize --dry-run to preview changes
   tokenCount:dots optimize shows token count - track changes
+  validateDraft:dots validate <draft> reports unterminated blocks, bad keys, meta and index errors
 |
 @optimize |
   whatItDoes:removes .why explanations, detects redundancy
@@ -104,6 +115,15 @@
   simplification:verbose values get shortened
   dryRun:use --dry-run to preview without modifying
   manualReview:optimization is suggestions - review before accepting
+|
+@proofGate |
+  draft:dots validate /abs/path/<name>.s - must print structural checks passed
+  parse:dots get /abs/path/<name>.s @meta - must render canonical @meta
+  trim:dots optimize --dry-run /abs/path/<name>.s - must show zero actions
+  route:dots find "<topic>" - must resolve after registration
+  deliver:never present a draft before all four checks pass
+  confidence:mark @meta confidence high only after checks pass; otherwise medium
+  strict:dots validate <draft> is draft-only; legacy store files are not retroactively checked
 |
 @locking |
   beforeEdit:always run `dots locked` before editing any .s file
@@ -144,12 +164,14 @@
   blockNotFound:typo in block name causes "not found" error
   emptyBlock:empty blocks (just @name | |) waste tokens
   indexMismatch:@index referencing non-existent block
-  versionField:always include version in @meta for cache invalidation
+  versionField:canonical key is versions (plural) in @meta; version is rejected by dots validate <draft>
 |
 @run |
   create:dots get skills/writing-skill.s @format
   optimize:dots optimize writing-skill
-  validate:dots find "writeSkill" - should find this skill
+  validate:dots validate skills/writing-skill.s - structural self-check
+  validateDraft:dots validate /abs/path/<name>.s - draft gate
+  find:dots find "writeSkill" - should find this skill
   indexCheck:dots get index.s - verify skill appears
   tokens:dots optimize shows token count
 |

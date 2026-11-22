@@ -17,24 +17,27 @@ inside the dotS store. This is the dotS-native twin of `/skill-create`.
 
 ## Task
 
-1. Load the house style first:
-   `dots get skills/writing-skill.s @patterns @blocks @tokens @antiPatterns`
-   (its create playbook, `@run.create`, shows the canonical create → optimize → validate loop).
-2. Check for an existing skill: `dots find $1` and `dots search $1`.
-3. Identify the repeated pattern in $ARGUMENTS and abstract it to the general case.
-4. Create `skills/<name>.s` in the dotS store — `$(dots where)` — (or update the existing file)
-   following `writing-skill.s`:
-   - Base structure (`@patterns.simpleSkill`): `@meta` + `@core` + `@blocks` + `@gotchas` + `@index`
-   - Rich content (`@patterns.referenceSkill`): `@meta` + `@core` + multiple content blocks + `@gotchas` + `@index`
-   - Executable workflow: a `@run` playbook with numbered steps (`1.cmd`, `1.expect`, `1.onFail`)
-5. Register it in the index (formats per `@patterns.indexBlock` / `@quickRefBlock` / `@byTaskBlock`):
-   - `dots add index.s @index skills/<name>.s`
-   - `dots add index.s @byTask "<trigger>:skills/<name>.s"`
-   - Optional shortcut: `dots add index.s @quickRef "<alias>:dots get skills/<name>.s <block>"`
-6. Add a relationship if it connects to existing knowledge:
-   `dots add relations.s "$<name> ~ $<related>"`
-7. Log the change: `dots add changelog.s @h "#<n>: created/updated skill <name> when:<date>"`
-8. Verify: `dots validate`, then `dots find $1` — it must resolve to the new skill.
+ 1. Load the house style first:
+    `dots get skills/writing-skill.s @patterns @blocks @tokens @antiPatterns @proofGate`
+    (its create playbook, `@run.create`, shows the canonical create → validate → optimize → register loop).
+ 2. Check for an existing skill: `dots find $1` and `dots search $1`.
+ 3. Identify the repeated pattern in $ARGUMENTS and abstract it to the general case.
+ 4. Draft the skill at a scratch path following `writing-skill.s`:
+    - One `key:value` per physical line; no indented continuation lines.
+    - Base structure (`@patterns.simpleSkill`): `@meta` + `@core` + `@blocks` + `@gotchas` + `@index`
+    - Rich content (`@patterns.referenceSkill`): `@meta` + `@core` + multiple content blocks + `@gotchas` + `@index`
+    - Executable workflow: a named `@run <name>` playbook with numbered steps (`1.cmd`, `1.expect`, `1.onFail`)
+    - Never copy authoring-guide blocks (`@versioning`, `@locking`, `@debugging`, bare `@run`) into the new skill.
+ 5. Draft gate: `dots validate /abs/path/<draft>.s` must print "structural checks passed"; then `dots optimize --dry-run <draft>` must show zero actions.
+ 6. Only then create/update `skills/<name>.s` in the dotS store — `$(dots where)`.
+ 7. Register it in the index (formats per `@patterns.indexBlock` / `@quickRefBlock` / `@byTaskBlock`):
+    - `dots add index.s @index skills/<name>.s`
+    - `dots add index.s @byTask "<trigger>:skills/<name>.s"`
+    - Optional shortcut: `dots add index.s @quickRef "<alias>:dots get skills/<name>.s <block>"`
+ 8. Add a relationship if it connects to existing knowledge:
+    `dots add relations.s "$<name> ~ $<related>"`
+ 9. Log the change: `dots add changelog.s @h "#<n>: created/updated skill <name> when:<date>"`
+ 10. Verify: `dots validate`, then `dots find $1` — it must resolve to the new skill.
 
 ## Quality Criteria (from writing-skill.s)
 

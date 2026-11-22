@@ -28,7 +28,7 @@
   gpu-draw.s:blocks:5|topic:blender gpu dotted line overlay preview draw handler|keyBlocks:@meta @facts @gotchas @verification
   ffmpeg.s:blocks:13|topic:ffmpeg audio video processing|keyBlocks:@trimSilence @pitchFormant @loudness @concat @gotchas @run
   audio-drama-pipeline.s:blocks:9|topic:per-line theatrical audio drama recording pipeline|keyBlocks:@flow @trim @pacing @loudness @gotchas @futureProject
-  writing-skill.s:blocks:20|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @patterns @optimize @gotchas @dependencies @mega @mutations @pollination
+  writing-skill.s:blocks:21|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @patterns @optimize @proofGate @gotchas @dependencies @mega @mutations @pollination
   comfy-t2v-ltx-2.3.s:blocks:9|topic:comfyui ltx-2.3 22b t2v on 16GB gpu|keyBlocks:@models @launch @workflow @vramMap @gotchas
   mml.s:blocks:20|topic:mml music macro language chiptune|keyBlocks:@basics @notes @lengths @loops @macros @dialects @gotchas
   server-setup.s:blocks:12|topic:vps server hardening fail2ban firewall deploy keys|keyBlocks:@sshHarden @firewall @fail2ban @gitKeys @verify @run
@@ -106,6 +106,7 @@
   blenderVSE:blender-python.s@vse
   writeSkill:writing-skill.s
   optimizeSkill:writing-skill.s@tokens writing-skill.s@optimize
+  skillDraft:writing-skill.s@proofGate
   videoGenVideo:comfy-t2v-ltx-2.3.s
   ltxT2V:comfy-t2v-ltx-2.3.s@workflow
   comfyOOM:comfy-t2v-ltx-2.3.s@vramMap comfy-t2v-ltx-2.3.s@gotchas
@@ -213,6 +214,8 @@
   writeSkillTokens:dots get skills/writing-skill.s @tokens
   writeSkillPatterns:dots get skills/writing-skill.s @patterns
   writeSkillOptimize:dots get skills/writing-skill.s @optimize
+  writeSkillProof:dots get skills/writing-skill.s @proofGate
+  validateDraft:dots validate /abs/path/<draft>.s
   comfyT2V:dots get skills/comfy-t2v-ltx-2.3.s @workflow
   comfyT2VLaunch:dots get skills/comfy-t2v-ltx-2.3.s @launch
   comfyT2VModels:dots get skills/comfy-t2v-ltx-2.3.s @models
