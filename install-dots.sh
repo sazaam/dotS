@@ -15,6 +15,7 @@ MODE_ANTIGRAVITY=false
 MODE_OPENCODE=false
 MODE_CLAUDE=false
 MODE_CURSOR=false
+MODE_HERMES=false
 FORCE=false
 
 for arg in "$@"; do
@@ -24,6 +25,7 @@ for arg in "$@"; do
     --opencode) MODE_OPENCODE=true ;;
     --claude) MODE_CLAUDE=true ;;
     --cursor) MODE_CURSOR=true ;;
+    --hermes) MODE_HERMES=true ;;
     --force) FORCE=true ;;
     -h|--help)
       echo "Usage: ./install-dots.sh [OPTIONS]"
@@ -35,6 +37,7 @@ for arg in "$@"; do
       echo "  --opencode      Configure OpenCode (/dots/*) slash-commands integration"
       echo "  --claude        Configure Claude Code global rules"
       echo "  --cursor        Configure Cursor rules"
+      echo "  --hermes        Configure Hermes local dots skill"
       echo "  --force         Overwrite/backup conflicting files with symlinks"
       echo "  -h, --help      Show this help message"
       exit 0
@@ -164,7 +167,24 @@ else
 fi
 
 # ---------------------------------------------------------
-# 2. Antigravity / Gemini Code Assist Integration
+# 2. Hermes Agent Integration
+# ---------------------------------------------------------
+HERMES_BASE="${HERMES_HOME:-$HOME/.hermes}"
+if [ "$MODE_ALL" = true ] || [ "$MODE_HERMES" = true ] || [ -d "$HERMES_BASE" ] || command -v hermes >/dev/null 2>&1; then
+  printf "%b[DETECTED] Hermes Agent%b\n" "$BOLD" "$RESET"
+  _hermes_skill="$DOTS_DIR/integrations/hermes/skills/dots"
+  if [ -d "$_hermes_skill" ]; then
+    safe_link "$_hermes_skill/SKILL.md" "$HERMES_BASE/skills/autonomous-ai-agents/dots/SKILL.md" "Hermes dots skill"
+    safe_link "$_hermes_skill/references/hermes-enablement.md" "$HERMES_BASE/skills/autonomous-ai-agents/dots/references/hermes-enablement.md" "Hermes enablement notes"
+  else
+    printf "  %b[SKIP]%b Hermes adapter folder missing in repo.\n" "$RED" "$RESET"
+  fi
+else
+  printf "%b[SKIPPED]%b  Hermes (not detected. Use --hermes or --all to force)\n" "$CYAN" "$RESET"
+fi
+
+# ---------------------------------------------------------
+# 3. Antigravity / Gemini Code Assist Integration
 # ---------------------------------------------------------
 GEMINI_BASE="$HOME/.gemini"
 if [ "$MODE_ALL" = true ] || [ "$MODE_ANTIGRAVITY" = true ] || [ -d "$GEMINI_BASE" ] || command -v agy >/dev/null 2>&1; then
@@ -183,7 +203,7 @@ else
 fi
 
 # ---------------------------------------------------------
-# 3. Claude Code Integration
+# 4. Claude Code Integration
 # ---------------------------------------------------------
 CLAUDE_BASE="$HOME/.claude"
 if [ "$MODE_ALL" = true ] || [ "$MODE_CLAUDE" = true ] || [ -d "$CLAUDE_BASE" ] || command -v claude >/dev/null 2>&1; then
@@ -197,7 +217,7 @@ else
 fi
 
 # ---------------------------------------------------------
-# 4. Cursor Integration
+# 5. Cursor Integration
 # ---------------------------------------------------------
 CURSOR_BASE="$HOME/.cursor"
 CURSOR_CFG="$HOME/.config/Cursor"

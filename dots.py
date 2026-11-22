@@ -3,7 +3,7 @@
 
 Usage:
     dots init                  Scaffold dotS/ structure
-    dots get <file> [block]    Read file or specific block
+    dots get <file> [@block ...] [key]  Read file, blocks, or one key
     dots get index.s *         Load index + ALL skills (quote * or it may expand)
     dots set <file> <path> <value>  Set a value (path: block.key or block.key.subkey)
     dots add <file> <path> <value>  Append to a list
@@ -646,9 +646,9 @@ def _is_load_all(args: list) -> bool:
 
 
 def cmd_get(args):
-    """Read a file, specific block, or all skills via wildcard."""
+    """Read a file, one or more blocks, or all skills via wildcard."""
     if not args:
-        print("Usage: dots get <file> [block|*]", file=sys.stderr)
+        print("Usage: dots get <file> [@block ...] [key|*]", file=sys.stderr)
         sys.exit(1)
 
     # Wildcard shortcuts (quote the * or rely on expansion tolerance):
@@ -670,24 +670,36 @@ def cmd_get(args):
     sf = SFile(filepath)
 
     if len(args) > 1:
-        # get specific block
-        block_name = args[1].lstrip('@')  # strip leading @ if user typed it
-        block = sf.get_block(block_name)
-        if not block:
-            print(f"Block @{block_name} not found in {args[0]}", file=sys.stderr)
-            sys.exit(1)
-        # optional key
-        if len(args) > 2:
-            val = block.get(args[2])
-            if val is None:
-                print(f"Key '{args[2]}' not found in @{block_name}", file=sys.stderr)
-                sys.exit(1)
-            if isinstance(val, (dict, list)):
-                print(json.dumps(val, indent=2, default=str))
+        block_args = []
+        keys = []
+        for arg in args[1:]:
+            if arg.startswith('@'):
+                block_args.append(arg)
+            elif not block_args and not keys:
+                block_args.append('@' + arg)
             else:
-                print(val)
-        else:
-            print(block.render())
+                keys.append(arg)
+        if not block_args or len(keys) > 1 or (keys and len(block_args) > 1):
+            print("Usage: dots get <file> [@block ...] [key]", file=sys.stderr)
+            sys.exit(1)
+        key = keys[0] if keys else None
+        for block_arg in block_args:
+            block_name = block_arg.lstrip('@')
+            block = sf.get_block(block_name)
+            if not block:
+                print(f"Block @{block_name} not found in {args[0]}", file=sys.stderr)
+                sys.exit(1)
+            if key:
+                val = block.get(key)
+                if val is None:
+                    print(f"Key '{key}' not found in @{block_name}", file=sys.stderr)
+                    sys.exit(1)
+                if isinstance(val, (dict, list)):
+                    print(json.dumps(val, indent=2, default=str))
+                else:
+                    print(val)
+            else:
+                print(block.render())
     else:
         print(sf.render(), end='')
 

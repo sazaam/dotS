@@ -44,6 +44,7 @@ source ~/.zshrc  # or ~/.bashrc
 - **OpenCode** (`~/.config/opencode/`): Links slash-commands (`commands/dots/`) to `$XDG_CONFIG_HOME/opencode/commands/dots`.
 - **Claude Code** (`~/.claude/`): Links global instructions (`CLAUDE.md`).
 - **Cursor** (`~/.cursor/`): Links hard-gate rule (`rules/dots.mdc`).
+- **Hermes Agent** (`~/.hermes/skills/autonomous-ai-agents/dots/`): Links the on-demand skill and its enablement notes.
 
 Because all integrations are live symlinks to the repo, **a single `git pull` updates your knowledge store and all AI adapters simultaneously**:
 
@@ -62,6 +63,7 @@ You can let `./install-dots.sh` auto-detect your tools, or target specific envir
 ./install-dots.sh --opencode    # Configure OpenCode (/dots/* commands)
 ./install-dots.sh --claude      # Configure Claude Code global instructions
 ./install-dots.sh --cursor      # Configure Cursor rules
+./install-dots.sh --hermes      # Configure Hermes local dots skill
 ./install-dots.sh --force       # Backup existing conflicting files and link
 ```
 
@@ -364,7 +366,10 @@ Reference configuration for running dotS as the context layer of [opencode](http
 ### 4. Cursor IDE
 - **Hard Gate Rule (`~/.cursor/rules/dots.mdc`)**: Enforces `dots find <topic>` as the first tool call before answering stack, how-to, or configuration questions.
 
-### 5. Universal Agents (Aider, Windsurf, etc.)
+### 5. Hermes Agent
+- **Local skill (`skills/autonomous-ai-agents/dots/`)**: Links `SKILL.md` plus enablement notes into `$HERMES_HOME`. Routes infrastructure and supported-stack questions through `dots find` and keeps authoring guidance in a reference file.
+
+### 6. Universal Agents (Aider, Windsurf, etc.)
 - A portable rule pointer is provided in `integrations/generic/AGENTS.md` for any workspace or tool that supports markdown agent instructions.
 
 ---
@@ -511,6 +516,8 @@ dotS/
 │   │   └── rules/
 │   ├── claude-code/     # Claude Code global instructions
 │   ├── cursor/          # Cursor IDE rules (.mdc)
+│   ├── hermes/          # Hermes local skill + enablement notes
+│   │   └── skills/dots/
 │   └── generic/         # Universal AGENTS.md rules
 ├── skills/              # knowledge base .s files
 │   ├── css.s
