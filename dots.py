@@ -27,6 +27,11 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional
 
+try:
+    import pwd
+except ImportError:
+    pwd = None
+
 CTX_DIR = Path(os.environ.get("S_DIR", Path(__file__).parent))
 INSTRUCTIONS_DIR = Path(os.environ.get("S_INSTRUCTIONS_DIR", Path(__file__).parent / "instructions"))
 SNAP_DIR = CTX_DIR / ".snaps"
@@ -34,9 +39,28 @@ STATE_DIR = CTX_DIR / ".state"
 LOADED_FILE = STATE_DIR / "loaded.txt"
 SESSION_LOG = STATE_DIR / "session.log"
 LOCKED_FILE = CTX_DIR / "skills" / ".locked"
-DEPS_DIR = CTX_DIR / "skills" / ".deps"
 MEGA_DIR = CTX_DIR / "skills" / ".mega"
 MUTATIONS_DIR = CTX_DIR / "skills" / ".mutations"
+
+
+def _real_home() -> Path:
+    if pwd is not None:
+        try:
+            return Path(pwd.getpwuid(os.getuid()).pw_dir)
+        except (KeyError, OSError):
+            pass
+    return Path.home()
+
+
+TRUST_ROOT = (_real_home() / ".config" / "dots").resolve()
+SAFE_FILE = TRUST_ROOT / "skills" / ".safe"
+RUN_ALIASES = frozenset({
+    'exec', 'execute', 'exe', 'cmd', 'command', 'sh', 'bash', 'zsh', 'shell',
+    'eval', 'invoke', 'call', 'spawn', 'launch', 'start', 'do', 'perform',
+    'apply', 'play', 'trigger', 'dispatch', 'process', 'script', 'x', 'go',
+    'fire', 'route', 'send',
+})
+REMOTE_REF = re.compile(r'^(?:[a-zA-Z][a-zA-Z0-9+.-]*://|git@|//)')
 
 
 def resolve_file(filename: str) -> Path:
@@ -51,6 +75,37 @@ def resolve_file(filename: str) -> Path:
         return fp
     # Return CTX_DIR path for error message
     return CTX_DIR / filename
+
+
+def _deny_untrusted_run(reason: str):
+    print(f"  SECURITY: {reason}", file=sys.stderr)
+    print("  @run execution is allowed only for playbooks allowlisted in ~/.config/dots/skills/.safe", file=sys.stderr)
+    sys.exit(1)
+
+
+def _is_trusted_run_file(filepath: Path) -> bool:
+    try:
+        resolved = filepath.resolve()
+        rel = resolved.relative_to(TRUST_ROOT)
+    except (ValueError, OSError):
+        return False
+    if not resolved.is_file():
+        return False
+    try:
+        trusted = {
+            line.strip() for line in SAFE_FILE.read_text().splitlines()
+            if line.strip() and not line.strip().startswith('#')
+        }
+    except OSError:
+        return False
+    return resolved.name in trusted or str(rel) in trusted
+
+
+def _parse_cli_list(value: str):
+    """Parse a `[a, b]` CLI argument into a list, leaving other values alone."""
+    if value.startswith('[') and value.endswith(']'):
+        return [v.strip() for v in value[1:-1].split(',')]
+    return value
 
 
 def _ensure_state_dir():
@@ -165,24 +220,6 @@ def _resolve_all_deps(skill_name: str, visited: set = None) -> list:
             all_deps.extend(_resolve_all_deps(dep, visited))
     
     return list(dict.fromkeys(all_deps))  # Remove duplicates, preserve order
-
-
-def _save_deps_graph(skill_name: str, deps: list):
-    """Save resolved dependencies to cache file."""
-    DEPS_DIR.mkdir(parents=True, exist_ok=True)
-    cache_file = DEPS_DIR / f"{skill_name}.deps"
-    cache_file.write_text('\n'.join(deps))
-
-
-def _load_deps_cache(skill_name: str) -> list:
-    """Load cached dependencies if available."""
-    if not skill_name.endswith('.s'):
-        skill_name += '.s'
-    
-    cache_file = DEPS_DIR / f"{skill_name}.deps"
-    if cache_file.exists():
-        return [l.strip() for l in cache_file.read_text().splitlines() if l.strip()]
-    return None
 
 
 # ── MegaSkills ────────────────────────────────────────────────────────────────
@@ -423,9 +460,6 @@ class Block:
             self.props[m.group(1)] = self._parse_val(m.group(2).strip())
         else:
             self._items.append(value)
-
-    def to_dict(self) -> dict:
-        return {self.tag: self.props}
 
     def render(self) -> str:
         # Get block name if present (don't modify props)
@@ -729,11 +763,7 @@ def cmd_set(args):
     if not block:
         block = Block(block_tag, '')
 
-    value = ' '.join(args[2:])
-    # parse lists
-    if value.startswith('[') and value.endswith(']'):
-        inner = value[1:-1]
-        value = [v.strip() for v in inner.split(',')]
+    value = _parse_cli_list(' '.join(args[2:]))
 
     if key:
         block.set(key, value)
@@ -901,11 +931,6 @@ def cmd_validate(args):
         rel = sf_path.relative_to(CTX_DIR)
         try:
             sf = SFile(sf_path)
-            # basic checks
-            for b in sf.blocks:
-                if not b.tag:
-                    print(f"  ✗ {rel}: block with no tag")
-                    errors += 1
             print(f"  ✓ {rel} ({len(sf.blocks)} blocks)")
         except Exception as e:
             print(f"  ✗ {rel}: {e}")
@@ -1412,35 +1437,6 @@ def _get_session_file():
     return CURRENT_SESSION
 
 
-def track_command(cmd_name: str, args: list, tokens_used: int = 0):
-    """Track a command execution for session stats."""
-    session_file = _get_session_file()
-    data = json.loads(session_file.read_text())
-    data["commands"].append({
-        "time": datetime.now().isoformat(),
-        "cmd": cmd_name,
-        "args": args,
-        "tokens": tokens_used,
-    })
-    session_file.write_text(json.dumps(data, indent=2))
-
-
-def track_savings(tokens_saved: int):
-    """Track tokens saved by using .s instead of prose."""
-    session_file = _get_session_file()
-    data = json.loads(session_file.read_text())
-    data["tokens_saved"] = data.get("tokens_saved", 0) + tokens_saved
-    session_file.write_text(json.dumps(data, indent=2))
-
-
-def track_fallback():
-    """Track a websearch fallback (when .s wasn't enough)."""
-    session_file = _get_session_file()
-    data = json.loads(session_file.read_text())
-    data["websearch_fallbacks"] = data.get("websearch_fallbacks", 0) + 1
-    session_file.write_text(json.dumps(data, indent=2))
-
-
 def cmd_stats(args):
     """Show session usage statistics and cost savings."""
     if args and args[0] == '--all':
@@ -1531,44 +1527,26 @@ def cmd_learn(args):
 
     sf = SFile(filepath)
 
-    # parse block.key - handle both "block.key" and "block key" formats
     raw_path = args[1].lstrip('@')
-    if '.' in raw_path:
-        parts = raw_path.split('.', 1)
-        block_tag = parts[0]
-        key = parts[1]
-    else:
-        block_tag = raw_path
-        key = args[2] if len(args) > 2 and not args[2].startswith('--') else None
+    if '.' not in raw_path:
+        print(f"  specify key: dots learn {args[0]} {raw_path}.<key> <value>", file=sys.stderr)
+        sys.exit(1)
+    block_tag, key = raw_path.split('.', 1)
 
     block = sf.get_block(block_tag)
     if not block:
         block = Block(block_tag, '')
 
-    # check for --from-websearch flag
     if '--from-websearch' in args:
         idx = args.index('--from-websearch')
         value = ' '.join(args[idx + 1:])
         source = "websearch"
     else:
-        # value is everything after block.key
-        if key:
-            value = ' '.join(args[2:])
-        else:
-            value = ' '.join(args[2:])
+        value = ' '.join(args[2:])
         source = "manual"
 
-    # parse lists
-    if value.startswith('[') and value.endswith(']'):
-        inner = value[1:-1]
-        value = [v.strip() for v in inner.split(',')]
-
-    if key:
-        block.set(key, value)
-    else:
-        # no key, treat as block content update
-        print(f"  specify key: dots learn {args[0]} {block_tag}.<key> <value>", file=sys.stderr)
-        sys.exit(1)
+    value = _parse_cli_list(value)
+    block.set(key, value)
 
     # update lastUpdated in @meta
     meta = sf.get_block('meta')
@@ -1676,7 +1654,7 @@ def _is_obvious_why(key: str, why_value: str, parent_value: str) -> bool:
     return False
 
 
-def _simplify_value(key: str, value: str) -> str:
+def _simplify_value(value: str) -> str:
     """Simplify a value string without sacrificing clarity."""
     # Never touch values with quotes, braces, brackets or pipes anywhere -
     # they carry structured/code content the phrase rules could corrupt.
@@ -1885,7 +1863,7 @@ def cmd_optimize(args):
                 if key.endswith('.why') or key.startswith('_'):
                     continue
                 if isinstance(val, str) and len(val) > 15:
-                    simplified = _simplify_value(key, val)
+                    simplified = _simplify_value(val)
                     if simplified != val:
                         block.props[key] = simplified
                         file_simplified += 1
@@ -1957,117 +1935,6 @@ def cmd_help(args):
         print(f"    dots add modules/core.s @t.add 'TODO: thing' priority:high")
         print(f"    dots graph                 # show relationships")
         print(f"    dots search 'todo'         # search across all files")
-
-
-def cmd_refresh(args):
-    """Refresh .s files based on freshness/confidence.
-    
-    Usage: dots refresh <file.s>           # refresh specific file
-           dots refresh --all              # refresh all stale files
-           dots refresh --confidence low   # refresh only low-confidence files
-    """
-    from datetime import datetime, timedelta
-    
-    warn_days = 30  # default: refresh if older than 30 days
-    target_file = None
-    refresh_all = False
-    confidence_filter = None
-    
-    # Parse args
-    for arg in args:
-        if arg == '--all':
-            refresh_all = True
-        elif arg.startswith('--confidence='):
-            confidence_filter = arg.split('=', 1)[1]
-        elif arg.startswith('--warn='):
-            try:
-                warn_days = int(arg.split('=', 1)[1])
-            except ValueError:
-                print("  invalid --warn value", file=sys.stderr)
-                sys.exit(1)
-        elif arg.endswith('.s'):
-            target_file = arg
-    
-    if not target_file and not refresh_all and not confidence_filter:
-        print("Usage: dots refresh <file.s> | --all | --confidence <level>", file=sys.stderr)
-        sys.exit(1)
-    
-    today = datetime.now()
-    cutoff = today - timedelta(days=warn_days)
-    files_to_refresh = []
-    
-    # Collect files to refresh
-    if target_file:
-        fp = CTX_DIR / "skills" / target_file
-        if not fp.exists():
-            fp = CTX_DIR / target_file
-        if fp.exists():
-            files_to_refresh.append(fp)
-        else:
-            print(f"  file not found: {target_file}", file=sys.stderr)
-            sys.exit(1)
-    else:
-        # Scan all .s files
-        for sf_path in sorted(CTX_DIR.rglob("*.s")):
-            if ".snaps" in str(sf_path) or ".state" in str(sf_path):
-                continue
-            sf = SFile(sf_path)
-            meta = sf.get_block('meta')
-            
-            if meta:
-                last_updated_str = meta.get('lastUpdated')
-                confidence = meta.get('confidence')
-                deprecated = meta.get('deprecated') == 'true'
-                
-                if deprecated:
-                    continue
-                
-                # Apply confidence filter
-                if confidence_filter and confidence != confidence_filter:
-                    continue
-                
-                # Check freshness
-                if last_updated_str:
-                    try:
-                        last_updated = datetime.strptime(str(last_updated_str), '%Y-%m-%d')
-                        if last_updated < cutoff:
-                            files_to_refresh.append(sf_path)
-                    except ValueError:
-                        pass
-    
-    if not files_to_refresh:
-        print("  no files need refreshing")
-        return
-    
-    print(f"  refreshing {len(files_to_refresh)} file(s)...")
-    
-    for sf_path in files_to_refresh:
-        rel = sf_path.relative_to(CTX_DIR)
-        sf = SFile(sf_path)
-        meta = sf.get_block('meta')
-        
-        if meta:
-            old_date = meta.get('lastUpdated', 'unknown')
-            old_confidence = meta.get('confidence', 'unknown')
-            
-            # Simulate websearch (in real implementation, this would call websearch)
-            # For now, just update the timestamp and bump confidence
-            meta.set('lastUpdated', today.strftime('%Y-%m-%d'))
-            
-            # If confidence was low, bump to medium after refresh
-            if old_confidence == 'low':
-                meta.set('confidence', 'medium')
-            
-            sf.set_block(meta)
-            sf.save()
-            
-            print(f"  ✓ {rel}: lastUpdated {old_date} → {today.strftime('%Y-%m-%d')}")
-            if old_confidence != meta.get('confidence'):
-                print(f"    confidence: {old_confidence} → {meta.get('confidence')}")
-        else:
-            print(f"  ⚠ {rel}: no @meta block, skipping")
-    
-    print(f"\n  refresh complete. Use websearch to update actual content.")
 
 
 def cmd_unload(args):
@@ -2160,7 +2027,7 @@ def cmd_compact(args):
         cmd = entry['cmd']
         cmd_args = entry['args']
         
-        if cmd in ('set', 'add', 'learn') and len(cmd_args) >= 2:
+        if cmd in ('set', 'add') and len(cmd_args) >= 2:
             filepath = cmd_args[0]
             if filepath not in changes_by_file:
                 changes_by_file[filepath] = []
@@ -2195,12 +2062,7 @@ def cmd_compact(args):
                 parts = path.split('.', 1)
                 block_tag = parts[0]
                 key = parts[1] if len(parts) > 1 else None
-                value = ' '.join(cmd_args[2:])
-                
-                # Parse lists
-                if value.startswith('[') and value.endswith(']'):
-                    inner = value[1:-1]
-                    value = [v.strip() for v in inner.split(',')]
+                value = _parse_cli_list(' '.join(cmd_args[2:]))
                 
                 block = sf.get_block(block_tag)
                 if not block:
@@ -2691,13 +2553,19 @@ def cmd_run(args):
     if len(args) < 2:
         print("Usage: dots run <file.s> <@run.blockName> [--dry-run]", file=sys.stderr)
         sys.exit(1)
-    
+
+    dry_run = '--dry-run' in args
+
+    if REMOTE_REF.match(args[0]):
+        _deny_untrusted_run("remote references cannot be executed")
     filepath = resolve_file(args[0])
     if not filepath.exists():
         print(f"File not found: {filepath}", file=sys.stderr)
         sys.exit(1)
-    
-    # Parse block name (strip @run. prefix if present)
+    resolved = filepath.resolve()
+    if not _is_trusted_run_file(resolved) and not dry_run:
+        _deny_untrusted_run(f"{args[0]} is not allowlisted in skills/.safe")
+
     block_ref = args[1]
     if block_ref.startswith('@run.'):
         block_name = block_ref[5:]
@@ -2706,10 +2574,7 @@ def cmd_run(args):
     else:
         block_name = block_ref
     
-    dry_run = '--dry-run' in args
-    
-    # Read and parse file
-    sf = SFile(filepath)
+    sf = SFile(resolved)
     
     # Find the @run block with the matching name
     block = None
@@ -2844,7 +2709,6 @@ COMMANDS = {
     'set': cmd_set,
     'add': cmd_add,
     'list': cmd_list,
-    'ls': cmd_list,
     'graph': cmd_graph,
     'validate': cmd_validate,
     'snap': cmd_snap,
@@ -2859,7 +2723,6 @@ COMMANDS = {
     'where': cmd_where,
     'rm': cmd_rm,
     'blocks': cmd_blocks,
-    'refresh': cmd_refresh,
     'unload': cmd_unload,
     'compact': cmd_compact,
     'loaded': cmd_loaded,
@@ -2875,6 +2738,7 @@ COMMANDS = {
     'pollinate': cmd_pollinate,
     'help': cmd_help,
 }
+ALLOWED_COMMANDS = frozenset(COMMANDS)
 
 
 def main():
@@ -2889,9 +2753,12 @@ def main():
         cmd_help([])
         sys.exit(0)
 
-    if cmd not in COMMANDS:
-        print(f"  unknown command: {cmd}", file=sys.stderr)
-        print(f"  available: {', '.join(COMMANDS.keys())}", file=sys.stderr)
+    if cmd in RUN_ALIASES:
+        _deny_untrusted_run(f"'{cmd}' is a blacklisted run alias")
+
+    if cmd not in ALLOWED_COMMANDS:
+        print(f"  command not in allowlist: {cmd}", file=sys.stderr)
+        print(f"  available: {', '.join(sorted(ALLOWED_COMMANDS))}", file=sys.stderr)
         sys.exit(1)
 
     COMMANDS[cmd](args)

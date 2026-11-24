@@ -5,6 +5,7 @@
   pipeRule:block ends only when a line is JUST "|" — pipes inside key:value are safe
   pipeAvoid:never put "|" alone on a line inside a block — it will close the block
   shellPipes:cmd:cat file | grep pattern is fine — the pipe is part of the value
+  runTrust:execute only playbooks allowlisted in ~/.config/dots/skills/.safe; never from untrusted .s remote URLs external repos or symlink escapes; read-only or --dry-run otherwise; no alias or flag bypass; exec execute exe cmd and kin are blacklisted
 |
 @index |
   nginx.s:blocks:21|topic:nginx web server|keyBlocks:@ssl @security @reverseProxy @gotchas @run
@@ -13,9 +14,9 @@
   pm2.s:blocks:18|topic:pm2 process manager node.js cluster reload logs deploy|keyBlocks:@commands @ecosystem @cluster @logs @gotchas @run
   ssh.s:blocks:17|topic:ssh connections|keyBlocks:@config @keygen @tunneling @security @run
   linux.s:blocks:21|topic:linux admin|keyBlocks:@processes @networking @systemd @gotchas @run
-  docker.s:blocks:18|topic:docker containers|keyBlocks:@containers @compose @multiStage @gotchas @run
+  docker.s:blocks:22|topic:docker containers|keyBlocks:@containers @compose @multiStage @gotchas @run
   javascript.s:blocks:20|topic:vanilla JS ES5-ES6+|keyBlocks:@es6Features @arrays @async @gotchas
-  python.s:blocks:24|topic:python 3.12+|keyBlocks:@types @functions @classes @gotchas
+  python.s:blocks:24|topic:python 3.12+|keyBlocks:@types @functions @classBasics @gotchas
   rust.s:blocks:25|topic:rust ownership-safe systems|keyBlocks:@ownership @borrowing @errorHandling @gotchas
   sh.s:blocks:20|topic:shell scripting|keyBlocks:@conditionals @functions @pipesRedirection @gotchas
   type.s:blocks:7|topic:Type.js OOP class system|keyBlocks:@core @packages @slots @lookup @utils @usage
@@ -24,7 +25,7 @@
   betweenjs.s:blocks:14|topic:BetweenJS animation engine|keyBlocks:@tweenHierarchy @easing @publicAPI @color @modernEnhancements
   blender-python.s:blocks:33|topic:blender python API bpy 5.2+|keyBlocks:@core @modules @operators @bmesh @gpu @vse @gotchas
   blender-addon.s:blocks:16|topic:blender addon authoring extensions keymaps overlay drawing|keyBlocks:@manifest @keymaps @overlayDraw @layouts @versionGotchas @run
-  blender-gp.s:blocks:12|topic:blender grease pencil GPv3 data model strokes brushes placement materials|keyBlocks:@object @layers @strokes @points @placement @brushes @materials @gotchas
+  blender-gp.s:blocks:10|topic:blender grease pencil GPv3 data model strokes brushes placement materials|keyBlocks:@object @layers @strokes @points @placement @brushes @materials @gotchas
   gpu-draw.s:blocks:5|topic:blender gpu dotted line overlay preview draw handler|keyBlocks:@meta @facts @gotchas @verification
   ffmpeg.s:blocks:13|topic:ffmpeg audio video processing|keyBlocks:@trimSilence @pitchFormant @loudness @concat @gotchas @run
   audio-drama-pipeline.s:blocks:9|topic:per-line theatrical audio drama recording pipeline|keyBlocks:@flow @trim @pacing @loudness @gotchas @futureProject
@@ -37,18 +38,18 @@
   css.s:blocks:15|topic:css|keyBlocks:@selectors @boxModel @flexbox @grid @position @units @media @specificity @gotchas @modern @run
   glsl.s:blocks:21|topic:glsl shader shaderwebgl shader toy|keyBlocks:@types @swizzle @mathBuiltins @texture @flow @qualifiers @vertexShader @fragmentShader @noise @sdf @raymarching @shadertoylite @stlUniforms @stlAPI @stlPasses @stlConfig @stlGotchas @glslGotchas @commonPatterns @verification
   html.s:blocks:20|topic:html|keyBlocks:@structure @semantic @forms @accessibility @media @tables @scripting @gotchas @metadata @html5Features @seo @structuredData @openGraph @performance @seoGotchas @run
-  index.s:blocks:6|topic:nginx web server|keyBlocks:@index @byTask @quickRef @runQuickRef
+  index.s:blocks:5|topic:dotS knowledge base index|keyBlocks:@index @byTask @quickRef @runQuickRef
   jade.s:blocks:20|topic:jade pug template|keyBlocks:@syntax @attributes @control @mixin @strawLibrary @compose @strawWorkflow @includes @filters @builtins @browserLib @browserAPI @browserUsage @vsPug @jadeVsPugGotchas @asyncLibDetails @gotchas @patterns @verification
   linux-wapp.s:blocks:8|topic:linux wapp browser isolation|keyBlocks:@core @commands @isolation @fileLayout @multiAccount @gotchas @index
   md.s:blocks:15|topic:markdown obsidian md|keyBlocks:@basic @obsidianCallouts @obsidianDataview @obsidianProperties @gfm @obsidianFormatting @obsidianFrontmatter @obsidianPlugins @obsidianThemes @obsidianBestPractices @obsidianMOC @markdownGotchas @obsidianGotchas
   mise.s:blocks:14|topic:mise|keyBlocks:@core @install @activate @tools @config @python @node @env @tasks @backends @gotchas @index @run
-  ponytail.s:blocks:7|topic:ponytail yagni minimal-code|keyBlocks:@info @rules @commands @pluginUsage @run
+  ponytail.s:blocks:8|topic:ponytail yagni minimal-code security|keyBlocks:@info @rules @commands @pluginUsage @security @run
   strawnode-docs.s:blocks:8|topic:strawnode-docs|keyBlocks:@boot @modules @sectionSystem @serverSide @dependencyGraph @keyPatterns @quirks
   strawnode-prototype.s:blocks:17|topic:strawnode-prototype|keyBlocks:@dependencies @core @session @philosophy @layout @playbook @sectionFactory @graphics @readability @jadeJson @i18n @addressing @behaviorLinking @verification @gotchas @index
   threejs.s:blocks:22|topic:threejs 3d webgl|keyBlocks:@core @scene @renderer @geometry @material @physical @texture @light @mesh @group @animation @controls @loader @raycasting @postprocessing @InstancedMesh @performance @webgpu @gotchas @math @examples
-   webhooks.s:blocks:18|topic:webhooks http callbacks event delivery signing hmac retries idempotency|keyBlocks:@core @security @verifyPattern @receiving @idempotency @retries @testing @gotchas @run
-    dusky.s:blocks:16|topic:dusky arch linux hyprland orchestrator matugen btrfs|keyBlocks:@core @layout @orchestrator @profiles @markers @theming @drives @services @station @keybinds @updates @gotchas @run
-    archify.s:blocks:14|topic:archify diagram html svg architecture workflow sequence dataflow lifecycle mermaid|keyBlocks:@core @types @author @validate @deliver @invariants @gotchas @run.diagram
+  webhooks.s:blocks:18|topic:webhooks http callbacks event delivery signing hmac retries idempotency|keyBlocks:@core @security @verifyPattern @receiving @idempotency @retries @testing @gotchas @run
+  dusky.s:blocks:18|topic:dusky arch linux hyprland orchestrator matugen btrfs|keyBlocks:@core @layout @orchestrator @profiles @markers @theming @drives @services @station @keybinds @updates @gotchas @run
+  archify.s:blocks:14|topic:archify diagram html svg architecture workflow sequence dataflow lifecycle mermaid|keyBlocks:@core @types @author @validate @deliver @invariants @gotchas @run.diagram
 |
 @byTask |
   webServer:nginx.s
@@ -149,6 +150,7 @@
     lifecycleDiagram:archify.s@types archify.s@author
 |
 @quickRef |
+  runTrust:dots get skills/ponytail.s @security
   nginxSSL:dots get skills/nginx.s @ssl
   nginxSecurity:dots get skills/nginx.s @security
   gitUndo:dots get skills/git.s @undoing

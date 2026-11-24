@@ -148,7 +148,6 @@ OC_BASE="${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
 if [ "$MODE_ALL" = true ] || [ "$MODE_OPENCODE" = true ] || [ -d "$OC_BASE" ] || command -v opencode >/dev/null 2>&1; then
   printf "%b[DETECTED] OpenCode%b\n" "$BOLD" "$RESET"
   _oc_cmds="$DOTS_DIR/integrations/opencode/commands/dots"
-  [ ! -d "$_oc_cmds" ] && _oc_cmds="$DOTS_DIR/commands/dots"
 
   if [ -d "$_oc_cmds" ]; then
     safe_link "$_oc_cmds" "$OC_BASE/commands/dots" "OpenCode commands (/dots/*)"

@@ -22,11 +22,11 @@ dotS stores dense, token-efficient knowledge in `.s` format (`key:value` pairs i
   ```
 - **Inspect a specific block or full file:**
   ```bash
-  dots get <skill>.s [@block]
+  dots get skills/<skill>.s [@block]
   # Examples:
-  dots get ssh.s @tunneling
-  dots get docker.s @compose
-  dots get rust.s @cargo
+  dots get skills/ssh.s @tunneling
+  dots get skills/docker.s @compose
+  dots get skills/rust.s @errorHandling
   ```
 - **Search across all knowledge files:**
   ```bash
@@ -34,16 +34,16 @@ dotS stores dense, token-efficient knowledge in `.s` format (`key:value` pairs i
   ```
 - **List blocks in a skill:**
   ```bash
-  dots list <skill>.s
+  dots list skills/<skill>.s
   ```
 - **Execute a verified runbook:**
   ```bash
-  dots run <playbook>
+  dots run skills/<skill>.s @run.<playbook>
   # Example:
-  dots run keySetup
+  dots run skills/ssh.s @run.keySetup
   ```
 - **Persist state and patterns:**
   ```bash
-  dots add <skill>.s @block.list "new item"
-  dots set <skill>.s key value
+  dots add skills/<skill>.s @block.list "new item"
+  dots set skills/<skill>.s block.key value
   ```

@@ -41,7 +41,7 @@ source ~/.zshrc  # or ~/.bashrc
 `./install-dots.sh` automatically detects which AI assistants and developer tools are present on your machine and establishes live symlinks. It copies nothing:
 
 - **Google Antigravity / Gemini Code Assist** (`~/.gemini/config/`): Links native progressive disclosure skills (`skills/dots/SKILL.md`) and behavioral priority rules (`rules/dots.md`, `GEMINI.md`).
-- **OpenCode** (`~/.config/opencode/`): Links slash-commands (`commands/dots/`) to `$XDG_CONFIG_HOME/opencode/commands/dots`.
+- **OpenCode** (`~/.config/opencode/`): Links slash-commands (`integrations/opencode/commands/dots/`) to `$XDG_CONFIG_HOME/opencode/commands/dots`.
 - **Claude Code** (`~/.claude/`): Links global instructions (`CLAUDE.md`).
 - **Cursor** (`~/.cursor/`): Links hard-gate rule (`rules/dots.mdc`).
 - **Hermes Agent** (`~/.hermes/skills/autonomous-ai-agents/dots/`): Links the on-demand skill and its enablement notes.
@@ -218,7 +218,7 @@ Every .s file has a `@meta` block:
 ```bash
 dots freshness                # check all files
 dots freshness nginx.s        # check one file
-dots freshness --warn 180     # warn if older than 180 days
+dots freshness --warn=180     # warn if older than 180 days
 ```
 
 Output:
@@ -357,7 +357,7 @@ Antigravity uses native progressive disclosure and directory rules:
 
 ### 2. OpenCode (V2)
 Reference configuration for running dotS as the context layer of [opencode](https://opencode.ai):
-- **Slash Commands (`commands/dots/`)**: Native `/dots/*` commands (`index`, `learn`, `optimize`, `skills`, `skill-create`) symlinked to `$XDG_CONFIG_HOME/opencode/commands/dots`.
+- **Slash Commands (`integrations/opencode/commands/dots/`)**: Native `/dots/*` commands (`index`, `learn`, `optimize`, `skills`, `skill-create`) symlinked to `$XDG_CONFIG_HOME/opencode/commands/dots`.
 - **`AGENTS.md`**: Routes relevant requests through `dots find` with a `skip dots` bypass.
 
 ### 3. Claude Code
@@ -391,17 +391,16 @@ loads unless you ask.
 │   ├── dots              # CLI wrapper — added to PATH by the installer
 │   ├── dots.py
 │   ├── index.s           # routing map — fetched via dots get, loaded on demand
-│   ├── commands/
-│   │   └── dots/*.md     # /dots/* slash-commands
+│   ├── integrations/opencode/commands/dots/*.md  # /dots/* slash-commands
 │   └── skills/*.s        # knowledge bodies — loaded on demand
 └── opencode/             # opencode config tree
     ├── AGENTS.md -> ../dots/integrations/opencode/AGENTS.md  # routing gate
     └── commands/
-        └── dots -> ../../dots/commands/dots   # /dots/* slash-commands (symlink)
+        └── dots -> ../../dots/integrations/opencode/commands/dots  # /dots/* slash-commands
 ```
 
 `install-dots.sh` copies nothing: it adds the CLI to PATH and symlinks
-`commands/dots` into `$XDG_CONFIG_HOME/opencode/commands/` (default
+`integrations/opencode/commands/dots` into `$XDG_CONFIG_HOME/opencode/commands/` (default
 `~/.config/opencode/commands/`), so opencode discovers the `/dots/*`
 commands (index, learn, skill-create, optimize, skills) while they live in
 the repo. The store stays at the agent-agnostic XDG path `~/.config/dots`
@@ -494,10 +493,9 @@ dotS/
 ├── dots.py              # main CLI script
 ├── dots                 # bash wrapper (installed to PATH)
 ├── install-dots.sh      # multi-AI installer
-├── index.s              # project index (read first, ~200 tokens)
+├── index.s              # project index (read first, ~3.3k tokens)
 ├── relations.s          # dependency graph
 ├── changelog.s          # change history
-├── commands -> integrations/opencode/commands  # legacy root symlink
 ├── integrations/        # Multi-AI integration adapters
 │   ├── shared/          # single source for all adapters
 │   │   ├── dots-gate.body.md
@@ -521,8 +519,9 @@ dotS/
 │   ├── html.s
 │   ├── threejs.s
 │   ├── glsl.s
+│   ├── .mutations/   # skill variants for specific contexts
+│   ├── .mega/        # skill bundles
 │   └── ...
-├── .mutations/       # skill variants for specific contexts
 ├── .snaps/           # snapshots for diff
 ├── .state/           # tracking
 └── .sessions/        # session logs
@@ -568,6 +567,8 @@ dots run skills/writing-skill.s @run.promote  # promote validated deltas at a ga
 block termination, canonical `@meta` keys, named playbooks and `@index` references before a
 draft is delivered. It is strict for drafts; legacy store files are not retroactively checked.
 See `dots get skills/writing-skill.s @proofGate` for the full four-check workflow.
+
+`@run` execution is allowlisted separately by `skills/.safe` (one skill filename per line in the trusted store); `.locked` only marks skills immutable for `dots optimize`. To enable a new playbook, add its skill file to `skills/.safe`. Remote refs, files outside `~/.config/dots`, symlink escapes, and run aliases (`exec`, `sh`, `eval`, …) are denied; external files remain readable and `--dry-run` previewable.
 
 Learning is gated, not automatic: keep in-task deltas in a scratch draft, then promote only when a fact is proven/needed twice and the refetch cost would exceed rediscovery. Store promotion runs unlock → edit → validate → optimize dry-run → index → lock. New skills are allowed, but only after `dots find`/`dots search` show no existing owner; see `dots get skills/writing-skill.s @refinement @newSkill @run.promote`.
 

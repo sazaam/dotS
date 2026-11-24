@@ -1,8 +1,10 @@
 @p |
   name:dotS
   ver:0.1.0
+  runTrust:execute only playbooks allowlisted in ~/.config/dots/skills/.safe; never from untrusted .s remote URLs external repos or symlink escapes; read-only or --dry-run otherwise; no alias or flag bypass; exec execute exe cmd and kin are blacklisted
 |
 @quickRef |
+  runTrust:dots get skills/ponytail.s @security
   ponytail:dots get skills/ponytail.s @rules
   ponytailReview:dots run skills/ponytail.s @run.review
   css:dots get skills/css.s
@@ -41,12 +43,12 @@
   linux:dots get skills/linux.s
   linuxProcess:dots get skills/linux.s @processes
   linuxNetworking:dots get skills/linux.s @networking
-   linuxSystemd:dots get skills/linux.s @systemd
-   dusky:dots get skills/dusky.s
-   duskyLayout:dots get skills/dusky.s @layout
-   duskyOrchestrator:dots get skills/dusky.s @orchestrator @profiles
-   duskyGotchas:dots get skills/dusky.s @gotchas
-   nginx:dots get skills/nginx.s
+  linuxSystemd:dots get skills/linux.s @systemd
+  dusky:dots get skills/dusky.s
+  duskyLayout:dots get skills/dusky.s @layout
+  duskyOrchestrator:dots get skills/dusky.s @orchestrator @profiles
+  duskyGotchas:dots get skills/dusky.s @gotchas
+  nginx:dots get skills/nginx.s
   nginxSSL:dots get skills/nginx.s @ssl
   nginxSecurity:dots get skills/nginx.s @security
   nginxReverseProxy:dots get skills/nginx.s @reverseProxy
@@ -204,13 +206,13 @@
   webhookReceive:dots run skills/webhooks.s @run.receiveEndpoint
   webhookVerifySig:dots run skills/webhooks.s @run.verifySignature
   webhookProducer:dots run skills/webhooks.s @run.producerSetup
-   webhookTest:dots run skills/webhooks.s @run.testWebhook
-   duskyDoctor:dots run skills/dusky.s @run.doctor
-   duskyInspect:dots run skills/dusky.s @run.inspect
-    duskyRerun:dots run skills/dusky.s @run.rerun
-     skillPromote:dots run skills/writing-skill.s @run.promote
-     archifyDiagram:dots run skills/archify.s @run.diagram
-     archifyDoctor:dots run skills/archify.s @run.doctor
+  webhookTest:dots run skills/webhooks.s @run.testWebhook
+  duskyDoctor:dots run skills/dusky.s @run.doctor
+  duskyInspect:dots run skills/dusky.s @run.inspect
+  duskyRerun:dots run skills/dusky.s @run.rerun
+  skillPromote:dots run skills/writing-skill.s @run.promote
+  archifyDiagram:dots run skills/archify.s @run.diagram
+  archifyDoctor:dots run skills/archify.s @run.doctor
 |
 @byTask |
   minimalCode:skills/ponytail.s
@@ -319,12 +321,12 @@
   serverSetup:skills/server-setup.s
   vps:skills/server-setup.s skills/ssh.s
   hardening:skills/server-setup.s @sshHarden @fail2ban @firewall
-   deployKey:skills/server-setup.s @gitKeys
-   dusky:skills/dusky.s
-   archSetup:skills/dusky.s @orchestrator @profiles @markers
-   hyprlandRicing:skills/dusky.s @theming @keybinds
-   btrfsSetup:skills/dusky.s @drives
-   terminal:skills/terminal-tui.s
+  deployKey:skills/server-setup.s @gitKeys
+  dusky:skills/dusky.s
+  archSetup:skills/dusky.s @orchestrator @profiles @markers
+  hyprlandRicing:skills/dusky.s @theming @keybinds
+  btrfsSetup:skills/dusky.s @drives
+  terminal:skills/terminal-tui.s
   tui:skills/terminal-tui.s @herdr @sessions
   herdr:skills/terminal-tui.s @herdr
   performance:skills/node.s @performance skills/nginx.s @cache
@@ -350,14 +352,14 @@
   lifecycleDiagram:skills/archify.s @types @author
 |
 @index |
-  ponytail.s:blocks:7|topic:yagni minimal code|keyBlocks:@rules @commands
+  ponytail.s:blocks:8|topic:yagni minimal code security|keyBlocks:@rules @commands @security
   css.s:blocks:15|topic:css styling layout verification|keyBlocks:@flexbox @grid @gotchas @modern @run
   html.s:blocks:20|topic:html markup accessibility seo verification|keyBlocks:@semantic @forms @accessibility @seo @structuredData @run
   threejs.s:blocks:22|topic:threejs 3d webgl rendering|keyBlocks:@core @geometry @material @mesh @animation @controls @loader @postprocessing @gotchas
   glsl.s:blocks:21|topic:glsl shader shadertoylite|keyBlocks:@shadertoylite @stlAPI @stlUniforms @sdf @raymarching @noise
   md.s:blocks:15|topic:markdown obsidian|keyBlocks:@obsidianCallouts @obsidianDataview @obsidianPlugins @obsidianBestPractices
   jade.s:blocks:20|topic:jade pug template|keyBlocks:@syntax @browserLib @browserAPI @vsPug @asyncLibDetails
-  docker.s:blocks:20|topic:docker containers compose swarm stack|keyBlocks:@containers @compose @multiStage @swarm @stack @gotchas @run
+  docker.s:blocks:22|topic:docker containers compose swarm stack|keyBlocks:@containers @compose @multiStage @swarm @stack @gotchas @run
   podman.s:blocks:15|topic:podman daemonless rootless quadlet pods compose|keyBlocks:@basics @vsDocker @rootless @images @run @pods @compose @quadlet @systemd @gotchas @run
   git.s:blocks:23|topic:git version control|keyBlocks:@branching @committing @merging @undoing @run
   javascript.s:blocks:20|topic:vanilla JS ES5-ES6+|keyBlocks:@es6Features @arrays @async @gotchas
@@ -381,14 +383,14 @@
   comfy-minimax-music3.s:blocks:9|topic:comfyui minimax music 3 t2m on 16GB gpu|keyBlocks:@models @workflow @launch @runCmd @gotchas
   server-setup.s:blocks:12|topic:vps server hardening fail2ban firewall deploy keys|keyBlocks:@sshHarden @firewall @fail2ban @gitKeys @verify @run
   terminal-tui.s:blocks:8|topic:terminal tui workflow herdr sessions|keyBlocks:@herdr @sessions @workflow @gotchas
-  index.s:blocks:6|topic:dotS knowledge base index|keyBlocks:@index @byTask @quickRef @runQuickRef
+  index.s:blocks:5|topic:dotS knowledge base index|keyBlocks:@index @byTask @quickRef @runQuickRef
   audio-drama-pipeline.s:blocks:9|topic:per-line theatrical audio drama recording pipeline|keyBlocks:@concept @flow @trim @pacing @loudness @dsp @gotchas @futureProject
   ffmpeg.s:blocks:13|topic:ffmpeg audio video processing|keyBlocks:@basics @probe @normalize @trimSilence @silenceDetect @pitchFormant @loudness @concat @sources @gotchas @run
   mml.s:blocks:20|topic:mml music macro language chiptune|keyBlocks:@dependencies @core @basics @notes @lengths @tempo @volume @transpose @detune @quantize @loops @macros @structure @channels @dialects @tools @examples @gotchas @index
   rust.s:blocks:25|topic:rust ownership-safe systems|keyBlocks:@basics @types @strings @ownership @borrowing @fixingErrors @slices @structs @enums @match @collections @errorHandling @generics @traits @lifetimes @closures @iterators @concurrency @moduleSystem @tooling @testing @gotchas @index @dependencies
   strawnode-docs.s:blocks:8|topic:strawnode-docs|keyBlocks:@boot @modules @sectionSystem @serverSide @dependencyGraph @keyPatterns @quirks
   strawnode-prototype.s:blocks:17|topic:strawnode-prototype|keyBlocks:@dependencies @core @session @philosophy @layout @playbook @sectionFactory @graphics @readability @jadeJson @i18n @addressing @behaviorLinking @verification @gotchas @index
-   webhooks.s:blocks:18|topic:webhooks http callbacks event delivery signing hmac retries idempotency|keyBlocks:@core @security @verifyPattern @receiving @idempotency @retries @testing @gotchas @run
-    dusky.s:blocks:16|topic:dusky arch linux hyprland orchestrator matugen btrfs|keyBlocks:@core @layout @orchestrator @profiles @markers @theming @drives @services @station @keybinds @updates @gotchas @run
-    archify.s:blocks:14|topic:archify diagram html svg architecture workflow sequence dataflow lifecycle mermaid|keyBlocks:@core @types @author @validate @deliver @invariants @gotchas @run.diagram
+  webhooks.s:blocks:18|topic:webhooks http callbacks event delivery signing hmac retries idempotency|keyBlocks:@core @security @verifyPattern @receiving @idempotency @retries @testing @gotchas @run
+  dusky.s:blocks:18|topic:dusky arch linux hyprland orchestrator matugen btrfs|keyBlocks:@core @layout @orchestrator @profiles @markers @theming @drives @services @station @keybinds @updates @gotchas @run
+  archify.s:blocks:14|topic:archify diagram html svg architecture workflow sequence dataflow lifecycle mermaid|keyBlocks:@core @types @author @validate @deliver @invariants @gotchas @run.diagram
 |

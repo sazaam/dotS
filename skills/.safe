@@ -1,0 +1,23 @@
+# Execution allowlist for `dots run` (@run playbooks only).
+# Not the immutable list — skills/.locked is used by `dots optimize`.
+archify.s
+blender-addon.s
+blender-python.s
+css.s
+docker.s
+dusky.s
+ffmpeg.s
+git.s
+html.s
+linux.s
+mise.s
+nginx.s
+node.s
+pm2.s
+podman.s
+ponytail.s
+server-setup.s
+ssh.s
+traefik.s
+webhooks.s
+writing-skill.s
