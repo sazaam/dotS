@@ -1,7 +1,8 @@
 #!/bin/sh
 # dotS multi-AI installer
-# Discovers installed AI coding tools (Antigravity, OpenCode, Claude Code, Cursor)
-# and establishes symlinks so the repo remains the single source of truth.
+# Discovers installed AI coding tools (Antigravity, OpenCode, Claude Code, Cursor, Hermes)
+# and links hardened dotS adapters by default (--minimal selects canonical pointers).
+# Symlinks keep the repo the single source of truth.
 # Updates are instant via `git pull` with nothing to re-copy.
 
 set -e
@@ -17,6 +18,7 @@ MODE_CLAUDE=false
 MODE_CURSOR=false
 MODE_HERMES=false
 FORCE=false
+MINIMAL=false
 
 for arg in "$@"; do
   case "$arg" in
@@ -27,6 +29,7 @@ for arg in "$@"; do
     --cursor) MODE_CURSOR=true ;;
     --hermes) MODE_HERMES=true ;;
     --force) FORCE=true ;;
+    --minimal) MINIMAL=true ;;
     -h|--help)
       echo "Usage: ./install-dots.sh [OPTIONS]"
       echo ""
@@ -39,6 +42,7 @@ for arg in "$@"; do
       echo "  --cursor        Configure Cursor rules"
       echo "  --hermes        Configure Hermes local dots skill"
       echo "  --force         Overwrite/backup conflicting files with symlinks"
+      echo "  --minimal       Link canonical minimal adapters instead of hardened ones"
       echo "  -h, --help      Show this help message"
       exit 0
       ;;
@@ -155,9 +159,15 @@ if [ "$MODE_ALL" = true ] || [ "$MODE_OPENCODE" = true ] || [ -d "$OC_BASE" ] ||
     printf "  %b[SKIP]%b OpenCode commands folder missing in repo.\n" "$RED" "$RESET"
   fi
 
-  if [ -f "$DOTS_DIR/integrations/opencode/AGENTS.md" ]; then
+  _oc_agents="$DOTS_DIR/integrations/opencode/AGENTS.hardened.md"
+  _oc_label="hardened"
+  if [ "$MINIMAL" = true ]; then
+    _oc_agents="$DOTS_DIR/integrations/opencode/AGENTS.md"
+    _oc_label="minimal"
+  fi
+  if [ -f "$_oc_agents" ]; then
     if [ ! -f "$OC_BASE/AGENTS.md" ]; then
-      safe_link "$DOTS_DIR/integrations/opencode/AGENTS.md" "$OC_BASE/AGENTS.md" "OpenCode V2 AGENTS.md"
+      safe_link "$_oc_agents" "$OC_BASE/AGENTS.md" "OpenCode V2 AGENTS.md ($_oc_label)"
     else
       printf "  %b[UP-TO-DATE]%b OpenCode AGENTS.md already exists (%s/AGENTS.md)\n" "$GREEN" "$RESET" "$OC_BASE"
     fi
@@ -172,10 +182,17 @@ fi
 HERMES_BASE="${HERMES_HOME:-$HOME/.hermes}"
 if [ "$MODE_ALL" = true ] || [ "$MODE_HERMES" = true ] || [ -d "$HERMES_BASE" ] || command -v hermes >/dev/null 2>&1; then
   printf "%b[DETECTED] Hermes Agent%b\n" "$BOLD" "$RESET"
-  _hermes_skill="$DOTS_DIR/integrations/hermes/skills/dots"
+  _hermes_skill="$DOTS_DIR/integrations/hermes/skills/dots-hardened"
+  _hermes_target="$HERMES_BASE/skills/autonomous-ai-agents/dots-hardened"
+  _hermes_label="hardened"
+  if [ "$MINIMAL" = true ]; then
+    _hermes_skill="$DOTS_DIR/integrations/hermes/skills/dots"
+    _hermes_target="$HERMES_BASE/skills/autonomous-ai-agents/dots"
+    _hermes_label="minimal"
+  fi
   if [ -d "$_hermes_skill" ]; then
-    safe_link "$_hermes_skill/SKILL.md" "$HERMES_BASE/skills/autonomous-ai-agents/dots/SKILL.md" "Hermes dots skill"
-    safe_link "$_hermes_skill/references/hermes-enablement.md" "$HERMES_BASE/skills/autonomous-ai-agents/dots/references/hermes-enablement.md" "Hermes enablement notes"
+    safe_link "$_hermes_skill/SKILL.md" "$_hermes_target/SKILL.md" "Hermes dots skill ($_hermes_label)"
+    safe_link "$DOTS_DIR/integrations/hermes/skills/dots/references/hermes-enablement.md" "$_hermes_target/references/hermes-enablement.md" "Hermes enablement notes"
   else
     printf "  %b[SKIP]%b Hermes adapter folder missing in repo.\n" "$RED" "$RESET"
   fi
@@ -194,9 +211,15 @@ if [ "$MODE_ALL" = true ] || [ "$MODE_ANTIGRAVITY" = true ] || [ -d "$GEMINI_BAS
   if [ -d "$DOTS_DIR/integrations/antigravity/skills/dots" ]; then
     safe_link "$DOTS_DIR/integrations/antigravity/skills/dots" "$GEMINI_BASE/config/skills/dots" "Antigravity Skill"
   fi
-  if [ -f "$DOTS_DIR/integrations/antigravity/rules/dots.md" ]; then
-    safe_link "$DOTS_DIR/integrations/antigravity/rules/dots.md" "$GEMINI_BASE/config/rules/dots.md" "Antigravity Rule (rules/)"
-    safe_link "$DOTS_DIR/integrations/antigravity/rules/dots.md" "$GEMINI_BASE/config/GEMINI.md" "Antigravity Global Rule (GEMINI.md)"
+  _ag_rule="$DOTS_DIR/integrations/antigravity/rules/dots.hardened.md"
+  _ag_label="hardened"
+  if [ "$MINIMAL" = true ]; then
+    _ag_rule="$DOTS_DIR/integrations/antigravity/rules/dots.md"
+    _ag_label="minimal"
+  fi
+  if [ -f "$_ag_rule" ]; then
+    safe_link "$_ag_rule" "$GEMINI_BASE/config/rules/dots.md" "Antigravity Rule (rules/, $_ag_label)"
+    safe_link "$_ag_rule" "$GEMINI_BASE/config/GEMINI.md" "Antigravity Global Rule (GEMINI.md, $_ag_label)"
   fi
 else
   printf "%b[SKIPPED]%b  Antigravity / Gemini (not detected. Use --antigravity or --all to force)\n" "$CYAN" "$RESET"
@@ -209,8 +232,14 @@ CLAUDE_BASE="$HOME/.claude"
 if [ "$MODE_ALL" = true ] || [ "$MODE_CLAUDE" = true ] || [ -d "$CLAUDE_BASE" ] || command -v claude >/dev/null 2>&1; then
   printf "%b[DETECTED] Claude Code%b\n" "$BOLD" "$RESET"
   mkdir -p "$CLAUDE_BASE"
-  if [ -f "$DOTS_DIR/integrations/claude-code/CLAUDE.md" ]; then
-    safe_link "$DOTS_DIR/integrations/claude-code/CLAUDE.md" "$CLAUDE_BASE/CLAUDE.md" "Claude Code global instructions"
+  _claude_instructions="$DOTS_DIR/integrations/claude-code/CLAUDE.hardened.md"
+  _claude_label="hardened"
+  if [ "$MINIMAL" = true ]; then
+    _claude_instructions="$DOTS_DIR/integrations/claude-code/CLAUDE.md"
+    _claude_label="minimal"
+  fi
+  if [ -f "$_claude_instructions" ]; then
+    safe_link "$_claude_instructions" "$CLAUDE_BASE/CLAUDE.md" "Claude Code global instructions ($_claude_label)"
   fi
 else
   printf "%b[SKIPPED]%b  Claude Code (not detected. Use --claude or --all to force)\n" "$CYAN" "$RESET"
@@ -224,8 +253,14 @@ CURSOR_CFG="$HOME/.config/Cursor"
 if [ "$MODE_ALL" = true ] || [ "$MODE_CURSOR" = true ] || [ -d "$CURSOR_BASE" ] || [ -d "$CURSOR_CFG" ] || command -v cursor >/dev/null 2>&1; then
   printf "%b[DETECTED] Cursor%b\n" "$BOLD" "$RESET"
   mkdir -p "$CURSOR_BASE/rules"
-  if [ -f "$DOTS_DIR/integrations/cursor/dots.mdc" ]; then
-    safe_link "$DOTS_DIR/integrations/cursor/dots.mdc" "$CURSOR_BASE/rules/dots.mdc" "Cursor rule (dots.mdc)"
+  _cursor_rule="$DOTS_DIR/integrations/cursor/dots.hardened.mdc"
+  _cursor_label="hardened"
+  if [ "$MINIMAL" = true ]; then
+    _cursor_rule="$DOTS_DIR/integrations/cursor/dots.mdc"
+    _cursor_label="minimal"
+  fi
+  if [ -f "$_cursor_rule" ]; then
+    safe_link "$_cursor_rule" "$CURSOR_BASE/rules/dots.mdc" "Cursor rule (dots.mdc, $_cursor_label)"
   fi
 else
   printf "%b[SKIPPED]%b  Cursor (not detected. Use --cursor or --all to force)\n" "$CYAN" "$RESET"

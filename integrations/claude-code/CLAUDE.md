@@ -1,3 +1,9 @@
+<!--
+Injected by dotS install: install-dots.sh links this file into
+~/.claude/CLAUDE.md and will not overwrite a conflicting file without --force.
+Edit here, not in the generated copy.
+-->
+
 # dotS Knowledge & State System
 
 When dealing with DevOps, infrastructure, system configuration, or supported development stacks (SSH, Docker, Podman, Nginx, Traefik, Linux, Blender, Three.js, Rust, GLSL):

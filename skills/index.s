@@ -1,5 +1,5 @@
 # dotS Knowledge Base Index
-@meta |type:index|lastUpdated:2026-11-22|totalFiles:43|
+@meta |type:index|lastUpdated:2026-11-24|totalFiles:44|
 @constraints |
   pipe:"|" has three roles: block delimiter, metadata separator, value content
   pipeRule:block ends only when a line is JUST "|" — pipes inside key:value are safe
@@ -47,7 +47,8 @@
   strawnode-prototype.s:blocks:17|topic:strawnode-prototype|keyBlocks:@dependencies @core @session @philosophy @layout @playbook @sectionFactory @graphics @readability @jadeJson @i18n @addressing @behaviorLinking @verification @gotchas @index
   threejs.s:blocks:22|topic:threejs 3d webgl|keyBlocks:@core @scene @renderer @geometry @material @physical @texture @light @mesh @group @animation @controls @loader @raycasting @postprocessing @InstancedMesh @performance @webgpu @gotchas @math @examples
    webhooks.s:blocks:18|topic:webhooks http callbacks event delivery signing hmac retries idempotency|keyBlocks:@core @security @verifyPattern @receiving @idempotency @retries @testing @gotchas @run
-   dusky.s:blocks:16|topic:dusky arch linux hyprland orchestrator matugen btrfs|keyBlocks:@core @layout @orchestrator @profiles @markers @theming @drives @services @station @keybinds @updates @gotchas @run
+    dusky.s:blocks:16|topic:dusky arch linux hyprland orchestrator matugen btrfs|keyBlocks:@core @layout @orchestrator @profiles @markers @theming @drives @services @station @keybinds @updates @gotchas @run
+    archify.s:blocks:14|topic:archify diagram html svg architecture workflow sequence dataflow lifecycle mermaid|keyBlocks:@core @types @author @validate @deliver @invariants @gotchas @run.diagram
 |
 @byTask |
   webServer:nginx.s
@@ -135,7 +136,17 @@
    hyprlandRicing:dusky.s@theming dusky.s@keybinds
    btrfsSetup:dusky.s@drives
    duskyServices:dusky.s@services dusky.s@station
-   duskyUpdates:dusky.s@updates
+    duskyUpdates:dusky.s@updates
+    diagrams:archify.s
+    diagramTypes:archify.s@types archify.s@author
+    diagramValidation:archify.s@validate
+    diagramDelivery:archify.s@deliver
+    mermaid:archify.s@mermaid
+    architectureDiagram:archify.s@types archify.s@author
+    workflowDiagram:archify.s@types archify.s@author
+    sequenceDiagram:archify.s@types archify.s@author
+    dataflowDiagram:archify.s@types archify.s@author
+    lifecycleDiagram:archify.s@types archify.s@author
 |
 @quickRef |
   nginxSSL:dots get skills/nginx.s @ssl
@@ -260,7 +271,11 @@
    duskyMarkers:dots get skills/dusky.s @markers
    duskyTheme:dots get skills/dusky.s @theming @keybinds
    duskyDrives:dots get skills/dusky.s @drives
-   duskyGotchas:dots get skills/dusky.s @gotchas
+    duskyGotchas:dots get skills/dusky.s @gotchas
+    archify:dots get skills/archify.s
+    archifyTypes:dots get skills/archify.s @types
+    archifyValidate:dots get skills/archify.s @validate
+    archifyDelivery:dots get skills/archify.s @deliver
 |
 @runQuickRef |
   gitCommit:dots run skills/git.s @run.quickCommit
@@ -302,5 +317,7 @@
    duskyDoctor:dots run skills/dusky.s @run.doctor
    duskyInspect:dots run skills/dusky.s @run.inspect
     duskyRerun:dots run skills/dusky.s @run.rerun
-    skillPromote:dots run skills/writing-skill.s @run.promote
+     skillPromote:dots run skills/writing-skill.s @run.promote
+     archifyDiagram:dots run skills/archify.s @run.diagram
+     archifyDoctor:dots run skills/archify.s @run.doctor
 |

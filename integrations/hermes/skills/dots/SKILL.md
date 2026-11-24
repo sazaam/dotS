@@ -6,6 +6,12 @@ description: >-
   Dusky/Hyprland, Blender, Three.js, GLSL, Rust). Loads dense .s blocks on demand.
 ---
 
+<!--
+Injected by dotS install: install-dots.sh links this skill into
+$HERMES_HOME/skills/autonomous-ai-agents/dots/SKILL.md.
+Edit here, not in the generated copy.
+-->
+
 # dotS Knowledge Layer
 
 Store: `~/.config/dots`. CLI: `dots` (fallback: `~/.config/dots/dots`).

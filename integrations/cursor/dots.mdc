@@ -3,6 +3,11 @@ description: dotS knowledge layer — HARD GATE: dots find before any topic/how-
 alwaysApply: true
 ---
 
+<!--
+Injected by dotS install: install-dots.sh links this file into
+~/.cursor/rules/dots.mdc. Edit here, not in the generated copy.
+-->
+
 # dotS knowledge layer
 
 This machine runs dotS at `~/.config/dots` (`dots where` prints it).

@@ -1,3 +1,9 @@
+<!--
+Injected by dotS install: install-dots.sh uses this file as the portable
+AGENTS.md rule for tools that accept markdown agent instructions.
+Edit here, not in any generated copy.
+-->
+
 # dotS Knowledge & Workflow Rules
 
 1. **Token-Efficient Knowledge First**: When dealing with infrastructure, deployment, system configuration, or supported frameworks (e.g., SSH, Docker, Podman, Nginx, Traefik, Linux, Blender, Three.js, GLSL, Rust), ALWAYS check dotS before conducting web searches or generating verbose speculative solutions:

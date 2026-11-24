@@ -1,3 +1,9 @@
+<!--
+Injected by dotS install: install-dots.sh symlinks this file into
+~/.config/opencode/AGENTS.md when no global AGENTS.md exists, and leaves
+an existing global file untouched. Edit here, not in the generated copy.
+-->
+
 # dotS knowledge layer
 
 This machine runs dotS as its knowledge base (install dir: ~/.config/dots; `dots where` prints it).

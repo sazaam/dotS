@@ -1,3 +1,9 @@
+<!--
+Injected by dotS install: install-dots.sh links this file into both
+~/.gemini/config/rules/dots.md and ~/.gemini/config/GEMINI.md.
+Edit here, not in the generated copies.
+-->
+
 # dotS Knowledge & Workflow Rules
 
 1. **Token-Efficient Knowledge First**: When dealing with infrastructure, deployment, system configuration, or supported frameworks (e.g., SSH, Docker, Podman, Nginx, Traefik, Linux, Blender, Three.js, GLSL, Rust), ALWAYS check dotS before conducting web searches or generating verbose speculative solutions:

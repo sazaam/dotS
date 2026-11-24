@@ -54,7 +54,7 @@ git -C ~/.config/dots pull
 
 #### Installer Flags
 
-You can let `./install-dots.sh` auto-detect your tools, or target specific environments:
+You can let `./install-dots.sh` auto-detect your tools, or target specific environments. Hardened adapters are linked by default; `--minimal` selects the short canonical pointers instead.
 
 ```bash
 ./install-dots.sh               # Auto-detect present tools and configure
@@ -65,6 +65,7 @@ You can let `./install-dots.sh` auto-detect your tools, or target specific envir
 ./install-dots.sh --cursor      # Configure Cursor rules
 ./install-dots.sh --hermes      # Configure Hermes local dots skill
 ./install-dots.sh --force       # Backup existing conflicting files and link
+./install-dots.sh --minimal     # Link canonical minimal adapters, not hardened ones
 ```
 
 ### Verify
@@ -353,34 +354,36 @@ dotS is designed to provide token-efficient context across modern AI coding assi
 ### 1. Google Antigravity & Gemini Code Assist
 Antigravity uses native progressive disclosure and directory rules:
 - **Skill (`skills/dots/SKILL.md`)**: Injected into the agent's capability registry. When you ask about DevOps, server setups, or supported frameworks, Antigravity loads the skill on demand.
-- **Rules (`rules/dots.md` & `GEMINI.md`)**: Enforces a strict "dotS knowledge first" workflow—requiring `dots find <topic>` and `dots get <skill.s> [@block]` before general web searches or speculative answers.
+- **Rules (`rules/dots.hardened.md` → `dots.md` / `GEMINI.md`)**: Hardened default: conditional `dots find` gate with a `skip dots` bypass. `--minimal` links the shorter canonical rule instead.
 
 ### 2. OpenCode (V2)
 Reference configuration for running dotS as the context layer of [opencode](https://opencode.ai):
 - **Slash Commands (`commands/dots/`)**: Native `/dots/*` commands (`index`, `learn`, `optimize`, `skills`, `skill-create`) symlinked to `$XDG_CONFIG_HOME/opencode/commands/dots`.
-- **`AGENTS.md` pointer**: Routes sessions to the routing map on demand.
+- **`AGENTS.md`**: Hardened default routes relevant requests through `dots find` with a `skip dots` bypass; `--minimal` links the tiny canonical pointer.
 
 ### 3. Claude Code
-- **Global Instructions (`~/.claude/CLAUDE.md`)**: Instructs Claude Code to query dotS before generating infrastructure configurations or running web searches.
+- **Global Instructions (`~/.claude/CLAUDE.md`)**: Hardened default instructs Claude Code to route dotS-covered requests before web search or speculation; `--minimal` links the shorter canonical rules.
 
 ### 4. Cursor IDE
-- **Hard Gate Rule (`~/.cursor/rules/dots.mdc`)**: Enforces `dots find <topic>` as the first tool call before answering stack, how-to, or configuration questions.
+- **Rule (`~/.cursor/rules/dots.mdc`)**: Hardened default is a conditional gate with `alwaysApply: true`; `--minimal` links the stricter canonical always-on gate.
 
 ### 5. Hermes Agent
-- **Local skill (`skills/autonomous-ai-agents/dots/`)**: Links `SKILL.md` plus enablement notes into `$HERMES_HOME`. Routes infrastructure and supported-stack questions through `dots find` and keeps authoring guidance in a reference file.
+- **Local skill (`skills/autonomous-ai-agents/dots-hardened/`)**: Hardened default skill plus enablement notes; `--minimal` links the canonical `dots` skill instead.
 
 ### 6. Universal Agents (Aider, Windsurf, etc.)
-- A portable rule pointer is provided in `integrations/generic/AGENTS.md` for any workspace or tool that supports markdown agent instructions.
+- A portable hardened rule is provided in `integrations/generic/AGENTS.hardened.md`; the canonical pointer remains in `integrations/generic/AGENTS.md`.
 
 ---
 
 ## dotS + opencode: The Optimal Setup
 
 This is the reference configuration for running dotS as the context layer
-of [opencode](https://opencode.ai). A small `AGENTS.md` pointer — the V2
-instructions mechanism — routes every session to the dotS *map*, while skill
-*bodies* are pulled on demand: the fast path is cheap, and nothing heavy
-(50k tokens worth of skills) ever loads unless you ask.
+of [opencode](https://opencode.ai). A hardened `AGENTS.md` gate — the V2
+instructions mechanism — routes dotS-covered requests through `dots find` while
+letting trivial chat pass and honoring an explicit `skip dots` bypass. Skill
+*bodies* are still pulled on demand: nothing heavy (50k tokens worth of skills)
+ever loads unless you ask. `--minimal` restores the tiny canonical pointer for
+users who want strictly opt-on-demand behavior.
 
 ### Recommended layout
 
@@ -394,7 +397,7 @@ instructions mechanism — routes every session to the dotS *map*, while skill
 │   │   └── dots/*.md     # /dots/* slash-commands
 │   └── skills/*.s        # knowledge bodies — loaded on demand
 └── opencode/             # opencode config tree
-    ├── AGENTS.md         # global instructions — points every session at the dotS map
+    ├── AGENTS.md -> ../dots/integrations/opencode/AGENTS.hardened.md  # hardened gate by default
     └── commands/
         └── dots -> ../../dots/commands/dots   # /dots/* slash-commands (symlink)
 ```
@@ -418,8 +421,20 @@ The supported always-resident mechanism is `AGENTS.md` (V2 docs:
 subagents); the workspace then stacks any project `AGENTS.md` upward toward
 `$HOME` (discovery stops at the project root outside `$HOME`).
 
-Keep the global file a *pointer*, not a dump — the routing map stays in the
-repo and is read on demand:
+Fresh installs link `integrations/opencode/AGENTS.hardened.md` into the global
+file; pass `--minimal` to link the classic pointer below instead. All hardened
+adapters are generated from one shared body:
+
+```bash
+sh integrations/shared/render-hardened.sh
+```
+
+Edit `integrations/shared/dots-hardened.body.md`, never the generated files.
+The gate is conditional: knowledge/how-to/config/skill-topic requests route
+through `dots find`; trivial chat skips; `skip dots` / `skip all dots use` /
+`bypass dots` always wins. The routing map is still fetched only on demand.
+
+With `--minimal`, the classic pointer is:
 
 ```md title="~/.config/opencode/AGENTS.md"
 # dotS knowledge layer
@@ -437,10 +452,9 @@ The routing map lives in index.s (@quickRef shortcuts, @byTask task→skill,
 Never echo secrets (sudo passwords, key passphrases) into conversations or files.
 ```
 
-The pointer keeps the map's location always known for ~100 tokens; the map
+The minimal pointer keeps the map's location known for ~100 tokens; the map
 itself (~2,400 tokens) is fetched only when a request needs routing.
-Duplicating the map into `AGENTS.md` is an anti-pattern (see below) — it would
-drift from the repo on every `git pull`.
+Duplicating the map into instructions is an anti-pattern (see below).
 
 ### Pointing `dots` at a sibling instructions dir
 
@@ -463,7 +477,8 @@ directory. Without this, `dots get <instructions-file>.s` fails with
 | Command | Tokens | Verdict |
 |---|---|---|
 | `dots get index.s "*"` | **~50,000** (loads every skill body) | Never do this |
-| `AGENTS.md` pointer + `index.s` on demand | ~100 resident, ~2,400 when routed | **Recommended** |
+| Hardened `AGENTS.md` + `index.s` on demand | slightly more resident, ~2,400 when routed | **Default** |
+| Minimal `AGENTS.md` pointer + `index.s` on demand | ~100 resident, ~2,400 when routed | `--minimal` |
 | `dots get core.s @always` | ~100, occasionally | Run when coding starts |
 
 The 50k "load-all" startup both defeats dotS's token advantage and burns
@@ -493,6 +508,7 @@ dots get index.s @index @byTask   # ~1,100 tokens: map without shortcut tables
 
 - ❌ `dots get index.s "*"` in your shell profile / INSTRUCTIONS.md
 - ❌ Duplicating `@quickRef` contents into AGENTS.md or prose docs
+- ❌ Editing generated `*.hardened.*` files directly — change `integrations/shared/dots-hardened.body.md` and re-run the renderer
 - ❌ `"instructions": [...]` in `opencode.json`/`cli.json` — accepted by the V2 schema but **never loaded**; use `AGENTS.md`
 - ❌ Storing API keys in `index.s` or any `.s` file (commit to git is too easy)
 
@@ -508,17 +524,31 @@ dotS/
 ├── changelog.s          # change history
 ├── commands -> integrations/opencode/commands  # legacy root symlink
 ├── integrations/        # Multi-AI integration adapters
-│   ├── opencode/        # OpenCode commands (/dots/*) & AGENTS.md
+│   ├── shared/          # single source for hardened adapters
+│   │   ├── dots-hardened.body.md
+│   │   └── render-hardened.sh
+│   ├── opencode/        # OpenCode commands (/dots/*) & AGENTS.md variants
 │   │   ├── commands/dots/
-│   │   └── AGENTS.md
+│   │   ├── AGENTS.md
+│   │   └── AGENTS.hardened.md
 │   ├── antigravity/     # Antigravity / Gemini skills & rules
 │   │   ├── skills/dots/
 │   │   └── rules/
+│   │       ├── dots.md
+│   │       └── dots.hardened.md
 │   ├── claude-code/     # Claude Code global instructions
+│   │   ├── CLAUDE.md
+│   │   └── CLAUDE.hardened.md
 │   ├── cursor/          # Cursor IDE rules (.mdc)
-│   ├── hermes/          # Hermes local skill + enablement notes
-│   │   └── skills/dots/
+│   │   ├── dots.mdc
+│   │   └── dots.hardened.mdc
+│   ├── hermes/          # Hermes local skills + enablement notes
+│   │   └── skills/
+│   │       ├── dots/
+│   │       └── dots-hardened/
 │   └── generic/         # Universal AGENTS.md rules
+│       ├── AGENTS.md
+│       └── AGENTS.hardened.md
 ├── skills/              # knowledge base .s files
 │   ├── css.s
 │   ├── html.s

@@ -146,6 +146,10 @@
   webhookIdempotency:dots get skills/webhooks.s @idempotency
   webhookRetries:dots get skills/webhooks.s @retries
   webhookTesting:dots get skills/webhooks.s @testing
+  archify:dots get skills/archify.s
+  archifyTypes:dots get skills/archify.s @types
+  archifyValidate:dots get skills/archify.s @validate
+  archifyDelivery:dots get skills/archify.s @deliver
 |
 @runQuickRef |
   htmlValidate:npx htmlhint **/*.html
@@ -204,7 +208,9 @@
    duskyDoctor:dots run skills/dusky.s @run.doctor
    duskyInspect:dots run skills/dusky.s @run.inspect
     duskyRerun:dots run skills/dusky.s @run.rerun
-    skillPromote:dots run skills/writing-skill.s @run.promote
+     skillPromote:dots run skills/writing-skill.s @run.promote
+     archifyDiagram:dots run skills/archify.s @run.diagram
+     archifyDoctor:dots run skills/archify.s @run.doctor
 |
 @byTask |
   minimalCode:skills/ponytail.s
@@ -332,6 +338,16 @@
   webhookRetries:skills/webhooks.s @retries
   webhookIdempotency:skills/webhooks.s @idempotency
   webhookTesting:skills/webhooks.s @testing
+  diagrams:skills/archify.s
+  diagramTypes:skills/archify.s @types @author
+  diagramValidation:skills/archify.s @validate
+  diagramDelivery:skills/archify.s @deliver
+  mermaid:skills/archify.s @mermaid
+  architectureDiagram:skills/archify.s @types @author
+  workflowDiagram:skills/archify.s @types @author
+  sequenceDiagram:skills/archify.s @types @author
+  dataflowDiagram:skills/archify.s @types @author
+  lifecycleDiagram:skills/archify.s @types @author
 |
 @index |
   ponytail.s:blocks:7|topic:yagni minimal code|keyBlocks:@rules @commands
@@ -373,5 +389,6 @@
   strawnode-docs.s:blocks:8|topic:strawnode-docs|keyBlocks:@boot @modules @sectionSystem @serverSide @dependencyGraph @keyPatterns @quirks
   strawnode-prototype.s:blocks:17|topic:strawnode-prototype|keyBlocks:@dependencies @core @session @philosophy @layout @playbook @sectionFactory @graphics @readability @jadeJson @i18n @addressing @behaviorLinking @verification @gotchas @index
    webhooks.s:blocks:18|topic:webhooks http callbacks event delivery signing hmac retries idempotency|keyBlocks:@core @security @verifyPattern @receiving @idempotency @retries @testing @gotchas @run
-   dusky.s:blocks:16|topic:dusky arch linux hyprland orchestrator matugen btrfs|keyBlocks:@core @layout @orchestrator @profiles @markers @theming @drives @services @station @keybinds @updates @gotchas @run
+    dusky.s:blocks:16|topic:dusky arch linux hyprland orchestrator matugen btrfs|keyBlocks:@core @layout @orchestrator @profiles @markers @theming @drives @services @station @keybinds @updates @gotchas @run
+    archify.s:blocks:14|topic:archify diagram html svg architecture workflow sequence dataflow lifecycle mermaid|keyBlocks:@core @types @author @validate @deliver @invariants @gotchas @run.diagram
 |
