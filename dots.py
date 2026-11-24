@@ -63,42 +63,172 @@ RUN_ALIASES = frozenset({
 REMOTE_REF = re.compile(r'^(?:[a-zA-Z][a-zA-Z0-9+.-]*://|git@|//)')
 
 
-def resolve_file(filename: str) -> Path:
-    """Resolve a file from CTX_DIR or INSTRUCTIONS_DIR."""
-    # Try CTX_DIR first
-    fp = CTX_DIR / filename
-    if fp.exists():
-        return fp
-    # Try INSTRUCTIONS_DIR
-    fp = INSTRUCTIONS_DIR / filename
-    if fp.exists():
-        return fp
-    # Return CTX_DIR path for error message
-    return CTX_DIR / filename
+def _contained_path(filename: str, base: Path) -> Path:
+    candidate = Path(filename)
+    if candidate.is_absolute() or '..' in candidate.parts:
+        raise ValueError(f"path escapes store: {filename}")
+    raw = base / candidate
+    if raw.is_symlink():
+        raise ValueError(f"symlink paths not allowed: {filename}")
+    root = base.resolve()
+    resolved = raw.resolve()
+    if not resolved.is_relative_to(root):
+        raise ValueError(f"path escapes store: {filename}")
+    return resolved
+
+
+def resolve_file(filename: str, allow_external: bool = False, subdirs: tuple = None) -> Path:
+    """Resolve a store-contained file, or an external file only for dry-run preview."""
+    if allow_external:
+        for base in (CTX_DIR, INSTRUCTIONS_DIR):
+            fp = base / filename
+            if fp.exists():
+                return fp
+        return CTX_DIR / filename
+
+    roots = subdirs if subdirs is not None else ('',)
+    candidates = []
+    blocked = None
+    for sub in roots:
+        ctx_base = CTX_DIR if sub == '' else CTX_DIR / sub
+        ins_base = INSTRUCTIONS_DIR if sub == '' else INSTRUCTIONS_DIR / sub
+        for base in (ctx_base, ins_base):
+            try:
+                candidates.append(_contained_path(filename, base))
+            except ValueError as e:
+                blocked = str(e)
+    for fp in candidates:
+        if fp.exists():
+            return fp
+    if not candidates or blocked:
+        print(f"  SECURITY: {blocked or 'path escapes store'}", file=sys.stderr)
+        sys.exit(1)
+    return candidates[0]
+
+
+def _skill_file(skill_name: str) -> Optional[Path]:
+    if not skill_name.endswith('.s'):
+        skill_name += '.s'
+    try:
+        fp = _contained_path(skill_name, CTX_DIR / "skills")
+    except ValueError:
+        return None
+    return fp if fp.is_file() else None
+
+
+def _assert_writable_store_file(filepath: Path):
+    try:
+        rel = filepath.relative_to(CTX_DIR.resolve()).as_posix()
+    except ValueError:
+        print("  SECURITY: writes outside the store are not allowed", file=sys.stderr)
+        sys.exit(1)
+    if filepath.suffix != '.s' or rel in ('skills/.safe', 'skills/.locked'):
+        print("  SECURITY: only .s store files can be modified", file=sys.stderr)
+        sys.exit(1)
 
 
 def _deny_untrusted_run(reason: str):
     print(f"  SECURITY: {reason}", file=sys.stderr)
-    print("  @run execution is allowed only for playbooks allowlisted in ~/.config/dots/skills/.safe", file=sys.stderr)
+    print("  @run execution is allowed only for playbooks allowlisted in ~/.config/dots/skills/.safe or private user-owned *.local.s files", file=sys.stderr)
     sys.exit(1)
+
+
+SAFE_HEADER = (
+    "# Execution allowlist for `dots run` (@run playbooks only).",
+    "# Format: <exact path relative to ~/.config/dots> sha256:<hex>",
+    "# Not the immutable list — skills/.locked is used by `dots optimize`.",
+    "# *.local.s under skills/ is implicitly trusted when user-owned and private.",
+)
+
+
+def _sha256_file(filepath: Path) -> Optional[str]:
+    try:
+        return hashlib.sha256(filepath.read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
+def _skill_rel(name: str) -> Optional[str]:
+    name = name.strip()
+    if not name:
+        return None
+    if name.startswith('skills/'):
+        name = name[len('skills/'):]
+    if name.endswith('.local'):
+        name += '.s'
+    elif not name.endswith('.s'):
+        name += '.s'
+    path = Path(name)
+    if path.is_absolute() or '..' in path.parts:
+        return None
+    return (Path('skills') / path).as_posix()
+
+
+def _skill_in_trust_root(rel: str) -> Optional[Path]:
+    try:
+        filepath = _contained_path(rel, TRUST_ROOT)
+    except ValueError:
+        return None
+    return filepath if filepath.is_file() else None
+
+
+def _is_local_skill(filepath: Path) -> bool:
+    if not filepath.name.endswith('.local.s') or not filepath.is_file():
+        return False
+    for path in (TRUST_ROOT, TRUST_ROOT / "skills", filepath):
+        try:
+            st = path.stat()
+        except OSError:
+            return False
+        if st.st_uid != os.getuid() or st.st_mode & 0o022:
+            return False
+    return True
+
+
+def _load_safe_entries() -> dict:
+    entries = {}
+    try:
+        lines = SAFE_FILE.read_text().splitlines()
+    except OSError:
+        return entries
+    for line in lines:
+        parts = line.split()
+        if not parts or parts[0].startswith('#'):
+            continue
+        if len(parts) == 1:
+            entries[Path(parts[0]).as_posix()] = None
+        elif len(parts) == 2 and parts[1].startswith('sha256:'):
+            entries[Path(parts[0]).as_posix()] = parts[1][7:].lower()
+    return entries
+
+
+def _save_safe_entries(entries: dict):
+    try:
+        comments = [l for l in SAFE_FILE.read_text().splitlines() if l.strip().startswith('#')]
+    except OSError:
+        comments = list(SAFE_HEADER)
+    lines = comments + [
+        f"{rel} sha256:{digest}" if digest else rel
+        for rel, digest in sorted(entries.items())
+    ]
+    SAFE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    SAFE_FILE.write_text('\n'.join(lines) + '\n')
 
 
 def _is_trusted_run_file(filepath: Path) -> bool:
     try:
         resolved = filepath.resolve()
-        rel = resolved.relative_to(TRUST_ROOT)
+        rel = resolved.relative_to(TRUST_ROOT).as_posix()
     except (ValueError, OSError):
         return False
     if not resolved.is_file():
         return False
-    try:
-        trusted = {
-            line.strip() for line in SAFE_FILE.read_text().splitlines()
-            if line.strip() and not line.strip().startswith('#')
-        }
-    except OSError:
+    if _is_local_skill(resolved):
+        return True
+    expected_hash = _load_safe_entries().get(rel)
+    if expected_hash is None:
         return False
-    return resolved.name in trusted or str(rel) in trusted
+    return _sha256_file(resolved) == expected_hash
 
 
 def _parse_cli_list(value: str):
@@ -140,12 +270,32 @@ def _unload_file(filepath: str):
     return False
 
 
+SESSION_LOG_MAX_BYTES = 100_000
+_VALUE_LOG_CMDS = frozenset({'set', 'add', 'learn'})
+
+
+def _redact_log(cmd: str, args: list, result: str):
+    safe_args = list(args)
+    if cmd in _VALUE_LOG_CMDS and len(safe_args) > 2:
+        safe_args[2:] = ['<redacted>'] * (len(safe_args) - 2)
+    if cmd in _VALUE_LOG_CMDS and result:
+        for sep in ('+=', '='):
+            if sep in result:
+                result = result.split(sep, 1)[0] + sep + '<redacted>'
+                break
+    return ' '.join(safe_args), result
+
+
 def _log_session(cmd: str, args: list, result: str = ""):
-    """Log a command to session log for compact."""
+    """Log a command to session log for compact, with values redacted."""
     _ensure_state_dir()
+    if SESSION_LOG.exists() and SESSION_LOG.stat().st_size > SESSION_LOG_MAX_BYTES:
+        SESSION_LOG.replace(SESSION_LOG.with_name('session.log.1'))
     ts = datetime.now().isoformat()
-    line = f"{ts}|{cmd}|{' '.join(args)}|{result}\n"
+    safe_args, safe_result = _redact_log(cmd, args, result)
+    line = f"{ts}|{cmd}|{safe_args}|{safe_result}\n"
     with open(SESSION_LOG, 'a') as f:
+        os.chmod(SESSION_LOG, 0o600)
         f.write(line)
 
 
@@ -179,10 +329,10 @@ def _get_skill_deps(skill_name: str) -> list:
     if not skill_name.endswith('.s'):
         skill_name += '.s'
     
-    filepath = CTX_DIR / "skills" / skill_name
-    if not filepath.exists():
+    filepath = _skill_file(skill_name)
+    if not filepath:
         return []
-    
+
     sf = SFile(filepath)
     deps_block = sf.get_block('dependencies')
     if not deps_block:
@@ -254,13 +404,11 @@ def _load_mega_skill(name: str) -> list:
     for skill in skills:
         if not skill.endswith('.s'):
             skill += '.s'
-        
+
         skill_path = f"skills/{skill}"
-        if skill_path not in loaded:
-            filepath = CTX_DIR / "skills" / skill
-            if filepath.exists():
-                _track_loaded(skill_path)
-                loaded_count += 1
+        if skill_path not in loaded and _skill_file(skill):
+            _track_loaded(skill_path)
+            loaded_count += 1
     
     return skills
 
@@ -308,11 +456,9 @@ def _auto_load_skills_from_index(index_sf: SFile):
             skill_path = f"skills/{key}"
             # Check if already loaded
             loaded = _get_loaded()
-            if skill_path not in loaded:
-                full_path = CTX_DIR / "skills" / key
-                if full_path.exists():
-                    _track_loaded(skill_path)
-                    loaded_count += 1
+            if skill_path not in loaded and _skill_file(key):
+                _track_loaded(skill_path)
+                loaded_count += 1
 
     if loaded_count > 0:
         print(f"\n  ✓ auto-loaded {loaded_count} skill(s) from @index")
@@ -601,12 +747,19 @@ class SFile:
 
 def cmd_init(args):
     """Scaffold the dotS/ structure."""
-    global CTX_DIR, SNAP_DIR
-    if args:
-        CTX_DIR = Path(args[0])
-    else:
-        CTX_DIR = Path.cwd() / "dotS"
+    global CTX_DIR, SNAP_DIR, STATE_DIR, LOADED_FILE, SESSION_LOG, LOCKED_FILE, MEGA_DIR, MUTATIONS_DIR
+    try:
+        CTX_DIR = _contained_path(args[0], Path.cwd()) if args else Path.cwd() / "dotS"
+    except ValueError as e:
+        print(f"  SECURITY: {e}", file=sys.stderr)
+        sys.exit(1)
     SNAP_DIR = CTX_DIR / ".snaps"
+    STATE_DIR = CTX_DIR / ".state"
+    LOADED_FILE = STATE_DIR / "loaded.txt"
+    SESSION_LOG = STATE_DIR / "session.log"
+    LOCKED_FILE = CTX_DIR / "skills" / ".locked"
+    MEGA_DIR = CTX_DIR / "skills" / ".mega"
+    MUTATIONS_DIR = CTX_DIR / "skills" / ".mutations"
 
     dirs = [CTX_DIR, CTX_DIR / "modules", CTX_DIR / "decisions", SNAP_DIR]
     for d in dirs:
@@ -752,6 +905,7 @@ def cmd_set(args):
         sys.exit(1)
 
     filepath = resolve_file(args[0])
+    _assert_writable_store_file(filepath)
     sf = SFile(filepath)
 
     path = args[1].lstrip('@')  # strip leading @ if user typed it
@@ -783,6 +937,7 @@ def cmd_add(args):
         sys.exit(1)
 
     filepath = resolve_file(args[0])
+    _assert_writable_store_file(filepath)
     sf = SFile(filepath)
 
     path = args[1].lstrip('@')  # strip leading @ if user typed it
@@ -1057,6 +1212,7 @@ def cmd_rm(args):
         sys.exit(1)
 
     filepath = resolve_file(args[0])
+    _assert_writable_store_file(filepath)
     if not filepath.exists():
         print(f"File not found: {filepath}", file=sys.stderr)
         sys.exit(1)
@@ -1158,8 +1314,8 @@ def cmd_find(args):
             if file_key in seen:
                 continue
             seen.add(file_key)
-            filepath = CTX_DIR / "skills" / fname
-            if filepath.exists():
+            filepath = _skill_file(fname)
+            if filepath:
                 sf = SFile(filepath)
                 if block_ref:
                     # handle "run.block" → tag is "run", subkey is "block"
@@ -1223,8 +1379,8 @@ def cmd_find(args):
                     if file_key in seen:
                         continue
                     seen.add(file_key)
-                    filepath = CTX_DIR / "skills" / fname
-                    if not filepath.exists():
+                    filepath = _skill_file(fname)
+                    if not filepath:
                         print(f"  file not found: {fname}", file=sys.stderr)
                         continue
                     sf = SFile(filepath)
@@ -1274,10 +1430,8 @@ def cmd_freshness(args):
 
     files_to_check = []
     if target_file:
-        fp = CTX_DIR / "skills" / target_file
-        if not fp.exists():
-            fp = CTX_DIR / target_file
-        if fp.exists():
+        fp = resolve_file(target_file, subdirs=('skills', ''))
+        if fp.is_file():
             files_to_check.append(fp)
         else:
             print(f"  file not found: {target_file}", file=sys.stderr)
@@ -1377,12 +1531,8 @@ def cmd_tokens(args):
         return
 
     # count specific file/block
-    filepath = CTX_DIR / "skills" / args[0]
-    if not filepath.exists():
-        filepath = CTX_DIR / args[0]
-    if not filepath.exists():
-        filepath = INSTRUCTIONS_DIR / args[0]
-    if not filepath.exists():
+    filepath = resolve_file(args[0], subdirs=('skills', ''))
+    if not filepath.is_file():
         print(f"  file not found: {args[0]}", file=sys.stderr)
         sys.exit(1)
 
@@ -1519,8 +1669,9 @@ def cmd_learn(args):
         print("       dots learn <file.s> <block.key> --from-websearch 'output'", file=sys.stderr)
         sys.exit(1)
 
-    filepath = CTX_DIR / "skills" / args[0]
-    if not filepath.exists():
+    filepath = resolve_file(f"skills/{args[0]}")
+    _assert_writable_store_file(filepath)
+    if not filepath.is_file():
         print(f"  file not found: {filepath}", file=sys.stderr)
         print(f"  create it first: dots set {args[0]} @meta topic {args[0].replace('.s','')}")
         sys.exit(1)
@@ -1563,7 +1714,7 @@ def cmd_learn(args):
     data["commands"].append({
         "time": datetime.now().isoformat(),
         "cmd": "learn",
-        "args": [args[0], f"{block_tag}.{key}", str(value)],
+        "args": [args[0], f"{block_tag}.{key}", "<redacted>"],
         "source": source,
     })
     session_file.write_text(json.dumps(data, indent=2))
@@ -1776,11 +1927,12 @@ def cmd_optimize(args):
             print(f"  {skill_name}: locked (skipped)", file=sys.stderr)
             continue
         
-        filepath = CTX_DIR / "skills" / skill_name
-        if not filepath.exists():
+        filepath = _skill_file(skill_name)
+        if not filepath:
             print(f"  file not found: {skill_name}", file=sys.stderr)
             continue
-        
+        _assert_writable_store_file(filepath)
+
         sf = SFile(filepath)
         before_content = filepath.read_text()
         before_tokens = _estimate_tokens(before_content)
@@ -2043,13 +2195,12 @@ def cmd_compact(args):
     
     for filepath, file_entries in changes_by_file.items():
         # Resolve file
-        fp = CTX_DIR / filepath
-        if not fp.exists():
-            fp = CTX_DIR / "skills" / filepath
-        if not fp.exists():
+        fp = resolve_file(filepath, subdirs=('', 'skills'))
+        _assert_writable_store_file(fp)
+        if not fp.is_file():
             print(f"  ⚠ {filepath}: file not found, skipping")
             continue
-        
+
         sf = SFile(fp)
         changes_made = 0
         
@@ -2153,8 +2304,8 @@ def cmd_lock(args):
             skill_name += '.s'
         
         # Check if file exists
-        filepath = CTX_DIR / "skills" / skill_name
-        if not filepath.exists():
+        filepath = _skill_file(skill_name)
+        if not filepath:
             print(f"  {skill_name}: file not found", file=sys.stderr)
             continue
         
@@ -2192,8 +2343,8 @@ def cmd_unlock(args):
         count = len(locked)
         # Make all locked files writable
         for skill_name in locked:
-            filepath = CTX_DIR / "skills" / skill_name
-            if filepath.exists():
+            filepath = _skill_file(skill_name)
+            if filepath:
                 try:
                     filepath.chmod(0o644)
                 except:
@@ -2211,8 +2362,8 @@ def cmd_unlock(args):
             locked.remove(skill_name)
             removed += 1
             # Make file writable
-            filepath = CTX_DIR / "skills" / skill_name
-            if filepath.exists():
+            filepath = _skill_file(skill_name)
+            if filepath:
                 try:
                     filepath.chmod(0o644)
                     print(f"  {skill_name}: unlocked")
@@ -2241,6 +2392,236 @@ def cmd_locked(args):
         for f in locked:
             print(f"    {f}")
         print(f"\n  use 'dots unlock <skill>' to unlock")
+
+
+RUN_RISK_RULES = (
+    ("remote code execution", re.compile(r'\b(curl|wget)\b[^|]*\|\s*(sh|bash|zsh)\b', re.I)),
+    ("remote code execution", re.compile(r'\bbash\s+<\s*\(\s*(curl|wget)\b', re.I)),
+    ("destructive filesystem", re.compile(r'\brm\s+-[rRfF]*[rR][fF]?\s+(/|~|\$HOME\b)', re.I)),
+    ("device write", re.compile(r'\b(mkfs(?:\.[a-z0-9]+)?|dd\s+if=.*of=/dev/)', re.I)),
+    ("privilege escalation", re.compile(r'(^|[;&|]\s*)sudo\b|\bsu\s+-', re.I)),
+    ("sensitive file write", re.compile(r'(?:>>?|tee)\s+[^\n]*(\.ssh/authorized_keys|/etc/sudoers|\.bashrc|\.zshrc|\.profile|/etc/systemd/system/|/etc/cron)', re.I)),
+    ("persistence", re.compile(r'\bcrontab\b|\bsystemctl\s+enable\b', re.I)),
+    ("unsafe permissions", re.compile(r'\bchmod\s+(?:-R\s+)?777\b', re.I)),
+    ("destructive git", re.compile(r'\bgit\s+(?:push\s+.*--force|reset\s+--hard|clean\s+-fdx?)\b', re.I)),
+)
+
+
+def _scan_run_risks(filepath: Path) -> list:
+    try:
+        sf = SFile(filepath)
+    except Exception:
+        return []
+    findings = []
+    for block in sf.blocks:
+        tag = block.tag
+        if tag != 'run' and not tag.startswith('run.'):
+            continue
+        name = tag.split('.', 1)[1] if '.' in tag else 'run'
+        for key, value in block.props.items():
+            match = re.match(r'^(\d+)\.cmd$', key)
+            if not match or not isinstance(value, str):
+                continue
+            for reason, pattern in RUN_RISK_RULES:
+                if pattern.search(value):
+                    findings.append((name, int(match.group(1)), value, reason))
+                    break
+    return findings
+
+
+def _show_run_risks(rel: str, findings: list, action: str, force: bool = False):
+    if not findings:
+        return
+    if force:
+        print(f"  warning: {rel}: accepting {len(findings)} risky @run step(s) with --force")
+    else:
+        print(f"  SECURITY: {rel} has {len(findings)} risky @run step(s) for {action}", file=sys.stderr)
+    for name, step, cmd, reason in findings:
+        print(f"    @{name} step {step} [{reason}]: {cmd}")
+    if not force:
+        print(f"  review the steps above; rerun with --force to {action}", file=sys.stderr)
+
+
+def _skill_args(args: list) -> list:
+    names = []
+    for arg in args:
+        for part in arg.split(','):
+            rel = _skill_rel(part)
+            if rel and rel not in names:
+                names.append(rel)
+    return names
+
+
+def cmd_trust(args):
+    """Allow @run playbooks in skills by hashing their current content.
+
+    Usage: dots trust skills/git.s [skills/nginx.s ...] [--force]
+           dots trust git,nginx
+    """
+    force = '--force' in args
+    names = _skill_args([arg for arg in args if arg != '--force'])
+    if not names:
+        print("Usage: dots trust <skill> [skill ...]", file=sys.stderr)
+        sys.exit(1)
+
+    entries = _load_safe_entries()
+    changed = False
+    blocked = False
+    for rel in names:
+        filepath = _skill_in_trust_root(rel)
+        if not filepath:
+            print(f"  {rel}: file not found in {TRUST_ROOT}", file=sys.stderr)
+            continue
+        if _is_local_skill(filepath):
+            print(f"  {rel}: already trusted (local)")
+            continue
+        findings = _scan_run_risks(filepath)
+        if findings and not force:
+            _show_run_risks(rel, findings, 'trust')
+            blocked = True
+            continue
+        _show_run_risks(rel, findings, 'trust', force)
+        digest = _sha256_file(filepath)
+        if not digest:
+            print(f"  {rel}: cannot read file", file=sys.stderr)
+            continue
+        if entries.get(rel) != digest:
+            entries[rel] = digest
+            changed = True
+        print(f"  ✓ trusted {rel} sha256:{digest}")
+
+    if changed:
+        _save_safe_entries(entries)
+    if blocked:
+        sys.exit(1)
+
+
+def cmd_untrust(args):
+    """Remove @run permission from skills.
+
+    Usage: dots untrust skills/git.s [skills/nginx.s ...]
+    """
+    names = _skill_args(args)
+    if not names:
+        print("Usage: dots untrust <skill> [skill ...]", file=sys.stderr)
+        sys.exit(1)
+
+    entries = _load_safe_entries()
+    changed = False
+    for rel in names:
+        if _is_local_skill(TRUST_ROOT / rel):
+            print(f"  {rel}: local skills are always trusted (remove the file to revoke)")
+            continue
+        if rel in entries:
+            del entries[rel]
+            changed = True
+            print(f"  ✓ untrusted {rel}")
+        else:
+            print(f"  {rel}: not trusted")
+
+    if changed:
+        _save_safe_entries(entries)
+
+
+def cmd_trusted(args):
+    """List skills allowed to run @run playbooks.
+
+    Usage: dots trusted
+    """
+    entries = _load_safe_entries()
+    locals_ = []
+    skills_dir = TRUST_ROOT / "skills"
+    if skills_dir.is_dir():
+        for filepath in sorted(skills_dir.rglob("*.local.s")):
+            if _is_local_skill(filepath):
+                locals_.append(filepath.relative_to(TRUST_ROOT).as_posix())
+
+    total = len(entries) + len(locals_)
+    if not total:
+        print("  no skills trusted")
+        return
+
+    print(f"  trusted skills ({total}):")
+    for rel, digest in sorted(entries.items()):
+        print(f"    {rel} sha256:{digest or '<missing>'}")
+    for rel in locals_:
+        print(f"    {rel} (local)")
+    print(f"\n  use 'dots untrust <skill>' to revoke hashed entries")
+
+
+def cmd_hash(args):
+    """Show SHA-256 status of skills; --refresh updates stale trusted hashes.
+
+    Usage: dots hash
+           dots hash --refresh [--force]
+    """
+    refresh = '--refresh' in args
+    force = '--force' in args
+    entries = _load_safe_entries()
+    statuses = []
+    refreshed = set()
+    blocked = []
+    forced = []
+
+    skills_dir = TRUST_ROOT / "skills"
+    if skills_dir.is_dir():
+        for filepath in sorted(skills_dir.rglob("*.s")):
+            rel = filepath.relative_to(TRUST_ROOT).as_posix()
+            if _is_local_skill(filepath):
+                statuses.append((rel, 'local'))
+                continue
+            digest = _sha256_file(filepath)
+            expected = entries.get(rel)
+            if rel not in entries:
+                statuses.append((rel, 'untrusted'))
+            elif digest is not None and digest == expected:
+                statuses.append((rel, 'ok'))
+            else:
+                findings = _scan_run_risks(filepath) if refresh else []
+                if refresh and findings and not force:
+                    statuses.append((rel, 'blocked'))
+                    blocked.append((rel, findings))
+                    continue
+                statuses.append((rel, 'refreshed' if refresh else 'mismatch'))
+                if refresh and digest:
+                    entries[rel] = digest
+                    refreshed.add(rel)
+                if refresh and findings:
+                    forced.append((rel, findings))
+
+    for rel in entries:
+        if not (TRUST_ROOT / rel).is_file():
+            statuses.append((rel, 'missing'))
+
+    if refreshed:
+        _save_safe_entries(entries)
+
+    for status in ('ok', 'mismatch', 'refreshed', 'blocked', 'untrusted', 'local', 'missing'):
+        group = [rel for rel, state in statuses if state == status]
+        if not group:
+            continue
+        label = {
+            'ok': 'hash matches',
+            'mismatch': 'HASH MISMATCH (run --refresh or re-trust, add --force for risky steps)',
+            'refreshed': 'refreshed',
+            'blocked': 'BLOCKED risky @run (rerun with --force)',
+            'untrusted': 'not trusted (use dots trust)',
+            'local': 'local (implicitly trusted)',
+            'missing': 'trusted entry missing',
+        }[status]
+        print(f"  {label} ({len(group)}):")
+        for rel in group:
+            print(f"    {rel}")
+
+    for rel, findings in blocked:
+        _show_run_risks(rel, findings, 'refresh hash')
+    for rel, findings in forced:
+        _show_run_risks(rel, findings, 'refresh hash', True)
+
+    if refresh and not refreshed and not blocked:
+        print("  no stale hashes to refresh")
+    if blocked:
+        sys.exit(1)
 
 
 def cmd_deps(args):
@@ -2558,13 +2939,13 @@ def cmd_run(args):
 
     if REMOTE_REF.match(args[0]):
         _deny_untrusted_run("remote references cannot be executed")
-    filepath = resolve_file(args[0])
+    filepath = resolve_file(args[0], allow_external=True)
     if not filepath.exists():
         print(f"File not found: {filepath}", file=sys.stderr)
         sys.exit(1)
     resolved = filepath.resolve()
     if not _is_trusted_run_file(resolved) and not dry_run:
-        _deny_untrusted_run(f"{args[0]} is not allowlisted in skills/.safe")
+        _deny_untrusted_run(f"{args[0]} is not allowlisted with a matching hash in skills/.safe")
 
     block_ref = args[1]
     if block_ref.startswith('@run.'):
@@ -2731,6 +3112,10 @@ COMMANDS = {
     'lock': cmd_lock,
     'unlock': cmd_unlock,
     'locked': cmd_locked,
+    'trust': cmd_trust,
+    'untrust': cmd_untrust,
+    'trusted': cmd_trusted,
+    'hash': cmd_hash,
     'load': cmd_load,
     'deps': cmd_deps,
     'mega': cmd_mega,

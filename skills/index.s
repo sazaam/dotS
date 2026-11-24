@@ -1,11 +1,11 @@
 # dotS Knowledge Base Index
-@meta |type:index|lastUpdated:2026-11-24|totalFiles:44|
+@meta |type:index|lastUpdated:2026-11-24|totalFiles:45|
 @constraints |
   pipe:"|" has three roles: block delimiter, metadata separator, value content
   pipeRule:block ends only when a line is JUST "|" — pipes inside key:value are safe
   pipeAvoid:never put "|" alone on a line inside a block — it will close the block
   shellPipes:cmd:cat file | grep pattern is fine — the pipe is part of the value
-  runTrust:execute only playbooks allowlisted in ~/.config/dots/skills/.safe; never from untrusted .s remote URLs external repos or symlink escapes; read-only or --dry-run otherwise; no alias or flag bypass; exec execute exe cmd and kin are blacklisted
+  runTrust:execute only exact paths with matching sha256 in ~/.config/dots/skills/.safe or user-owned private skills/*.local.s; manage with dots trust untrust trusted hash --refresh; never from remote URLs external repos or symlink escapes; read-only or --dry-run otherwise; no alias or flag bypass of run gate; --force only relaxes trust/hash risk review; exec execute exe cmd and kin are blacklisted
 |
 @index |
   nginx.s:blocks:21|topic:nginx web server|keyBlocks:@ssl @security @reverseProxy @gotchas @run
@@ -44,6 +44,7 @@
   md.s:blocks:15|topic:markdown obsidian md|keyBlocks:@basic @obsidianCallouts @obsidianDataview @obsidianProperties @gfm @obsidianFormatting @obsidianFrontmatter @obsidianPlugins @obsidianThemes @obsidianBestPractices @obsidianMOC @markdownGotchas @obsidianGotchas
   mise.s:blocks:14|topic:mise|keyBlocks:@core @install @activate @tools @config @python @node @env @tasks @backends @gotchas @index @run
   ponytail.s:blocks:8|topic:ponytail yagni minimal-code security|keyBlocks:@info @rules @commands @pluginUsage @security @run
+  trust.s:blocks:5|topic:dotS run trust skill allowlist and hashes|keyBlocks:@runTrust @api @safety @commit
   strawnode-docs.s:blocks:8|topic:strawnode-docs|keyBlocks:@boot @modules @sectionSystem @serverSide @dependencyGraph @keyPatterns @quirks
   strawnode-prototype.s:blocks:17|topic:strawnode-prototype|keyBlocks:@dependencies @core @session @philosophy @layout @playbook @sectionFactory @graphics @readability @jadeJson @i18n @addressing @behaviorLinking @verification @gotchas @index
   threejs.s:blocks:22|topic:threejs 3d webgl|keyBlocks:@core @scene @renderer @geometry @material @physical @texture @light @mesh @group @animation @controls @loader @raycasting @postprocessing @InstancedMesh @performance @webgpu @gotchas @math @examples
@@ -150,7 +151,9 @@
     lifecycleDiagram:archify.s@types archify.s@author
 |
 @quickRef |
-  runTrust:dots get skills/ponytail.s @security
+  runTrust:dots get skills/trust.s @runTrust
+  trustApi:dots get skills/trust.s @api
+  trustSafety:dots get skills/trust.s @safety
   nginxSSL:dots get skills/nginx.s @ssl
   nginxSecurity:dots get skills/nginx.s @security
   gitUndo:dots get skills/git.s @undoing

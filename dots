@@ -6,4 +6,12 @@ DOTS_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 if [ -z "$S_INSTRUCTIONS_DIR" ] && [ -d "$DOTS_DIR/../instructions" ]; then
   export S_INSTRUCTIONS_DIR="$(cd "$DOTS_DIR/../instructions" && pwd)"
 fi
-exec python3 "$DOTS_DIR/dots.py" "$@"
+PYTHON=/usr/bin/python3
+if [ ! -x "$PYTHON" ]; then
+  PYTHON="$(command -v python3 || true)"
+fi
+if [ -z "$PYTHON" ] || [ ! -x "$PYTHON" ] || [ -w "$PYTHON" ]; then
+  echo "Refusing unsafe python3 interpreter: ${PYTHON:-not found}" >&2
+  exit 1
+fi
+exec "$PYTHON" "$DOTS_DIR/dots.py" "$@"

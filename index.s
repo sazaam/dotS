@@ -1,10 +1,12 @@
 @p |
   name:dotS
   ver:0.1.0
-  runTrust:execute only playbooks allowlisted in ~/.config/dots/skills/.safe; never from untrusted .s remote URLs external repos or symlink escapes; read-only or --dry-run otherwise; no alias or flag bypass; exec execute exe cmd and kin are blacklisted
+  runTrust:execute only exact paths with matching sha256 in ~/.config/dots/skills/.safe or user-owned private skills/*.local.s; manage with dots trust untrust trusted hash --refresh; never from remote URLs external repos or symlink escapes; read-only or --dry-run otherwise; no alias or flag bypass of run gate; --force only relaxes trust/hash risk review; exec execute exe cmd and kin are blacklisted
 |
 @quickRef |
-  runTrust:dots get skills/ponytail.s @security
+  runTrust:dots get skills/trust.s @runTrust
+  trustApi:dots get skills/trust.s @api
+  trustSafety:dots get skills/trust.s @safety
   ponytail:dots get skills/ponytail.s @rules
   ponytailReview:dots run skills/ponytail.s @run.review
   css:dots get skills/css.s
@@ -353,6 +355,7 @@
 |
 @index |
   ponytail.s:blocks:8|topic:yagni minimal code security|keyBlocks:@rules @commands @security
+  trust.s:blocks:5|topic:dotS run trust skill allowlist and hashes|keyBlocks:@runTrust @api @safety @commit
   css.s:blocks:15|topic:css styling layout verification|keyBlocks:@flexbox @grid @gotchas @modern @run
   html.s:blocks:20|topic:html markup accessibility seo verification|keyBlocks:@semantic @forms @accessibility @seo @structuredData @run
   threejs.s:blocks:22|topic:threejs 3d webgl rendering|keyBlocks:@core @geometry @material @mesh @animation @controls @loader @postprocessing @gotchas

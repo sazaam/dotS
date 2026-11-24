@@ -1,14 +1,20 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # dotS multi-AI installer
 # Discovers installed AI coding tools (Antigravity, OpenCode, Claude Code, Cursor, Hermes)
 # and links the dotS routing-gate adapters for each one.
 # Symlinks keep the repo the single source of truth.
 # Updates are instant via `git pull` with nothing to re-copy.
 
-set -e
+set -euo pipefail
 
 # Detect where this script is located (the dotS directory)
 DOTS_DIR="$(cd "$(dirname "$0")" && pwd)"
+case "$DOTS_DIR" in
+  *[!A-Za-z0-9._/-]*)
+    echo "Refusing unsafe install path: $DOTS_DIR" >&2
+    exit 1
+    ;;
+esac
 
 # Parse optional arguments
 MODE_ALL=false
@@ -82,7 +88,7 @@ SHELL_RC="$HOME/.zshrc"
 if ! grep -qF "$DOTS_DIR" "$SHELL_RC" 2>/dev/null && ! grep -qF "\$HOME/${DOTS_DIR#$HOME/}" "$SHELL_RC" 2>/dev/null; then
   echo "" >> "$SHELL_RC"
   echo "# dotS tool" >> "$SHELL_RC"
-  echo "export PATH=\"$DOTS_DIR:\$PATH\"" >> "$SHELL_RC"
+  echo "export PATH='$DOTS_DIR':\$PATH" >> "$SHELL_RC"
   printf "%b[PATH]%b Added %s to %s\n" "$GREEN" "$RESET" "$DOTS_DIR" "$SHELL_RC"
 else
   printf "%b[PATH]%b CLI already configured in %s\n" "$BLUE" "$RESET" "$SHELL_RC"
@@ -100,6 +106,10 @@ safe_link() {
   fi
 
   _dst_dir="$(dirname "$_dst")"
+  if [ -L "$_dst_dir" ]; then
+    printf "  %b[ERROR]%b %s: destination parent is a symlink: %s\n" "$RED" "$RESET" "$_label" "$_dst_dir"
+    return 0
+  fi
   mkdir -p "$_dst_dir"
 
   if [ -L "$_dst" ]; then

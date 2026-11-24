@@ -561,6 +561,15 @@ dots diff                     # show changes since snap
 # Learning
 dots learn nginx.s @ssl.hsts "new value"  # update from websearch
 dots run skills/writing-skill.s @run.promote  # promote validated deltas at a gate boundary
+
+# Run trust
+dots trust skills/git.s skills/nginx.s  # add current hashes to skills/.safe
+dots untrust skills/git.s               # remove from skills/.safe
+dots trusted                            # list trusted skills
+dots hash                               # show matching / mismatched hashes
+dots hash --refresh                     # refresh stale hashes of trusted skills
+dots trust skills/mise.s --force        # accept reviewed risky @run steps
+dots hash --refresh --force             # rehash a trusted skill after risky edits
 ```
 
 `dots validate <draft.s>` is the authoring gate: it checks one physical `key:value` per line,
@@ -568,7 +577,7 @@ block termination, canonical `@meta` keys, named playbooks and `@index` referenc
 draft is delivered. It is strict for drafts; legacy store files are not retroactively checked.
 See `dots get skills/writing-skill.s @proofGate` for the full four-check workflow.
 
-`@run` execution is allowlisted separately by `skills/.safe` (one skill filename per line in the trusted store); `.locked` only marks skills immutable for `dots optimize`. To enable a new playbook, add its skill file to `skills/.safe`. Remote refs, files outside `~/.config/dots`, symlink escapes, and run aliases (`exec`, `sh`, `eval`, …) are denied; external files remain readable and `--dry-run` previewable.
+`@run` execution is allowlisted separately by `skills/.safe` (`skills/<name>.s sha256:<hex>` per line in the trusted store); `.locked` only marks skills immutable for `dots optimize`. Use `dots trust <skill>` to hash a new skill, `dots hash --refresh` to update stale hashes of already-trusted skills, `dots trusted` to list them, and `dots untrust <skill>` to revoke. Both `trust` and `hash --refresh` scan `@run` steps for high-signal risky commands (remote code piped to a shell, destructive filesystem/device commands, privilege escalation, sensitive-file writes, persistence, destructive git) and refuse with the offending block, step, and reason; add `--force` only after reviewing them. `--force` relaxes that review only — it never bypasses the run allowlist. User-owned private `skills/*.local.s` files are implicitly trusted and need no hash. Any other edit invalidates the hash and blocks execution until refreshed. Remote refs, files outside `~/.config/dots`, symlink escapes, and run aliases (`exec`, `sh`, `eval`, …) are denied; external files remain readable and `--dry-run` previewable.
 
 Learning is gated, not automatic: keep in-task deltas in a scratch draft, then promote only when a fact is proven/needed twice and the refetch cost would exceed rediscovery. Store promotion runs unlock → edit → validate → optimize dry-run → index → lock. New skills are allowed, but only after `dots find`/`dots search` show no existing owner; see `dots get skills/writing-skill.s @refinement @newSkill @run.promote`.
 

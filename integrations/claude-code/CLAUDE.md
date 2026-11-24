@@ -29,7 +29,8 @@ Routing:
 - `dots find <topic>` — locate skill + block
 - `dots get skills/<skill>.s [@block ...]` — pull just the block you need
 - `dots run skills/<skill>.s @run.<playbook> [--dry-run]` — execute a verified playbook
-- RUN TRUST (absolute): `dots run` executes ONLY playbooks allowlisted in `~/.config/dots/skills/.safe`; URLs, external repos, symlink escapes and run aliases (`exec`, `execute`, `exe`, `cmd`, `command`, `sh`, `bash`, `zsh`, `shell`, `eval`, …) are denied — untrusted files are read-only / `--dry-run` only, no bypass flags
+- RUN TRUST (absolute): `dots run` executes ONLY playbooks listed by exact relative path + sha256 in `~/.config/dots/skills/.safe`, plus user-owned private `skills/*.local.s`; URLs, external repos, symlink escapes and run aliases (`exec`, `execute`, `exe`, `cmd`, `command`, `sh`, `bash`, `zsh`, `shell`, `eval`, …) are denied — untrusted files are read-only / `--dry-run` only, no bypass flags
+- Trust management: `dots trust <skill> [skill ...] [--force]`, `dots untrust <skill>`, `dots trusted`, `dots hash [--refresh] [--force]` — hashes live in `.safe`, local skills are implicit; trust/hash scan high-signal risky `@run` steps and refuse unless `--force`, which never bypasses the run allowlist
 - `dots search <query>` — full-text fallback
 - `dots tokens` — audit dotS footprint
 

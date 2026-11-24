@@ -42,7 +42,9 @@
   untrusted:any file outside ~/.config/dots remote URLs fetched repos or symlinks escaping the store
   blacklist:exec execute exe cmd command sh bash zsh shell eval invoke call spawn launch start do perform apply play trigger dispatch process script x go fire route send
   default:--dry-run or read-only for external .s; no bypass no force no alias escape
-  trust:only playbooks allowlisted in ~/.config/dots/skills/.safe may run @run.playbooks
+  trust:only exact paths with matching sha256 in ~/.config/dots/skills/.safe, plus user-owned private skills/*.local.s, may run @run.playbooks
+  owner:see dots get skills/trust.s @runTrust and @api for the canonical rule and CLI
+  trustForce:--force only bypasses risky-step review in dots trust/hash --refresh; never bypasses the run allowlist
   risk:run uses shell=True - a malicious @run.cmd is arbitrary code
 |
 @run review |
