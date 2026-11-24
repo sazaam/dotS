@@ -564,12 +564,15 @@ dots diff                     # show changes since snap
 
 # Learning
 dots learn nginx.s @ssl.hsts "new value"  # update from websearch
+dots run skills/writing-skill.s @run.promote  # promote validated deltas at a gate boundary
 ```
 
 `dots validate <draft.s>` is the authoring gate: it checks one physical `key:value` per line,
 block termination, canonical `@meta` keys, named playbooks and `@index` references before a
 draft is delivered. It is strict for drafts; legacy store files are not retroactively checked.
 See `dots get skills/writing-skill.s @proofGate` for the full four-check workflow.
+
+Learning is gated, not automatic: keep in-task deltas in a scratch draft, then promote only when a fact is proven/needed twice and the refetch cost would exceed rediscovery. Store promotion runs unlock → edit → validate → optimize dry-run → index → lock. New skills are allowed, but only after `dots find`/`dots search` show no existing owner; see `dots get skills/writing-skill.s @refinement @newSkill @run.promote`.
 
 ## Mutations
 

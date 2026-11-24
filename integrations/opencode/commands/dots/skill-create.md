@@ -18,9 +18,9 @@ inside the dotS store. This is the dotS-native twin of `/skill-create`.
 ## Task
 
  1. Load the house style first:
-    `dots get skills/writing-skill.s @patterns @blocks @tokens @antiPatterns @proofGate`
+    `dots get skills/writing-skill.s @patterns @blocks @tokens @antiPatterns @proofGate @refinement @newSkill @run.promote`
     (its create playbook, `@run.create`, shows the canonical create → validate → optimize → register loop).
- 2. Check for an existing skill: `dots find $1` and `dots search $1`.
+ 2. Check for an existing skill: `dots find $1` and `dots search $1`. If one already owns the topic, extend its block via `@run.promote` instead of creating a duplicate; a new file is allowed only when `@newSkill` triggers fire and no owner exists.
  3. Identify the repeated pattern in $ARGUMENTS and abstract it to the general case.
  4. Draft the skill at a scratch path following `writing-skill.s`:
     - One `key:value` per physical line; no indented continuation lines.

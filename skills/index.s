@@ -28,7 +28,7 @@
   gpu-draw.s:blocks:5|topic:blender gpu dotted line overlay preview draw handler|keyBlocks:@meta @facts @gotchas @verification
   ffmpeg.s:blocks:13|topic:ffmpeg audio video processing|keyBlocks:@trimSilence @pitchFormant @loudness @concat @gotchas @run
   audio-drama-pipeline.s:blocks:9|topic:per-line theatrical audio drama recording pipeline|keyBlocks:@flow @trim @pacing @loudness @gotchas @futureProject
-  writing-skill.s:blocks:21|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @patterns @optimize @proofGate @gotchas @dependencies @mega @mutations @pollination
+  writing-skill.s:blocks:24|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @patterns @optimize @proofGate @refinement @newSkill @run.promote @gotchas @dependencies @mega @mutations @pollination
   comfy-t2v-ltx-2.3.s:blocks:9|topic:comfyui ltx-2.3 22b t2v on 16GB gpu|keyBlocks:@models @launch @workflow @vramMap @gotchas
   mml.s:blocks:20|topic:mml music macro language chiptune|keyBlocks:@basics @notes @lengths @loops @macros @dialects @gotchas
   server-setup.s:blocks:12|topic:vps server hardening fail2ban firewall deploy keys|keyBlocks:@sshHarden @firewall @fail2ban @gitKeys @verify @run
@@ -107,6 +107,9 @@
   writeSkill:writing-skill.s
   optimizeSkill:writing-skill.s@tokens writing-skill.s@optimize
   skillDraft:writing-skill.s@proofGate
+  skillEvolution:writing-skill.s@refinement writing-skill.s@run.promote
+  promoteSkill:writing-skill.s@run.promote writing-skill.s@refinement
+  newSkill:writing-skill.s@newSkill
   videoGenVideo:comfy-t2v-ltx-2.3.s
   ltxT2V:comfy-t2v-ltx-2.3.s@workflow
   comfyOOM:comfy-t2v-ltx-2.3.s@vramMap comfy-t2v-ltx-2.3.s@gotchas
@@ -215,6 +218,9 @@
   writeSkillPatterns:dots get skills/writing-skill.s @patterns
   writeSkillOptimize:dots get skills/writing-skill.s @optimize
   writeSkillProof:dots get skills/writing-skill.s @proofGate
+  writeSkillRefine:dots get skills/writing-skill.s @refinement
+  writeSkillNew:dots get skills/writing-skill.s @newSkill
+  promoteSkill:dots get skills/writing-skill.s @run.promote
   validateDraft:dots validate /abs/path/<draft>.s
   comfyT2V:dots get skills/comfy-t2v-ltx-2.3.s @workflow
   comfyT2VLaunch:dots get skills/comfy-t2v-ltx-2.3.s @launch
@@ -295,5 +301,6 @@
    webhookTest:dots run skills/webhooks.s @run.testWebhook
    duskyDoctor:dots run skills/dusky.s @run.doctor
    duskyInspect:dots run skills/dusky.s @run.inspect
-   duskyRerun:dots run skills/dusky.s @run.rerun
+    duskyRerun:dots run skills/dusky.s @run.rerun
+    skillPromote:dots run skills/writing-skill.s @run.promote
 |

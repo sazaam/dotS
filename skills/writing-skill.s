@@ -1,7 +1,7 @@
 # How to Write .s Skill Files - Meta Reference
 @meta |
   topic:writing-skill
-  versions:1.2
+  versions:1.3
   confidence:high
   lastUpdated:2026-11-22
 |
@@ -16,6 +16,8 @@
   sFind:dots find "topic" - searches across all skills
   sOptimize:dots optimize <skill> - removes waste
   sValidate:dots validate <draft.s> - strict structural check before delivery
+  refinement:promote validated learnings from live work into dotS
+  newSkill:create new skill only when no existing skill can host the fact
 |
 @format |
   blockStart:@blockName followed by pipe on next line
@@ -45,6 +47,9 @@
   domainOnly:every block must teach the skill topic - delete guide residue
   honestyOnly:include @honesty only when the skill makes measured claims
   dependenciesBlock:use @dependencies requires:key instead of custom deps keys in @meta
+  refinementBlock:use @refinement to govern live-work evolution
+  newSkillBlock:use @newSkill for creation triggers and guardrails
+  promotePlaybook:use @run.promote for store promotion
 |
 @tokens |
   mergeLine:foo:bar:baz:qux on one line = 1 line not 4
@@ -73,6 +78,8 @@
   noMeta:every skill MUST have @meta
   longLines:>200 chars per line wastes tokens
   lonePipe:putting | on its own inside block content breaks parsing
+  silentLoss:one-off win left in transcript instead of refined at gate boundary
+  promotionChurn:rewriting store skills mid-task without a gate or evidence
 |
 @honesty |
   ranges:state savings as measured ranges (30-90%), never flat best-case numbers
@@ -80,15 +87,19 @@
   context:pair big numbers with what produced them (task scope, block size)
   noOverclaim:avoid absolute promises - docs that oversell lose trust
   measured:prefer real measurements over theoretical maxima
+  costs:state refetch and loop costs honestly; promotion is gated, not automatic
 |
 @index |
   howTo:list each section and its blocks
   format:sectionName:@block1 @block2 @block3
-  sections:group logically (core, data, runtime, proof, gotchas)
+  sections:group logically (core, data, runtime, proof, refinement, gotchas)
   includeAll:every block should appear in exactly one section
   quickRef:dots get skills/skill.s @blockName - show how to load
-  newBlocks:@dependencies @mega @mutations @pollination
+  newBlocks:@dependencies @refinement @newSkill @run.promote @mega @mutations @pollination
   proof:@proofGate - mandatory verification before delivering a draft
+  refinement:@refinement - live-work evolution loop
+  newSkill:@newSkill - creation freedom with guardrails
+  promote:@run.promote - promote deltas into store
   honesty:@honesty - claims discipline for docs and savings numbers
 |
 @versioning |
@@ -124,12 +135,46 @@
   deliver:never present a draft before all four checks pass
   confidence:mark @meta confidence high only after checks pass; otherwise medium
   strict:dots validate <draft> is draft-only; legacy store files are not retroactively checked
+  refine:at prompt end, run @run.promote before closing out
+|
+@refinement |
+  purpose:turn live work into reusable skill assets
+  micro:within one prompt, at each gate boundary, write deltas to scratch draft
+  meso:at prompt end, promote proven deltas into the store
+  macro:after a batch of tasks, audit duplicates and prune
+  twoUse:promote only when a fact is proven or needed twice
+  evidence:command output or failed check must back each promoted fact
+  noLogs:distill; never paste raw transcripts or secrets
+  costGate:skip promotion for trivial one-offs; refetch cost must beat rediscovery cost
+  confidence:medium after first pass; high only after repeated passes
+  newBridge:if no skill owns the topic, use @newSkill
+|
+@newSkill |
+  freedom:any reusable domain may become a skill
+  searchFirst:run dots find and dots search before creating
+  preferBlock:extend an existing skill block when one owns the topic
+  minimum:@meta @core @gotchas @index @run
+  route:register in skills/index.s and index.s before delivery
+  noDuplicate:overlapping skill means mutation or merge, not a second file
+  proofGate:new skills still pass all @proofGate checks
+  keepNarrow:one topic per skill; split only at real seams
+|
+@run.promote |
+  capture:write deltas to scratch draft at gate boundary
+  check:dots validate /abs/path/<draft>.s then dots optimize --dry-run <draft>
+  decide:apply @refinement twoUse and costGate before any store write
+  edit:dots unlock <skill>; append or revise; dots validate; dots optimize --dry-run
+  register:update @index and byTask in both indexes when blocks or skills change
+  lock:dots lock <skill> after checks pass
+  newSkill:follow @newSkill then @proofGate for a new file
+  skip:leave one-offs in transcript when no trigger fires
 |
 @locking |
   beforeEdit:always run `dots locked` before editing any .s file
   refuseLocked:if target is locked, refuse and inform user
   useOptimizer:always use `dots optimize` for optimization, never manual edits
   appendOnly:may append NEW content to locked files, but never modify existing
+  promotionUnlock:unlock before store promotion edits; re-lock after gate
   osProtect:dots lock makes files read-only (chmod -w), unlock restores (chmod +w)
 |
 @dependencies |
@@ -165,12 +210,18 @@
   emptyBlock:empty blocks (just @name | |) waste tokens
   indexMismatch:@index referencing non-existent block
   versionField:canonical key is versions (plural) in @meta; version is rejected by dots validate <draft>
+  prematurePromotion:single success is not a rule; require twoUse
+  rawLogs:transcripts bloat skills and may leak secrets
+  missingRoute:new skill without index entry is invisible to dots find
+  duplicateSkill:overlapping new skill fragments routing; prefer block or mutation
 |
 @run |
   create:dots get skills/writing-skill.s @format
   optimize:dots optimize writing-skill
   validate:dots validate skills/writing-skill.s - structural self-check
   validateDraft:dots validate /abs/path/<name>.s - draft gate
+  refine:dots get skills/writing-skill.s @refinement
+  promote:dots get skills/writing-skill.s @run.promote
   find:dots find "writeSkill" - should find this skill
   indexCheck:dots get index.s - verify skill appears
   tokens:dots optimize shows token count

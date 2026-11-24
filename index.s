@@ -81,6 +81,9 @@
   terminalTui:dots get skills/terminal-tui.s
   herdr:dots get skills/terminal-tui.s @herdr
   writeSkillProof:dots get skills/writing-skill.s @proofGate
+  writeSkillRefine:dots get skills/writing-skill.s @refinement
+  writeSkillNew:dots get skills/writing-skill.s @newSkill
+  promoteSkill:dots get skills/writing-skill.s @run.promote
   validateDraft:dots validate /abs/path/<draft>.s
   strawexpress:dots get skills/strawexpress.s
   strawexpressRoutes:dots get skills/strawexpress.s @express
@@ -200,11 +203,15 @@
    webhookTest:dots run skills/webhooks.s @run.testWebhook
    duskyDoctor:dots run skills/dusky.s @run.doctor
    duskyInspect:dots run skills/dusky.s @run.inspect
-   duskyRerun:dots run skills/dusky.s @run.rerun
+    duskyRerun:dots run skills/dusky.s @run.rerun
+    skillPromote:dots run skills/writing-skill.s @run.promote
 |
 @byTask |
   minimalCode:skills/ponytail.s
   skillDraft:skills/writing-skill.s@proofGate
+  skillEvolution:skills/writing-skill.s@refinement skills/writing-skill.s@run.promote
+  promoteSkill:skills/writing-skill.s@run.promote
+  newSkill:skills/writing-skill.s@newSkill
   codeReview:skills/ponytail.s
   styling:skills/css.s
   layout:skills/css.s
@@ -351,7 +358,7 @@
   type.s:blocks:7|topic:Type.js OOP class system|keyBlocks:@core @packages @slots @lookup @utils @usage
   blender-python.s:blocks:33|topic:blender python API bpy 5.2+|keyBlocks:@core @modules @operators @bmesh @gpu @gotchas
   blender-addon.s:blocks:16|topic:blender addon authoring extensions keymaps overlay drawing|keyBlocks:@manifest @keymaps @overlayDraw @layouts @versionGotchas @run
-  writing-skill.s:blocks:21|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @honesty @patterns @optimize @proofGate @gotchas @dependencies @mega @mutations @pollination
+  writing-skill.s:blocks:24|topic:meta - how to write .s skills|keyBlocks:@format @blocks @tokens @honesty @patterns @optimize @proofGate @refinement @newSkill @run.promote @gotchas @dependencies @mega @mutations @pollination
   mise.s:blocks:14|topic:mise tool version manager env tasks|keyBlocks:@tools @config @python @node @env @tasks @gotchas @run
   linux-wapp.s:blocks:8|topic:wapp isolated browser apps|keyBlocks:@commands @isolation @fileLayout @multiAccount @gotchas
   comfy-t2v-ltx-2.3.s:blocks:9|topic:comfyui ltx-2.3 22b t2v on 16GB gpu|keyBlocks:@models @launch @workflow @vramMap @gotchas

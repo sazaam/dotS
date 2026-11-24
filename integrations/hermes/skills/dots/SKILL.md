@@ -26,14 +26,17 @@ Store: `~/.config/dots`. CLI: `dots` (fallback: `~/.config/dots/dots`).
 - `dots set <file.s> <block.key> <value>` — set a value
 - `dots add <file.s> @block <item> [key:value ...]` — append to a block
 - `dots validate [file.s]` — check store integrity, or structurally check one draft
+- `dots run skills/writing-skill.s @run.promote` — promote validated deltas at a gate boundary
 - `dots where` — show install location
 
 ## Rules
 
 - On-demand only: run `find` first; never dump `index.s` or all skills into context.
 - Do not duplicate the routing map into instructions or chat.
-- Before authoring `.s` files, load the spec: `dots get skills/writing-skill.s @format @blocks @proofGate @gotchas @index`.
+- Before authoring `.s` files, load the spec: `dots get skills/writing-skill.s @format @blocks @proofGate @refinement @newSkill @gotchas @index`.
 - Never present a `.s` draft before `dots validate <draft>` passes and `dots optimize --dry-run <draft>` shows zero actions.
+- Evolve skills only at gate boundaries: keep in-task deltas in scratch, promote only proven/repeated facts via `@run.promote`.
+- Create a new skill only when `dots find` and `dots search` find no existing owner; otherwise extend a block.
 - Domain skills must not copy guide blocks (`@versioning`, `@locking`, `@debugging`, bare `@run`); use named playbooks only.
 
 See `references/hermes-enablement.md` for verification, dry-run authoring and PATH notes.
