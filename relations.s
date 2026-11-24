@@ -17,3 +17,6 @@ $terminal-tui ~ $server-setup     # terminal-first admins operate hardened boxes
 $webhooks ~ $node                 # receivers commonly run on Node/Express
 $webhooks ~ $server-setup         # public HTTPS endpoints, hardening, secret handling
 $webhooks ~ $nginx                # TLS termination and routing for webhook endpoints
+$seo > $html                      # SEO audits depend on semantic HTML and metadata
+$seo ~ $css                       # layout and responsive UX affect mobile ranking signals
+$seo ~ $nginx                     # redirects headers HTTPS and performance are crawl signals

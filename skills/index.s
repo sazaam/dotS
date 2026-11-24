@@ -1,5 +1,5 @@
 # dotS Knowledge Base Index
-@meta |type:index|lastUpdated:2026-11-24|totalFiles:45|
+@meta |type:index|lastUpdated:2026-11-24|totalFiles:46|
 @constraints |
   pipe:"|" has three roles: block delimiter, metadata separator, value content
   pipeRule:block ends only when a line is JUST "|" — pipes inside key:value are safe
@@ -38,6 +38,7 @@
   css.s:blocks:15|topic:css|keyBlocks:@selectors @boxModel @flexbox @grid @position @units @media @specificity @gotchas @modern @run
   glsl.s:blocks:21|topic:glsl shader shaderwebgl shader toy|keyBlocks:@types @swizzle @mathBuiltins @texture @flow @qualifiers @vertexShader @fragmentShader @noise @sdf @raymarching @shadertoylite @stlUniforms @stlAPI @stlPasses @stlConfig @stlGotchas @glslGotchas @commonPatterns @verification
   html.s:blocks:20|topic:html|keyBlocks:@structure @semantic @forms @accessibility @media @tables @scripting @gotchas @metadata @html5Features @seo @structuredData @openGraph @performance @seoGotchas @run
+  seo.s:blocks:17|topic:seo search engine optimization crawling ranking audit review|keyBlocks:@core @crawling @indexing @relevance @content @technical @structuredData @aiReferencing @authority @measurement @audit @review @gotchas @run
   index.s:blocks:5|topic:dotS knowledge base index|keyBlocks:@index @byTask @quickRef @runQuickRef
   jade.s:blocks:20|topic:jade pug template|keyBlocks:@syntax @attributes @control @mixin @strawLibrary @compose @strawWorkflow @includes @filters @builtins @browserLib @browserAPI @browserUsage @vsPug @jadeVsPugGotchas @asyncLibDetails @gotchas @patterns @verification
   linux-wapp.s:blocks:8|topic:linux wapp browser isolation|keyBlocks:@core @commands @isolation @fileLayout @multiAccount @gotchas @index
@@ -60,6 +61,9 @@
   pm2:pm2.s@commands pm2.s@ecosystem
   zeroDowntime:pm2.s@cluster pm2.s@run
   frontend:javascript.s
+  seo:seo.s@core seo.s@crawling seo.s@indexing seo.s@relevance seo.s@content seo.s@technical seo.s@audit
+  seoAudit:seo.s@run.audit seo.s@audit seo.s@review
+  aiReferencing:seo.s@aiReferencing
   backend:python.s node.s
   rust:rust.s
   rustBorrowing:rust.s@borrowing rust.s@fixingErrors
@@ -154,6 +158,9 @@
   runTrust:dots get skills/trust.s @runTrust
   trustApi:dots get skills/trust.s @api
   trustSafety:dots get skills/trust.s @safety
+  seo:dots get skills/seo.s @core @audit
+  seoAudit:dots run skills/seo.s @run.audit
+  seoReview:dots run skills/seo.s @run.review
   nginxSSL:dots get skills/nginx.s @ssl
   nginxSecurity:dots get skills/nginx.s @security
   gitUndo:dots get skills/git.s @undoing
@@ -288,6 +295,8 @@
   gitSquash:dots run skills/git.s @run.squashMerge
   gitUndo:dots run skills/git.s @run.undoLastCommit
   gitClean:dots run skills/git.s @run.cleanBranches
+  seoAudit:dots run skills/seo.s @run.audit
+  seoReview:dots run skills/seo.s @run.review
   nginxSSL:dots run skills/nginx.s @run.sslSetup
   nginxRenew:dots run skills/nginx.s @run.sslRenew
   nginxTest:dots run skills/nginx.s @run.configTest

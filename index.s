@@ -21,6 +21,9 @@
   htmlLint:dots run skills/html.s @run.lint
   a11y:dots run skills/html.s @run.accessibility
   seoCheck:dots run skills/html.s @run.seoCheck
+  seo:dots get skills/seo.s @core @audit
+  seoAudit:dots run skills/seo.s @run.audit
+  seoReview:dots run skills/seo.s @run.review
   cssLint:dots run skills/css.s @run.lint
   cssValidate:dots run skills/css.s @run.validate
   cssSpecificity:dots run skills/css.s @run.specificity
@@ -161,6 +164,8 @@
   cssLint:npx stylelint **/*.css
   a11y:npx pa11y **/*.html
   seoCheck:dots run skills/html.s @run.seoCheck
+  seoAudit:dots run skills/seo.s @run.audit
+  seoReview:dots run skills/seo.s @run.review
   gitCommit:dots run skills/git.s @run.quickCommit
   gitRelease:dots run skills/git.s @run.releaseTag
   gitSquash:dots run skills/git.s @run.squashMerge
@@ -227,7 +232,9 @@
   layout:skills/css.s
   markup:skills/html.s
   accessibility:skills/html.s
-  seo:skills/html.s @seo @structuredData @openGraph
+  seo:skills/seo.s @core @crawling @indexing @relevance @content @technical @audit
+  seoAudit:skills/seo.s @run.audit @audit @review
+  aiReferencing:skills/seo.s @aiReferencing
   metaTags:skills/html.s @seo @metadata
   threeD:skills/threejs.s
   webgl:skills/threejs.s
@@ -358,6 +365,7 @@
   trust.s:blocks:5|topic:dotS run trust skill allowlist and hashes|keyBlocks:@runTrust @api @safety @commit
   css.s:blocks:15|topic:css styling layout verification|keyBlocks:@flexbox @grid @gotchas @modern @run
   html.s:blocks:20|topic:html markup accessibility seo verification|keyBlocks:@semantic @forms @accessibility @seo @structuredData @run
+  seo.s:blocks:17|topic:seo search engine optimization crawling ranking audit review|keyBlocks:@core @crawling @indexing @relevance @content @technical @structuredData @aiReferencing @authority @measurement @audit @review @gotchas @run
   threejs.s:blocks:22|topic:threejs 3d webgl rendering|keyBlocks:@core @geometry @material @mesh @animation @controls @loader @postprocessing @gotchas
   glsl.s:blocks:21|topic:glsl shader shadertoylite|keyBlocks:@shadertoylite @stlAPI @stlUniforms @sdf @raymarching @noise
   md.s:blocks:15|topic:markdown obsidian|keyBlocks:@obsidianCallouts @obsidianDataview @obsidianPlugins @obsidianBestPractices
