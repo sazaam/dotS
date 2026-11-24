@@ -1,17 +1,4 @@
----
-name: dots-hardened
-description: >-
-  Hardened dotS routing gate with `skip dots` bypass. Use before web search or
-  speculation on infrastructure, system configuration, and supported stacks.
----
-
-<!--
-Opt-in hardened Hermes skill, generated from integrations/shared/dots-hardened.body.md.
-dotS install links only the canonical dots skill; link this variant manually.
-Regenerate with: sh integrations/shared/render-hardened.sh
--->
-
-# dotS knowledge layer — hardened gate
+# dotS knowledge layer — routing gate
 
 This machine runs dotS at `~/.config/dots` (`dots where` prints it).
 
